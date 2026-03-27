@@ -4,6 +4,8 @@ export const siteConfig = {
   url: "https://agentfirst.directory",
   description:
     "Curated products, services, and open-source repos where AI agents are first class citizens",
+  defaultSocialImage: "/og-default.png",
+  defaultSocialImageAlt: "agentfirst.directory, the directory for agent-first tools",
   giscus: {
     repo: "bradvin/agentfirst.directory",
     repoId: "R_kgDORyNLNw",

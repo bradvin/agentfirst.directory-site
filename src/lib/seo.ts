@@ -47,19 +47,24 @@ export function itemListSchema(
 }
 
 export function softwareApplicationSchema(tool: ToolCardData) {
+  const pageUrl = absoluteUrl(`/tools/${tool.entry.slug}`);
+  const sameAs = [tool.entry.githubUrl].filter(Boolean);
+  const image = tool.entry.ogImageUrl ?? tool.entry.logoUrl;
+
   return {
     "@context": "https://schema.org",
-    "@type": "SoftwareApplication",
+    "@type": ["SoftwareApplication", "WebApplication"],
+    "@id": `${pageUrl}#tool`,
     name: tool.entry.name,
     description: tool.entry.description,
     applicationCategory: tool.category.label,
-    url: absoluteUrl(`/tools/${tool.entry.slug}`),
-    sameAs: [tool.entry.websiteUrl, tool.entry.githubUrl].filter(Boolean),
-    author: {
-      "@type": "Person",
-      name: tool.entry.submittedByGithub,
-      url: `https://github.com/${tool.entry.submittedByGithub}`,
-    },
+    url: tool.entry.websiteUrl,
+    mainEntityOfPage: pageUrl,
+    operatingSystem: "Web",
+    keywords: tool.entry.tags.join(", "),
+    isAccessibleForFree: tool.entry.pricing !== "paid",
+    ...(image ? { image } : {}),
+    ...(sameAs.length > 0 ? { sameAs } : {}),
   };
 }
 

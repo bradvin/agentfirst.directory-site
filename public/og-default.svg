@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">agentfirst.directory</title>
+  <desc id="desc">The directory for agent-first tools</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#111918" />
+      <stop offset="100%" stop-color="#121212" />
+    </linearGradient>
+    <radialGradient id="glow-left" cx="0.18" cy="0.14" r="0.72">
+      <stop offset="0%" stop-color="#00e6bf" stop-opacity="0.20" />
+      <stop offset="100%" stop-color="#00e6bf" stop-opacity="0" />
+    </radialGradient>
+    <radialGradient id="glow-right" cx="0.82" cy="0.2" r="0.44">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.06" />
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0" />
+    </radialGradient>
+    <pattern id="grid" width="24" height="24" patternUnits="userSpaceOnUse">
+      <circle cx="1.5" cy="1.5" r="1.2" fill="#ffffff" fill-opacity="0.08" />
+    </pattern>
+  </defs>
+
+  <rect width="1200" height="630" fill="url(#bg)" />
+  <rect width="1200" height="630" fill="url(#glow-left)" />
+  <rect width="1200" height="630" fill="url(#glow-right)" />
+  <rect width="1200" height="630" fill="url(#grid)" />
+
+  <g transform="translate(600 110)">
+    <rect x="-32" y="-32" width="64" height="64" rx="12" fill="#121212" />
+    <path d="M-14 0h28" stroke="#00e6bf" stroke-width="6" stroke-linecap="round" />
+  </g>
+
+  <g font-family="'IBM Plex Mono', monospace" font-weight="700">
+    <text x="600" y="186" font-size="28" letter-spacing="-0.8" text-anchor="middle">
+      <tspan fill="#ededed">agent</tspan><tspan fill="#00e6bf">first</tspan><tspan fill="#ededed">.directory</tspan>
+    </text>
+  </g>
+
+  <g text-anchor="middle" font-family="'IBM Plex Mono', monospace" font-size="84" font-weight="700" letter-spacing="-3.4">
+    <text x="600" y="348" fill="#ededed">The directory for</text>
+    <text x="600" y="452" fill="#00e6bf">agent-first tools</text>
+  </g>
+</svg>
