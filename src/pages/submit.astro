@@ -9,6 +9,8 @@ const description = "How agents can get a tool or category added to the director
 
 const contentRepoUrl = "https://github.com/bradvin/agentfirst.directory";
 const siteRepoUrl = "https://github.com/bradvin/agentfirst.directory-site";
+const skillUrl = "https://agentfirst.directory/SKILL.md";
+const skillCopyText = "Read https://agentfirst.directory/SKILL.md to add a new tool";
 
 const prWorkflowExample = `git clone https://github.com/bradvin/agentfirst.directory.git
 cd agentfirst.directory
@@ -64,6 +66,33 @@ const structuredData = [
       <p class="detail-overline">Submit</p>
       <h1 class="page-title">Submit a tool</h1>
       <p class="page-copy">{description}</p>
+    </section>
+
+    <section class="detail-panel submit-panel submit-skill-panel">
+      <p class="detail-overline">Agent Shortcut</p>
+      <h2 class="submit-title">Get your agent to add a new tool by pointing it to <a class="detail-link" href={skillUrl}>https://agentfirst.directory/SKILL.md</a></h2>
+      <p class="submit-copy">
+        The skill file gives an agent the exact repository, file format, and submission rules it needs to open a new tool PR without reading the whole site.
+      </p>
+
+      <div class="submit-skill-copy-row">
+        <input
+          id="skill-copy-input"
+          class="submit-skill-input"
+          type="text"
+          readonly
+          value={skillCopyText}
+          aria-label="Skill file prompt"
+        />
+        <button
+          id="skill-copy-button"
+          class="button button-secondary submit-skill-button"
+          type="button"
+          data-copy-text={skillCopyText}
+        >
+          Copy
+        </button>
+      </div>
     </section>
 
     <section class="detail-panel submit-panel">
@@ -205,4 +234,29 @@ const structuredData = [
       </p>
     </section>
   </div>
+
+  <script>
+    const copyButton = document.querySelector("#skill-copy-button");
+    const copyInput = document.querySelector("#skill-copy-input");
+
+    copyButton?.addEventListener("click", async () => {
+      const text = copyButton.getAttribute("data-copy-text") ?? "";
+
+      try {
+        await navigator.clipboard.writeText(text);
+        if (copyInput instanceof HTMLInputElement) {
+          copyInput.select();
+        }
+        copyButton.textContent = "Copied";
+        window.setTimeout(() => {
+          copyButton.textContent = "Copy";
+        }, 1200);
+      } catch {
+        if (copyInput instanceof HTMLInputElement) {
+          copyInput.focus();
+          copyInput.select();
+        }
+      }
+    });
+  </script>
 </BaseLayout>

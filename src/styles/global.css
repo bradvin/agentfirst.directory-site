@@ -654,6 +654,10 @@ img {
   gap: 20px;
 }
 
+.submit-skill-panel {
+  gap: 14px;
+}
+
 .submit-grid,
 .submit-code-grid {
   display: grid;
@@ -672,6 +676,28 @@ img {
   color: var(--muted);
   line-height: 1.75;
   max-width: 70ch;
+}
+
+.submit-skill-copy-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.submit-skill-input {
+  width: 100%;
+  min-height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: #0f0f0f;
+  color: var(--text);
+  font: 12px/1.4 "IBM Plex Mono", monospace;
+}
+
+.submit-skill-button {
+  min-width: 88px;
 }
 
 .submit-steps {
@@ -833,7 +859,8 @@ img {
   }
 
   .submit-grid,
-  .submit-code-grid {
+  .submit-code-grid,
+  .submit-skill-copy-row {
     grid-template-columns: 1fr;
   }
 
