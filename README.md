@@ -1,6 +1,6 @@
 # agentfirst.directory-site
 
-Astro site for `agentfirst.directory`, deployed to Cloudflare Pages with D1 sync. Site code lives here; approved content lives in the public `bradvin/agentfirst.directory` repo and is consumed through the `content/` git submodule.
+Astro site for `agentfirst.directory`, deployed to Cloudflare Pages with D1 sync. Site code lives here. Approved content continues to live in the public `bradvin/agentfirst.directory` repo, and this repo is being migrated away from the old embedded `content/` checkout toward runtime D1 reads.
 
 ## Stack
 
@@ -8,13 +8,12 @@ Astro site for `agentfirst.directory`, deployed to Cloudflare Pages with D1 sync
 - Cloudflare Pages for hosting and preview deploys
 - D1 as the mirrored published index
 - Public content repo for categories and tools
-- Git submodule wiring from site repo to content repo
 
 ## Content model
 
 ### Categories
 
-Approved categories live in `content/categories/<slug>.json`.
+Approved categories live in the public content repo at `categories/<slug>.json`.
 
 Example:
 
@@ -28,7 +27,7 @@ Example:
 
 ### Tools
 
-Approved tools live in `content/tools/<slug>.md`.
+Approved tools live in the public content repo at `tools/<slug>.md`.
 
 Example:
 
@@ -55,17 +54,18 @@ CrewAI is a lean, lightning-fast framework built in Python for orchestrating rol
 ## Local development
 
 ```bash
-git submodule update --init --recursive
 npm install
 npm run validate:content
 npm run dev
 ```
 
+This repo does not currently embed the content repo. Until the runtime D1 migration is complete, commands that expect a local `content/` directory will fail.
+
 ## Repo split
 
 - Site repo: `https://github.com/bradvin/agentfirst.directory-site`
 - Content repo: `https://github.com/bradvin/agentfirst.directory`
-- The site reads all published category and tool content from the `content/` submodule.
+- The site is being migrated to read published content at runtime instead of from an embedded checkout.
 
 ## CI and publish flow
 

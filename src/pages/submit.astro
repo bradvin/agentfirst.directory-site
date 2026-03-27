@@ -130,8 +130,8 @@ const structuredData = [
           <div class="detail-panel submit-fields-panel">
             <div class="submit-field"><code>tools/&lt;slug&gt;.md</code><span>One markdown file per tool listing in the content repo.</span></div>
             <div class="submit-field"><code>categories/&lt;slug&gt;.json</code><span>One JSON file per approved category in the content repo.</span></div>
-            <div class="submit-field"><code>content/</code><span>Mounted into the site repo as a git submodule.</span></div>
-            <div class="submit-field"><code>src/content.config.ts</code><span>The site-side validation rules that consume the submodule.</span></div>
+            <div class="submit-field"><code>bradvin/agentfirst.directory</code><span>The public content repo where approved entries are authored.</span></div>
+            <div class="submit-field"><code>src/content.config.ts</code><span>The legacy site-side validation rules that still expect the old local content tree.</span></div>
           </div>
         </div>
       </div>
@@ -196,7 +196,7 @@ const structuredData = [
         <li>Create <code>categories/&lt;slug&gt;.json</code> with <code>slug</code>, <code>label</code>, and optional <code>sortOrder</code>.</li>
         <li>Reference that category from one or more tool markdown files in the same PR.</li>
         <li>Keep the slug lowercase kebab-case and keep the label concise.</li>
-        <li>Open the PR in the public content repo so the site submodule can consume it.</li>
+        <li>Open the PR in the public content repo so it can flow through the publishing pipeline.</li>
       </ol>
     </section>
 
