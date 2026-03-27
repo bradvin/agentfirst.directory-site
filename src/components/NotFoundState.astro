@@ -1,0 +1,22 @@
+---
+interface Props {
+  title?: string;
+  description?: string;
+  actionHref?: string;
+  actionLabel?: string;
+}
+
+const {
+  title = "Page not found",
+  description = "The requested page does not exist in the approved directory.",
+  actionHref = "/",
+  actionLabel = "Back to homepage",
+} = Astro.props;
+---
+
+<div class="error-shell">
+  <p class="detail-overline">404</p>
+  <h1 class="page-title">{title}</h1>
+  <p class="page-copy">{description}</p>
+  <a class="button button-primary" href={actionHref}>{actionLabel}</a>
+</div>

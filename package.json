@@ -4,18 +4,16 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "astro dev",
-    "start": "astro dev",
-    "build": "astro build",
-    "preview": "astro preview",
-    "validate:content": "node ./scripts/validate-content.mjs",
-    "sync:d1:sql": "node ./scripts/generate-d1-sync-sql.mjs",
-    "ci": "npm run validate:content && npm run build"
+    "dev": "wrangler types && astro dev",
+    "start": "wrangler types && astro dev",
+    "build": "wrangler types && astro build",
+    "preview": "wrangler types && astro preview",
+    "ci": "npm run build"
   },
   "dependencies": {
-    "@astrojs/sitemap": "3.7.1",
+    "@astrojs/cloudflare": "^13.1.4",
     "astro": "6.0.8",
-    "gray-matter": "4.0.3"
+    "markdown-it": "^14.1.1"
   },
   "devDependencies": {
     "@types/node": "25.5.0",

@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import NotFoundState from "../components/NotFoundState.astro";
 import { siteConfig } from "../lib/site";
 ---
 
@@ -9,9 +10,6 @@ import { siteConfig } from "../lib/site";
   canonicalPath="/404"
 >
   <div class="shell-inner error-shell">
-    <p class="detail-overline">404</p>
-    <h1 class="page-title">Page not found</h1>
-    <p class="page-copy">The requested page does not exist in the approved directory.</p>
-    <a class="button button-primary" href="/">Back to homepage</a>
+    <NotFoundState />
   </div>
 </BaseLayout>

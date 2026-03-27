@@ -1,4 +1,4 @@
-name: Validate Content and Build
+name: Build Worker
 
 on:
   pull_request:
@@ -22,9 +22,6 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
-
-      - name: Validate content
-        run: npm run validate:content
 
       - name: Build site
         run: npm run build

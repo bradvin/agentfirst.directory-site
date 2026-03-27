@@ -1,4 +1,4 @@
-import type { CategoryEntry, ToolCardData } from "./content";
+import type { Category, ToolCardData } from "./content";
 import { siteConfig } from "./site";
 
 export function absoluteUrl(path: string) {
@@ -50,35 +50,35 @@ export function softwareApplicationSchema(tool: ToolCardData) {
   return {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
-    name: tool.entry.data.name,
-    description: tool.entry.data.description,
-    applicationCategory: tool.category.data.label,
-    url: absoluteUrl(`/tools/${tool.entry.data.slug}`),
-    sameAs: [tool.entry.data.websiteUrl, tool.entry.data.githubUrl].filter(Boolean),
+    name: tool.entry.name,
+    description: tool.entry.description,
+    applicationCategory: tool.category.label,
+    url: absoluteUrl(`/tools/${tool.entry.slug}`),
+    sameAs: [tool.entry.websiteUrl, tool.entry.githubUrl].filter(Boolean),
     author: {
       "@type": "Person",
-      name: tool.entry.data.submittedBy,
-      url: `https://github.com/${tool.entry.data.submittedBy}`,
+      name: tool.entry.submittedByGithub,
+      url: `https://github.com/${tool.entry.submittedByGithub}`,
     },
   };
 }
 
 export function collectionPageSchema(
-  category: CategoryEntry,
+  category: Category,
   tools: ToolCardData[],
   path: string,
 ) {
   return {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
-    name: `${category.data.label} tools`,
-    description: `Browse approved ${category.data.label.toLowerCase()} tools built for agent-first workflows.`,
+    name: `${category.label} tools`,
+    description: `Browse approved ${category.label.toLowerCase()} tools built for agent-first workflows.`,
     url: absoluteUrl(path),
     mainEntity: itemListSchema(
       tools.map((tool) => ({
-        name: tool.entry.data.name,
-        path: `/tools/${tool.entry.data.slug}`,
-        description: tool.entry.data.description,
+        name: tool.entry.name,
+        path: `/tools/${tool.entry.slug}`,
+        description: tool.entry.description,
       })),
       path,
     ),

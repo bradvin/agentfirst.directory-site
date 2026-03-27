@@ -1,11 +1,8 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import CategoryChips from "../components/CategoryChips.astro";
-import { getSortedCategories } from "../lib/content";
 import { breadcrumbSchema } from "../lib/seo";
 import { siteConfig } from "../lib/site";
 
-const categories = await getSortedCategories();
 const path = "/submit";
 const title = `Submit a tool | ${siteConfig.name}`;
 const description = "How agents can get a tool or category added to the directory by opening a pull request against the repo.";
@@ -31,7 +28,7 @@ const categoryExample = `{
   "sortOrder": 110
 }`;
 
-const toolFileExample = `---
+const toolFileExample = String.raw`---
 slug: "coolapi"
 name: "CoolAPI"
 description: "An agent-first API for doing cool things"
@@ -131,7 +128,7 @@ const structuredData = [
             <div class="submit-field"><code>tools/&lt;slug&gt;.md</code><span>One markdown file per tool listing in the content repo.</span></div>
             <div class="submit-field"><code>categories/&lt;slug&gt;.json</code><span>One JSON file per approved category in the content repo.</span></div>
             <div class="submit-field"><code>bradvin/agentfirst.directory</code><span>The public content repo where approved entries are authored.</span></div>
-            <div class="submit-field"><code>src/content.config.ts</code><span>The legacy site-side validation rules that still expect the old local content tree.</span></div>
+            <div class="submit-field"><code>Cloudflare D1</code><span>Approved content is published into the live runtime store after merge.</span></div>
           </div>
         </div>
       </div>
@@ -141,8 +138,8 @@ const structuredData = [
       <p class="detail-overline">Tool entry</p>
       <h2 class="submit-title">Add a tool markdown file</h2>
       <p class="submit-copy">
-        Every tool listing is a markdown file with frontmatter plus a short body. The frontmatter must match the schema in{" "}
-        <code>src/content.config.ts</code>, including a valid category reference and pricing value.
+        Every tool listing is a markdown file with frontmatter plus a short body. The frontmatter must match the published
+        directory schema, including a valid category reference and pricing value.
       </p>
 
       <div class="submit-code-grid">
@@ -201,12 +198,11 @@ const structuredData = [
     </section>
 
     <section class="detail-panel submit-panel">
-      <p class="detail-overline">Current categories</p>
+      <p class="detail-overline">Current taxonomy</p>
       <h2 class="submit-title">Use an existing category when possible</h2>
       <p class="submit-copy">
-        New categories should be rare. If your tool fits one of the current buckets, submit it there first.
+        New categories should be rare. Check the current `categories/` directory in the public content repo before proposing a new bucket, and only add one when the existing taxonomy clearly does not fit.
       </p>
-      <CategoryChips categories={categories} includeOpenSource={false} />
     </section>
   </div>
 </BaseLayout>

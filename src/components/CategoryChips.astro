@@ -1,9 +1,9 @@
 ---
-import type { CategoryEntry } from "../lib/content";
+import type { Category } from "../lib/content";
 import { categoryHref } from "../lib/content";
 
 interface Props {
-  categories: CategoryEntry[];
+  categories: Category[];
   currentCategorySlug?: string;
   includeOpenSource?: boolean;
   openSourceHref?: string;
@@ -24,11 +24,11 @@ const {
       <a
         class:list={[
           "chip",
-          currentCategorySlug === category.data.slug && "is-active",
+          currentCategorySlug === category.slug && "is-active",
         ]}
         href={categoryHref(category)}
       >
-        {category.data.label}
+        {category.label}
       </a>
     ))
   }

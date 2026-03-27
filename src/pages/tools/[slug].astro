@@ -1,102 +1,46 @@
 ---
-import { getEntry, render } from "astro:content";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import GiscusComments from "../../components/GiscusComments.astro";
+import NotFoundState from "../../components/NotFoundState.astro";
 import ToolList from "../../components/ToolList.astro";
 import { breadcrumbSchema, softwareApplicationSchema } from "../../lib/seo";
-import { formatPricing, getSortedTools, toToolCards, type ToolEntry } from "../../lib/content";
+import { cacheControl, setCacheControl } from "../../lib/cache";
+import { renderMarkdown } from "../../lib/markdown";
+import { formatPricing, getToolBySlug, getToolsByCategory } from "../../lib/content";
 import { siteConfig } from "../../lib/site";
 
-function extractMetaTagContent(html: string, keys: string[]) {
-  const metaTags = html.match(/<meta\s+[^>]*>/gi) ?? [];
+const slug = Astro.params.slug ?? "";
+const tool = await getToolBySlug(slug);
+const relatedTools = tool
+  ? (await getToolsByCategory(tool.category.slug))
+      .filter((entry) => entry.entry.slug !== tool.entry.slug)
+      .slice(0, 3)
+  : [];
+const path = tool ? `/tools/${tool.entry.slug}` : Astro.url.pathname;
+const title = tool ? `${tool.entry.name} | ${siteConfig.name}` : `Not found | ${siteConfig.name}`;
+const description = tool
+  ? tool.entry.description
+  : "The requested tool does not exist in the approved directory.";
+const submitterUrl = tool ? `https://github.com/${tool.entry.submittedByGithub}` : undefined;
+const resolvedOgImageUrl = tool?.entry.ogImageUrl;
+const bodyHtml = tool ? renderMarkdown(tool.entry.bodyMd) : "";
 
-  for (const tag of metaTags) {
-    const attrs = Object.fromEntries(
-      [...tag.matchAll(/([:@a-zA-Z0-9_-]+)\s*=\s*("([^"]*)"|'([^']*)'|([^\s>]+))/g)].map((match) => [
-        match[1].toLowerCase(),
-        match[3] ?? match[4] ?? match[5] ?? "",
+if (!tool) {
+  Astro.response.status = 404;
+} else {
+  setCacheControl(Astro.response.headers, cacheControl.tool);
+}
+
+const structuredData = tool
+  ? [
+      breadcrumbSchema([
+        { name: siteConfig.shortName, path: "/" },
+        { name: tool.category.label, path: `/category/${tool.category.slug}` },
+        { name: tool.entry.name, path },
       ]),
-    );
-
-    const metaKey = attrs.property?.toLowerCase() ?? attrs.name?.toLowerCase() ?? "";
-    if (keys.includes(metaKey) && attrs.content) {
-      return attrs.content;
-    }
-  }
-
-  return undefined;
-}
-
-async function resolveOgImageUrl(websiteUrl: string, fallback?: string) {
-  if (fallback) {
-    return fallback;
-  }
-
-  try {
-    const response = await fetch(websiteUrl, {
-      headers: {
-        "user-agent": "agentfirst.directory bot",
-      },
-    });
-
-    if (!response.ok) {
-      return undefined;
-    }
-
-    const html = await response.text();
-    const image = extractMetaTagContent(html, [
-      "og:image",
-      "og:image:url",
-      "og:image:secure_url",
-      "twitter:image",
-      "twitter:image:src",
-    ]);
-
-    if (!image) {
-      return undefined;
-    }
-
-    const resolvedUrl = new URL(image, response.url).toString();
-    return /^https?:\/\//i.test(resolvedUrl) ? resolvedUrl : undefined;
-  } catch {
-    return undefined;
-  }
-}
-
-export async function getStaticPaths() {
-  const tools = await getSortedTools();
-  return tools.map((tool) => ({
-    params: { slug: tool.data.slug },
-    props: { tool },
-  }));
-}
-
-const { tool } = Astro.props as { tool: ToolEntry };
-const category = await getEntry(tool.data.category);
-const { Content } = await render(tool);
-const allTools = await getSortedTools();
-const relatedTools = await toToolCards(
-  allTools.filter(
-    (entry) => entry.id !== tool.id && entry.data.category.id === tool.data.category.id,
-  ),
-);
-const path = `/tools/${tool.data.slug}`;
-const title = `${tool.data.name} | ${siteConfig.name}`;
-const description = tool.data.description;
-const submitterUrl = `https://github.com/${tool.data.submittedBy}`;
-const resolvedOgImageUrl = await resolveOgImageUrl(tool.data.websiteUrl, tool.data.ogImageUrl);
-const structuredData = [
-  breadcrumbSchema([
-    { name: siteConfig.shortName, path: "/" },
-    { name: category.data.label, path: `/category/${category.data.slug}` },
-    { name: tool.data.name, path },
-  ]),
-  softwareApplicationSchema({
-    entry: tool,
-    category,
-    pricingLabel: formatPricing(tool.data.pricing),
-  }),
-];
+      softwareApplicationSchema(tool),
+    ]
+  : [];
 ---
 
 <BaseLayout
@@ -107,90 +51,96 @@ const structuredData = [
   structuredData={structuredData}
 >
   <div class="shell-inner detail-shell">
-    <nav class="breadcrumb" aria-label="Breadcrumb">
-      <a class="breadcrumb-link" href={`/category/${category.data.slug}`}>{category.data.label}</a>
-      <span class="breadcrumb-separator" aria-hidden="true">›</span>
-      <span class="breadcrumb-current">
-        {tool.data.logoUrl && <img class="breadcrumb-logo" src={tool.data.logoUrl} alt="" loading="lazy" />}
-        <span>{tool.data.name}</span>
-      </span>
-    </nav>
+    {
+      tool ? (
+        <>
+          <nav class="breadcrumb" aria-label="Breadcrumb">
+            <a class="breadcrumb-link" href={`/category/${tool.category.slug}`}>{tool.category.label}</a>
+            <span class="breadcrumb-separator" aria-hidden="true">›</span>
+            <span class="breadcrumb-current">
+              {tool.entry.logoUrl && <img class="breadcrumb-logo" src={tool.entry.logoUrl} alt="" loading="lazy" />}
+              <span>{tool.entry.name}</span>
+            </span>
+          </nav>
 
-    <section class:list={["detail-hero", "detail-panel", resolvedOgImageUrl && "detail-hero-with-og"]}>
-      <div class="detail-hero-main">
-        <div class="detail-copy">
-          <div class="detail-title-row">
-            <h1 class="detail-title">{tool.data.name}</h1>
-            <span class="detail-badge">{formatPricing(tool.data.pricing)}</span>
-          </div>
-          <p class="detail-summary">{tool.data.description}</p>
-          <div class="feature-actions">
-            <a class="button button-primary" href={tool.data.websiteUrl} rel="noreferrer" target="_blank">Visit website</a>
-            {
-              tool.data.githubUrl && (
-                <a class="button button-secondary" href={tool.data.githubUrl} rel="noreferrer" target="_blank">
-                  GitHub
-                </a>
-              )
-            }
-          </div>
-        </div>
-      </div>
-
-      {
-        resolvedOgImageUrl && (
-          <div class="detail-hero-media">
-            <img
-              class="detail-og-image"
-              src={resolvedOgImageUrl}
-              alt={`${tool.data.name} preview`}
-              loading="lazy"
-            />
-          </div>
-        )
-      }
-    </section>
-
-    <div class="detail-grid">
-      <article class="detail-panel prose-panel">
-        <Content />
-      </article>
-
-      <aside class="detail-sidebar">
-        <article class="detail-panel detail-facts-panel">
-          <div class="detail-facts-list">
-            <div class="detail-fact">
-              <span class="detail-fact-label">Category</span>
-              <a class="detail-link" href={`/category/${category.data.slug}`}>{category.data.label}</a>
-            </div>
-
-            <div class="detail-fact">
-              <span class="detail-fact-label">Submitted by</span>
-              <a class="detail-link" href={submitterUrl} rel="noreferrer" target="_blank">
-                @{tool.data.submittedBy}
-              </a>
-            </div>
-
-            <div class="detail-fact detail-fact-tags">
-              <span class="detail-fact-label">Tags</span>
-              <div class="tag-list">
-                {tool.data.tags.map((tag) => (
-                  <span class="tag">#{tag}</span>
-                ))}
+          <section class:list={["detail-hero", "detail-panel", resolvedOgImageUrl && "detail-hero-with-og"]}>
+            <div class="detail-hero-main">
+              <div class="detail-copy">
+                <div class="detail-title-row">
+                  <h1 class="detail-title">{tool.entry.name}</h1>
+                  <span class="detail-badge">{formatPricing(tool.entry.pricing)}</span>
+                </div>
+                <p class="detail-summary">{tool.entry.description}</p>
+                <div class="feature-actions">
+                  <a class="button button-primary" href={tool.entry.websiteUrl} rel="noreferrer" target="_blank">Visit website</a>
+                  {
+                    tool.entry.githubUrl && (
+                      <a class="button button-secondary" href={tool.entry.githubUrl} rel="noreferrer" target="_blank">
+                        GitHub
+                      </a>
+                    )
+                  }
+                </div>
               </div>
             </div>
+
+            {
+              resolvedOgImageUrl && (
+                <div class="detail-hero-media">
+                  <img
+                    class="detail-og-image"
+                    src={resolvedOgImageUrl}
+                    alt={`${tool.entry.name} preview`}
+                    loading="lazy"
+                  />
+                </div>
+              )
+            }
+          </section>
+
+          <div class="detail-grid">
+            <article class="detail-panel prose-panel" set:html={bodyHtml} />
+
+            <aside class="detail-sidebar">
+              <article class="detail-panel detail-facts-panel">
+                <div class="detail-facts-list">
+                  <div class="detail-fact">
+                    <span class="detail-fact-label">Category</span>
+                    <a class="detail-link" href={`/category/${tool.category.slug}`}>{tool.category.label}</a>
+                  </div>
+
+                  <div class="detail-fact">
+                    <span class="detail-fact-label">Submitted by</span>
+                    <a class="detail-link" href={submitterUrl} rel="noreferrer" target="_blank">
+                      @{tool.entry.submittedByGithub}
+                    </a>
+                  </div>
+
+                  <div class="detail-fact detail-fact-tags">
+                    <span class="detail-fact-label">Tags</span>
+                    <div class="tag-list">
+                      {tool.entry.tags.map((tag) => (
+                        <span class="tag">#{tag}</span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </article>
+            </aside>
           </div>
-        </article>
-      </aside>
-    </div>
 
-    <section class="section-block">
-      <div class="section-heading">
-        <h2>Related tools</h2>
-      </div>
-      <ToolList tools={relatedTools.slice(0, 3)} variant="compact" emptyLabel="No related tools published yet." />
-    </section>
+          <section class="section-block">
+            <div class="section-heading">
+              <h2>Related tools</h2>
+            </div>
+            <ToolList tools={relatedTools} variant="compact" emptyLabel="No related tools published yet." />
+          </section>
 
-    <GiscusComments term={tool.data.slug} />
+          <GiscusComments term={tool.entry.slug} />
+        </>
+      ) : (
+        <NotFoundState />
+      )
+    }
   </div>
 </BaseLayout>

@@ -1,69 +1,80 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import CategoryChips from "../../components/CategoryChips.astro";
+import NotFoundState from "../../components/NotFoundState.astro";
 import ToolList from "../../components/ToolList.astro";
 import {
-  getSortedCategories,
-  getSortedTools,
-  toToolCards,
-  toolHref,
-  type CategoryEntry,
+  getCategories,
+  getCategoryBySlug,
+  getToolsByCategory,
 } from "../../lib/content";
+import { cacheControl, setCacheControl } from "../../lib/cache";
 import { breadcrumbSchema, collectionPageSchema } from "../../lib/seo";
 import { siteConfig } from "../../lib/site";
 
-export async function getStaticPaths() {
-  const categories = await getSortedCategories();
-  return categories.map((category) => ({
-    params: { category: category.data.slug },
-    props: { category },
-  }));
+const categorySlug = Astro.params.category ?? "";
+const [categories, category] = await Promise.all([
+  getCategories(),
+  getCategoryBySlug(categorySlug),
+]);
+const tools = category ? await getToolsByCategory(category.slug) : [];
+const path = category ? `/category/${category.slug}` : Astro.url.pathname;
+const description = category
+  ? `Browse approved ${category.label.toLowerCase()} tools built for agent-first workflows.`
+  : "The requested category does not exist in the approved directory.";
+
+if (!category) {
+  Astro.response.status = 404;
+} else {
+  setCacheControl(Astro.response.headers, cacheControl.category);
 }
 
-const { category } = Astro.props as { category: CategoryEntry };
-const categories = await getSortedCategories();
-const allTools = await getSortedTools();
-const tools = await toToolCards(
-  allTools.filter((tool) => tool.data.category.id === category.id),
-);
-const path = `/category/${category.data.slug}`;
-const description = `Browse approved ${category.data.label.toLowerCase()} tools built for agent-first workflows.`;
-const structuredData = [
-  breadcrumbSchema([
-    { name: siteConfig.shortName, path: "/" },
-    { name: category.data.label, path },
-  ]),
-  collectionPageSchema(category, tools, path),
-];
+const structuredData = category
+  ? [
+      breadcrumbSchema([
+        { name: siteConfig.shortName, path: "/" },
+        { name: category.label, path },
+      ]),
+      collectionPageSchema(category, tools, path),
+    ]
+  : [];
 ---
 
 <BaseLayout
-  title={`${category.data.label} tools | ${siteConfig.name}`}
+  title={category ? `${category.label} tools | ${siteConfig.name}` : `Not found | ${siteConfig.name}`}
   description={description}
   canonicalPath={path}
   structuredData={structuredData}
 >
   <div class="shell-inner">
-    <section class="page-intro page-intro-centered">
-      <p class="detail-overline">Category</p>
-      <h1 class="page-title">{category.data.label}</h1>
-      <p class="page-copy">{description}</p>
-    </section>
+    {
+      category ? (
+        <>
+          <section class="page-intro page-intro-centered">
+            <p class="detail-overline">Category</p>
+            <h1 class="page-title">{category.label}</h1>
+            <p class="page-copy">{description}</p>
+          </section>
 
-    <CategoryChips
-      categories={categories}
-      currentCategorySlug={category.data.slug}
-      includeOpenSource={false}
-    />
+          <CategoryChips
+            categories={categories}
+            currentCategorySlug={category.slug}
+            includeOpenSource={false}
+          />
 
-    <section class="section-block">
-      <div class="section-heading">
-        <div>
-          <p class="detail-overline">Category listing</p>
-          <h2>{tools.length} approved tools</h2>
-        </div>
-      </div>
-      <ToolList tools={tools} emptyLabel="No approved tools in this category yet." />
-    </section>
+          <section class="section-block">
+            <div class="section-heading">
+              <div>
+                <p class="detail-overline">Category listing</p>
+                <h2>{tools.length} approved tools</h2>
+              </div>
+            </div>
+            <ToolList tools={tools} emptyLabel="No approved tools in this category yet." />
+          </section>
+        </>
+      ) : (
+        <NotFoundState />
+      )
+    }
   </div>
 </BaseLayout>

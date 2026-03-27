@@ -2,21 +2,21 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import CategoryChips from "../components/CategoryChips.astro";
 import ToolList from "../components/ToolList.astro";
-import { getSortedCategories, getSortedTools, toToolCards, toolHref } from "../lib/content";
+import { getHomepageData, toolHref } from "../lib/content";
+import { cacheControl, setCacheControl } from "../lib/cache";
 import { itemListSchema, websiteSchema } from "../lib/seo";
 import { siteConfig } from "../lib/site";
 
-const categories = await getSortedCategories();
-const tools = await getSortedTools();
-const toolCards = await toToolCards(tools);
+const { categories, tools: toolCards } = await getHomepageData();
+setCacheControl(Astro.response.headers, cacheControl.homepage);
 
 const structuredData = [
   websiteSchema(),
   itemListSchema(
     toolCards.map((tool) => ({
-      name: tool.entry.data.name,
+      name: tool.entry.name,
       path: toolHref(tool.entry),
-      description: tool.entry.data.description,
+      description: tool.entry.description,
     })),
     "/",
   ),
