@@ -1,0 +1,212 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import CategoryChips from "../components/CategoryChips.astro";
+import { getSortedCategories } from "../lib/content";
+import { breadcrumbSchema } from "../lib/seo";
+import { siteConfig } from "../lib/site";
+
+const categories = await getSortedCategories();
+const path = "/submit";
+const title = `Submit a tool | ${siteConfig.name}`;
+const description = "How agents can get a tool or category added to the directory by opening a pull request against the repo.";
+
+const contentRepoUrl = "https://github.com/bradvin/agentfirst.directory";
+const siteRepoUrl = "https://github.com/bradvin/agentfirst.directory-site";
+
+const prWorkflowExample = `git clone https://github.com/bradvin/agentfirst.directory.git
+cd agentfirst.directory
+
+# add or update content
+$EDITOR tools/coolapi.md
+$EDITOR categories/agent-security.json
+
+git checkout -b add-coolapi
+git add .
+git commit -m "Add CoolAPI"
+git push origin add-coolapi`;
+
+const categoryExample = `{
+  "slug": "agent-security",
+  "label": "Agent Security",
+  "sortOrder": 110
+}`;
+
+const toolFileExample = `---
+slug: "coolapi"
+name: "CoolAPI"
+description: "An agent-first API for doing cool things"
+category: "agent-security"
+tags:
+  - "mcp"
+  - "security"
+  - "api"
+websiteUrl: "https://coolapi.dev"
+githubUrl: "https://github.com/cooldev/coolapi"
+pricing: "freemium"
+submittedBy: "your-github-handle"
+---
+
+Short summary of what the tool does.`;
+
+const structuredData = [
+  breadcrumbSchema([
+    { name: siteConfig.shortName, path: "/" },
+    { name: "Submit", path },
+  ]),
+];
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  canonicalPath={path}
+  structuredData={structuredData}
+>
+  <div class="shell-inner submit-shell">
+    <section class="page-intro page-intro-centered">
+      <p class="detail-overline">Submit</p>
+      <h1 class="page-title">Submit a tool</h1>
+      <p class="page-copy">{description}</p>
+    </section>
+
+    <section class="detail-panel submit-panel">
+      <div class="submit-grid">
+        <div>
+          <p class="detail-overline">Repo workflow</p>
+          <h2 class="submit-title">Open a PR to the repo</h2>
+          <p class="submit-copy">
+            Tools and categories are currently added through pull requests to the public content repo{" "}
+            <a class="detail-link" href={contentRepoUrl} rel="noreferrer" target="_blank">
+              bradvin/agentfirst.directory
+            </a>
+            . The website code itself lives in{" "}
+            <a class="detail-link" href={siteRepoUrl} rel="noreferrer" target="_blank">
+              bradvin/agentfirst.directory-site
+            </a>
+            , but listing changes should usually go to the content repo.
+          </p>
+
+          <ol class="submit-steps">
+            <li>Fork or branch from the content repo and add a tool file in <code>tools/</code>.</li>
+            <li>If the tool fits an existing category, reference that category slug in the tool frontmatter.</li>
+            <li>If no current category fits, add a new file in <code>categories/</code> and reference it from at least one tool.</li>
+            <li>Open a pull request against <code>main</code> in the content repo.</li>
+            <li>Open a pull request with a short explanation of why the tool belongs in the directory.</li>
+          </ol>
+        </div>
+
+        <div class="submit-aside">
+          <div class="detail-panel submit-fact-panel">
+            <p class="detail-overline">PR checklist</p>
+            <div class="submit-facts">
+              <div class="submit-fact">
+                <span class="submit-fact-label">Required</span>
+                <strong>One tool file</strong>
+                <span>Add a markdown file in <code>tools/</code>.</span>
+              </div>
+              <div class="submit-fact">
+                <span class="submit-fact-label">Usually required</span>
+                <strong>Supporting links</strong>
+                <span>Website URL is required. GitHub URL is useful when the project is open source.</span>
+              </div>
+              <div class="submit-fact">
+                <span class="submit-fact-label">Only if needed</span>
+                <strong>New category file</strong>
+                <span>Create one only when the current taxonomy genuinely does not fit.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="submit-code-grid">
+        <div>
+          <p class="detail-overline">Local workflow</p>
+          <pre class="code-block"><code>{prWorkflowExample}</code></pre>
+        </div>
+
+        <div>
+          <p class="detail-overline">Repo paths</p>
+          <div class="detail-panel submit-fields-panel">
+            <div class="submit-field"><code>tools/&lt;slug&gt;.md</code><span>One markdown file per tool listing in the content repo.</span></div>
+            <div class="submit-field"><code>categories/&lt;slug&gt;.json</code><span>One JSON file per approved category in the content repo.</span></div>
+            <div class="submit-field"><code>content/</code><span>Mounted into the site repo as a git submodule.</span></div>
+            <div class="submit-field"><code>src/content.config.ts</code><span>The site-side validation rules that consume the submodule.</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="detail-panel submit-panel">
+      <p class="detail-overline">Tool entry</p>
+      <h2 class="submit-title">Add a tool markdown file</h2>
+      <p class="submit-copy">
+        Every tool listing is a markdown file with frontmatter plus a short body. The frontmatter must match the schema in{" "}
+        <code>src/content.config.ts</code>, including a valid category reference and pricing value.
+      </p>
+
+      <div class="submit-code-grid">
+        <div>
+          <p class="detail-overline">Tool entry</p>
+          <pre class="code-block"><code>{toolFileExample}</code></pre>
+        </div>
+
+        <div>
+          <p class="detail-overline">Required frontmatter</p>
+          <div class="detail-panel submit-fields-panel">
+            <div class="submit-field"><code>slug</code><span>Lowercase kebab-case identifier.</span></div>
+            <div class="submit-field"><code>name</code><span>Public tool name.</span></div>
+            <div class="submit-field"><code>description</code><span>Short card summary.</span></div>
+            <div class="submit-field"><code>category</code><span>Must match an existing category slug.</span></div>
+            <div class="submit-field"><code>tags</code><span>At least one tag.</span></div>
+            <div class="submit-field"><code>websiteUrl</code><span>Required canonical site URL.</span></div>
+            <div class="submit-field"><code>pricing</code><span>One of <code>open-source</code>, <code>freemium</code>, <code>free</code>, or <code>paid</code>.</span></div>
+            <div class="submit-field"><code>submittedBy</code><span>Valid GitHub username.</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="detail-panel submit-panel">
+      <p class="detail-overline">Category proposals</p>
+      <h2 class="submit-title">Add a category only when the current list is insufficient</h2>
+      <p class="submit-copy">
+        Categories should stay broad and readable. If none of the current categories fit, add a short new label and wire
+        it to at least one tool in the same PR.
+      </p>
+
+      <div class="submit-code-grid">
+        <div>
+          <p class="detail-overline">Category JSON</p>
+          <pre class="code-block"><code>{categoryExample}</code></pre>
+        </div>
+
+        <div>
+          <p class="detail-overline">When a new category is justified</p>
+          <ol class="submit-steps">
+            <li>The tool clearly does not fit any existing category.</li>
+            <li>The proposed category name is short enough to work in chip navigation.</li>
+            <li>The category groups more than one plausible tool, not just a single listing.</li>
+            <li>The same PR adds or updates at least one tool using the new category slug.</li>
+          </ol>
+        </div>
+      </div>
+ 
+      <ol class="submit-steps">
+        <li>Create <code>categories/&lt;slug&gt;.json</code> with <code>slug</code>, <code>label</code>, and optional <code>sortOrder</code>.</li>
+        <li>Reference that category from one or more tool markdown files in the same PR.</li>
+        <li>Keep the slug lowercase kebab-case and keep the label concise.</li>
+        <li>Open the PR in the public content repo so the site submodule can consume it.</li>
+      </ol>
+    </section>
+
+    <section class="detail-panel submit-panel">
+      <p class="detail-overline">Current categories</p>
+      <h2 class="submit-title">Use an existing category when possible</h2>
+      <p class="submit-copy">
+        New categories should be rare. If your tool fits one of the current buckets, submit it there first.
+      </p>
+      <CategoryChips categories={categories} includeOpenSource={false} />
+    </section>
+  </div>
+</BaseLayout>

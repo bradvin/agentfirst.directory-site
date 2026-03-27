@@ -1,0 +1,62 @@
+---
+import type { ToolCardData } from "../lib/content";
+import { toolHref } from "../lib/content";
+
+interface Props {
+  tools: ToolCardData[];
+  emptyLabel?: string;
+  variant?: "default" | "compact";
+}
+
+const { tools, emptyLabel = "No tools found.", variant = "default" } = Astro.props;
+---
+
+{
+  tools.length === 0 ? (
+    <div class="empty-state">{emptyLabel}</div>
+  ) : (
+    <div class:list={["directory-list", variant === "compact" && "directory-list-compact"]}>
+      {tools.map((tool) => (
+        <article class:list={["card", variant === "compact" && "card-compact"]}>
+          <a class:list={["card-main", variant === "compact" && "card-main-compact"]} href={toolHref(tool.entry)}>
+            <div class="card-head">
+              <div class="card-brand">
+                <div class="card-logo" aria-hidden="true">
+                  {tool.entry.data.logoUrl ? (
+                    <img src={tool.entry.data.logoUrl} alt="" loading="lazy" />
+                  ) : (
+                    <span>{tool.entry.data.name.slice(0, 1)}</span>
+                  )}
+                </div>
+
+                <div class="card-body">
+                  {
+                    variant !== "compact" && <p class="card-category">{tool.category.data.label}</p>
+                  }
+                  <div class="card-topline">
+                    <h2 class="card-title">{tool.entry.data.name}</h2>
+                    <span class="card-license">{tool.pricingLabel}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <p class="card-description">{tool.entry.data.description}</p>
+
+            {
+              variant !== "compact" && (
+                <div class="card-footer">
+                  <div class="tag-list">
+                    {tool.entry.data.tags.map((tag) => (
+                      <span class="tag">#{tag}</span>
+                    ))}
+                  </div>
+                </div>
+              )
+            }
+          </a>
+        </article>
+      ))}
+    </div>
+  )
+}

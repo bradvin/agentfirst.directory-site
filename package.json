@@ -1,0 +1,25 @@
+{
+  "name": "agentfirst-directory",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "validate:content": "node ./scripts/validate-content.mjs",
+    "sync:d1:sql": "node ./scripts/generate-d1-sync-sql.mjs",
+    "ci": "npm run validate:content && npm run build"
+  },
+  "dependencies": {
+    "@astrojs/sitemap": "3.7.1",
+    "astro": "6.0.8",
+    "gray-matter": "4.0.3"
+  },
+  "devDependencies": {
+    "@types/node": "25.5.0",
+    "typescript": "6.0.2",
+    "wrangler": "4.77.0"
+  }
+}

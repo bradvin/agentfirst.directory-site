@@ -1,0 +1,17 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { siteConfig } from "../lib/site";
+---
+
+<BaseLayout
+  title={`Not found | ${siteConfig.name}`}
+  description="The page you requested could not be found."
+  canonicalPath="/404"
+>
+  <div class="shell-inner error-shell">
+    <p class="detail-overline">404</p>
+    <h1 class="page-title">Page not found</h1>
+    <p class="page-copy">The requested page does not exist in the approved directory.</p>
+    <a class="button button-primary" href="/">Back to homepage</a>
+  </div>
+</BaseLayout>

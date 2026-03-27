@@ -1,0 +1,42 @@
+---
+import type { CategoryEntry } from "../lib/content";
+import { categoryHref } from "../lib/content";
+
+interface Props {
+  categories: CategoryEntry[];
+  currentCategorySlug?: string;
+  includeOpenSource?: boolean;
+  openSourceHref?: string;
+}
+
+const {
+  categories,
+  currentCategorySlug,
+  includeOpenSource = true,
+  openSourceHref = "/#open-source-repos",
+} = Astro.props;
+---
+
+<nav class="chip-row" aria-label="Categories">
+  <a class:list={["chip", !currentCategorySlug && "is-active"]} href="/">All</a>
+  {
+    categories.map((category) => (
+      <a
+        class:list={[
+          "chip",
+          currentCategorySlug === category.data.slug && "is-active",
+        ]}
+        href={categoryHref(category)}
+      >
+        {category.data.label}
+      </a>
+    ))
+  }
+  {
+    includeOpenSource && (
+      <a class="chip" href={openSourceHref}>
+        Open Source Repos
+      </a>
+    )
+  }
+</nav>

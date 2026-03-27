@@ -1,0 +1,54 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import CategoryChips from "../components/CategoryChips.astro";
+import ToolList from "../components/ToolList.astro";
+import { getSortedCategories, getSortedTools, toToolCards, toolHref } from "../lib/content";
+import { itemListSchema, websiteSchema } from "../lib/seo";
+import { siteConfig } from "../lib/site";
+
+const categories = await getSortedCategories();
+const tools = await getSortedTools();
+const toolCards = await toToolCards(tools);
+
+const structuredData = [
+  websiteSchema(),
+  itemListSchema(
+    toolCards.map((tool) => ({
+      name: tool.entry.data.name,
+      path: toolHref(tool.entry),
+      description: tool.entry.data.description,
+    })),
+    "/",
+  ),
+];
+---
+
+<BaseLayout
+  title={`${siteConfig.name} | The directory for agent-first tools`}
+  description={siteConfig.description}
+  canonicalPath="/"
+  structuredData={structuredData}
+>
+  <div class="shell-inner">
+    <section class="hero">
+      <div class="hero-copy">
+        <p class="hero-pill">
+          <span class="pill-dot"></span>
+          {toolCards.length} agent-first tools listed
+        </p>
+
+        <h1 class="hero-title">
+          The directory for <span class="hero-accent">agent-first</span> tools
+        </h1>
+
+        <p class="hero-copy-text">{siteConfig.description}</p>
+      </div>
+    </section>
+
+    <CategoryChips categories={categories} includeOpenSource={false} />
+
+    <section class="section-block">
+      <ToolList tools={toolCards} />
+    </section>
+  </div>
+</BaseLayout>

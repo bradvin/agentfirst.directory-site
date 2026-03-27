@@ -1,0 +1,52 @@
+---
+import { siteConfig } from "../lib/site";
+
+interface Props {
+  term?: string;
+}
+
+const { term } = Astro.props;
+const giscus = siteConfig.giscus;
+const isConfigured = Boolean(giscus.repo && giscus.repoId && giscus.category && giscus.categoryId);
+---
+
+<section class="detail-panel comments-panel">
+  <div class="section-heading comments-heading">
+    <h2>Comments</h2>
+  </div>
+
+  {
+    isConfigured ? (
+      <div class="giscus" data-term={term}></div>
+    ) : (
+      <p class="comments-note">
+        Comments are configured to use <a class="detail-link" href="https://giscus.app" rel="noreferrer" target="_blank">giscus</a>
+        {" "}with <a class="detail-link" href={`https://github.com/${giscus.repo}`} rel="noreferrer" target="_blank">{giscus.repo}</a>,
+        but the live embed is waiting on GitHub Discussions to be enabled and the giscus repository/category IDs to be set.
+      </p>
+    )
+  }
+
+  {
+    isConfigured && (
+      <script
+        src="https://giscus.app/client.js"
+        data-repo={giscus.repo}
+        data-repo-id={giscus.repoId}
+        data-category={giscus.category}
+        data-category-id={giscus.categoryId}
+        data-mapping={giscus.mapping}
+        data-term={term}
+        data-strict={giscus.strict}
+        data-reactions-enabled={giscus.reactionsEnabled}
+        data-emit-metadata={giscus.emitMetadata}
+        data-input-position={giscus.inputPosition}
+        data-theme={giscus.theme}
+        data-lang={giscus.lang}
+        data-loading={giscus.loading}
+        crossorigin="anonymous"
+        async
+      />
+    )
+  }
+</section>
