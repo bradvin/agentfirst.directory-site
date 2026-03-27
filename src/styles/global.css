@@ -233,7 +233,14 @@ img {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 8px;
   font-size: 13px;
+}
+
+.button-icon {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
 }
 
 .button-primary {
@@ -332,6 +339,7 @@ img {
 
 .card-head {
   display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   gap: 16px;
   align-items: start;
 }
@@ -347,7 +355,6 @@ img {
   width: 44px;
   height: 44px;
   border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(255, 255, 255, 0.03);
   display: flex;
   align-items: center;
@@ -357,9 +364,10 @@ img {
 
 .card-logo img,
 .detail-logo img {
-  width: 24px;
-  height: 24px;
-  object-fit: contain;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
 }
 
 .card-body {
@@ -398,6 +406,35 @@ img {
   max-width: 72ch;
 }
 
+.card-arrow {
+  width: 40px;
+  height: 40px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    background-color 180ms ease,
+    color 180ms ease;
+}
+
+.card-arrow svg {
+  width: 16px;
+  height: 16px;
+}
+
+.card:hover .card-arrow {
+  transform: translateX(1px);
+  border-color: rgba(0, 230, 191, 0.22);
+  background: rgba(0, 230, 191, 0.08);
+  color: var(--accent);
+}
+
 .card-compact .card-brand {
   gap: 12px;
 }
@@ -408,9 +445,9 @@ img {
   border-radius: 10px;
 }
 
-.card-compact .card-logo img {
-  width: 20px;
-  height: 20px;
+.card-compact .card-arrow {
+  width: 34px;
+  height: 34px;
 }
 
 .card-compact .card-body {
@@ -675,7 +712,18 @@ img {
   margin: 10px 0 0;
   color: var(--muted);
   line-height: 1.75;
-  max-width: 70ch;
+}
+
+.submit-section-header {
+  display: grid;
+  gap: 10px;
+}
+
+.submit-skill-lead {
+  margin: 0;
+  color: var(--text);
+  font-size: 1rem;
+  line-height: 1.6;
 }
 
 .submit-skill-copy-row {

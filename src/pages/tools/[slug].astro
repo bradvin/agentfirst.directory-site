@@ -22,6 +22,13 @@ const description = tool
   ? tool.entry.description
   : "The requested tool does not exist in the approved directory.";
 const submitterUrl = tool ? `https://github.com/${tool.entry.submittedByGithub}` : undefined;
+const visitUrl = tool
+  ? (() => {
+      const url = new URL(tool.entry.websiteUrl);
+      url.searchParams.set("ref", "agentfirst.directory");
+      return url.toString();
+    })()
+  : undefined;
 const resolvedOgImageUrl = tool?.entry.ogImageUrl;
 const bodyHtml = tool ? renderMarkdown(tool.entry.bodyMd) : "";
 
@@ -72,11 +79,29 @@ const structuredData = tool
                 </div>
                 <p class="detail-summary">{tool.entry.description}</p>
                 <div class="feature-actions">
-                  <a class="button button-primary" href={tool.entry.websiteUrl} rel="noreferrer" target="_blank">Visit website</a>
+                  <a class="button button-primary" href={visitUrl} rel="noreferrer" target="_blank">
+                    <svg class="button-icon" viewBox="0 0 16 16" aria-hidden="true">
+                      <path
+                        d="M6 3h7v7M13 3 6 10M10 6v5H3V4h5"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="1.4"
+                      />
+                    </svg>
+                    <span>Visit website</span>
+                  </a>
                   {
                     tool.entry.githubUrl && (
                       <a class="button button-secondary" href={tool.entry.githubUrl} rel="noreferrer" target="_blank">
-                        GitHub
+                        <svg class="button-icon" viewBox="0 0 16 16" aria-hidden="true">
+                          <path
+                            d="M8 1.5a6.5 6.5 0 0 0-2.055 12.667c.325.06.444-.141.444-.314v-1.11c-1.807.393-2.188-.87-2.188-.87-.295-.75-.72-.95-.72-.95-.588-.402.045-.394.045-.394.65.046.992.668.992.668.577.989 1.514.703 1.883.537.058-.418.226-.703.411-.865-1.443-.164-2.96-.721-2.96-3.208 0-.709.253-1.288.667-1.742-.067-.164-.289-.824.064-1.717 0 0 .544-.174 1.782.665A6.2 6.2 0 0 1 8 4.64c.554.003 1.113.075 1.635.221 1.237-.84 1.78-.665 1.78-.665.354.893.132 1.553.065 1.717.415.454.666 1.033.666 1.742 0 2.493-1.52 3.042-2.97 3.203.232.2.439.593.439 1.195v1.77c0 .175.117.377.448.313A6.5 6.5 0 0 0 8 1.5Z"
+                            fill="currentColor"
+                          />
+                        </svg>
+                        <span>GitHub</span>
                       </a>
                     )
                   }

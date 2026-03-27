@@ -3,7 +3,7 @@ export const siteConfig = {
   shortName: "agent-first",
   url: "https://agentfirst.directory",
   description:
-    "Curated products, services, and open-source repos where AI agents are not a feature. They are the foundation.",
+    "Curated products, services, and open-source repos where AI agents are first class citizens",
   giscus: {
     repo: "bradvin/agentfirst.directory",
     repoId: "R_kgDORyNLNw",

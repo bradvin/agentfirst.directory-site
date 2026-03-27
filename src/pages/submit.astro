@@ -5,7 +5,7 @@ import { siteConfig } from "../lib/site";
 
 const path = "/submit";
 const title = `Submit a tool | ${siteConfig.name}`;
-const description = "How agents can get a tool or category added to the directory by opening a pull request against the repo.";
+const description = "Add a tool or category by opening a pull request.";
 
 const contentRepoUrl = "https://github.com/bradvin/agentfirst.directory";
 const siteRepoUrl = "https://github.com/bradvin/agentfirst.directory-site";
@@ -69,11 +69,11 @@ const structuredData = [
     </section>
 
     <section class="detail-panel submit-panel submit-skill-panel">
-      <p class="detail-overline">Agent Shortcut</p>
-      <h2 class="submit-title">Get your agent to add a new tool by pointing it to <a class="detail-link" href={skillUrl}>https://agentfirst.directory/SKILL.md</a></h2>
-      <p class="submit-copy">
-        The skill file gives an agent the exact repository, file format, and submission rules it needs to open a new tool PR without reading the whole site.
-      </p>
+      <header class="submit-section-header">
+        <p class="detail-overline">Agent Shortcut</p>
+        <h2 class="submit-title">Get your agent to do it</h2>
+        <p class="submit-skill-lead">Point it to <a class="detail-link" href={skillUrl}>agentfirst.directory/SKILL.md</a> - it tells your agent which repo to edit and how to format the files.</p>
+      </header>
 
       <div class="submit-skill-copy-row">
         <input
@@ -86,7 +86,7 @@ const structuredData = [
         />
         <button
           id="skill-copy-button"
-          class="button button-secondary submit-skill-button"
+          class="button button-primary submit-skill-button"
           type="button"
           data-copy-text={skillCopyText}
         >
@@ -99,25 +99,24 @@ const structuredData = [
       <div class="submit-grid">
         <div>
           <p class="detail-overline">Repo workflow</p>
-          <h2 class="submit-title">Open a PR to the repo</h2>
+          <h2 class="submit-title">Open a PR</h2>
           <p class="submit-copy">
-            Tools and categories are currently added through pull requests to the public content repo{" "}
+            Make listing changes in{" "}
             <a class="detail-link" href={contentRepoUrl} rel="noreferrer" target="_blank">
               bradvin/agentfirst.directory
             </a>
-            . The website code itself lives in{" "}
+            . Only edit{" "}
             <a class="detail-link" href={siteRepoUrl} rel="noreferrer" target="_blank">
               bradvin/agentfirst.directory-site
             </a>
-            , but listing changes should usually go to the content repo.
+            {" "}for site changes.
           </p>
 
           <ol class="submit-steps">
-            <li>Fork or branch from the content repo and add a tool file in <code>tools/</code>.</li>
-            <li>If the tool fits an existing category, reference that category slug in the tool frontmatter.</li>
-            <li>If no current category fits, add a new file in <code>categories/</code> and reference it from at least one tool.</li>
-            <li>Open a pull request against <code>main</code> in the content repo.</li>
-            <li>Open a pull request with a short explanation of why the tool belongs in the directory.</li>
+            <li>Add a tool file in <code>tools/</code>.</li>
+            <li>Reuse an existing category if it fits.</li>
+            <li>Add a category file only if needed.</li>
+            <li>Open a PR against <code>main</code>.</li>
           </ol>
         </div>
 
@@ -132,13 +131,13 @@ const structuredData = [
               </div>
               <div class="submit-fact">
                 <span class="submit-fact-label">Usually required</span>
-                <strong>Supporting links</strong>
-                <span>Website URL is required. GitHub URL is useful when the project is open source.</span>
+                <strong>Website URL</strong>
+                <span>Add a GitHub URL if it helps.</span>
               </div>
               <div class="submit-fact">
                 <span class="submit-fact-label">Only if needed</span>
                 <strong>New category file</strong>
-                <span>Create one only when the current taxonomy genuinely does not fit.</span>
+                <span>Add one only when nothing existing fits.</span>
               </div>
             </div>
           </div>
@@ -154,10 +153,10 @@ const structuredData = [
         <div>
           <p class="detail-overline">Repo paths</p>
           <div class="detail-panel submit-fields-panel">
-            <div class="submit-field"><code>tools/&lt;slug&gt;.md</code><span>One markdown file per tool listing in the content repo.</span></div>
-            <div class="submit-field"><code>categories/&lt;slug&gt;.json</code><span>One JSON file per approved category in the content repo.</span></div>
-            <div class="submit-field"><code>bradvin/agentfirst.directory</code><span>The public content repo where approved entries are authored.</span></div>
-            <div class="submit-field"><code>Cloudflare D1</code><span>Approved content is published into the live runtime store after merge.</span></div>
+            <div class="submit-field"><code>tools/&lt;slug&gt;.md</code><span>One file per tool.</span></div>
+            <div class="submit-field"><code>categories/&lt;slug&gt;.json</code><span>One file per category.</span></div>
+            <div class="submit-field"><code>bradvin/agentfirst.directory</code><span>The content repo.</span></div>
+            <div class="submit-field"><code>Cloudflare D1</code><span>Updated after merge.</span></div>
           </div>
         </div>
       </div>
@@ -167,8 +166,7 @@ const structuredData = [
       <p class="detail-overline">Tool entry</p>
       <h2 class="submit-title">Add a tool markdown file</h2>
       <p class="submit-copy">
-        Every tool listing is a markdown file with frontmatter plus a short body. The frontmatter must match the published
-        directory schema, including a valid category reference and pricing value.
+        Each tool is one markdown file with frontmatter and a short body.
       </p>
 
       <div class="submit-code-grid">
@@ -180,12 +178,12 @@ const structuredData = [
         <div>
           <p class="detail-overline">Required frontmatter</p>
           <div class="detail-panel submit-fields-panel">
-            <div class="submit-field"><code>slug</code><span>Lowercase kebab-case identifier.</span></div>
+            <div class="submit-field"><code>slug</code><span>Lowercase kebab-case.</span></div>
             <div class="submit-field"><code>name</code><span>Public tool name.</span></div>
-            <div class="submit-field"><code>description</code><span>Short card summary.</span></div>
-            <div class="submit-field"><code>category</code><span>Must match an existing category slug.</span></div>
+            <div class="submit-field"><code>description</code><span>Short summary.</span></div>
+            <div class="submit-field"><code>category</code><span>Existing category slug.</span></div>
             <div class="submit-field"><code>tags</code><span>At least one tag.</span></div>
-            <div class="submit-field"><code>websiteUrl</code><span>Required canonical site URL.</span></div>
+            <div class="submit-field"><code>websiteUrl</code><span>Required URL.</span></div>
             <div class="submit-field"><code>pricing</code><span>One of <code>open-source</code>, <code>freemium</code>, <code>free</code>, or <code>paid</code>.</span></div>
             <div class="submit-field"><code>submittedBy</code><span>Valid GitHub username.</span></div>
           </div>
@@ -195,10 +193,9 @@ const structuredData = [
 
     <section class="detail-panel submit-panel">
       <p class="detail-overline">Category proposals</p>
-      <h2 class="submit-title">Add a category only when the current list is insufficient</h2>
+      <h2 class="submit-title">Add a category only if needed</h2>
       <p class="submit-copy">
-        Categories should stay broad and readable. If none of the current categories fit, add a short new label and wire
-        it to at least one tool in the same PR.
+        Add one only when no existing category fits.
       </p>
 
       <div class="submit-code-grid">
@@ -210,28 +207,19 @@ const structuredData = [
         <div>
           <p class="detail-overline">When a new category is justified</p>
           <ol class="submit-steps">
-            <li>The tool clearly does not fit any existing category.</li>
-            <li>The proposed category name is short enough to work in chip navigation.</li>
-            <li>The category groups more than one plausible tool, not just a single listing.</li>
-            <li>The same PR adds or updates at least one tool using the new category slug.</li>
+            <li>No existing category fits.</li>
+            <li>The label is short and clear.</li>
+            <li>It could fit more than one tool.</li>
+            <li>The same PR uses it on at least one tool.</li>
           </ol>
         </div>
       </div>
- 
-      <ol class="submit-steps">
-        <li>Create <code>categories/&lt;slug&gt;.json</code> with <code>slug</code>, <code>label</code>, and optional <code>sortOrder</code>.</li>
-        <li>Reference that category from one or more tool markdown files in the same PR.</li>
-        <li>Keep the slug lowercase kebab-case and keep the label concise.</li>
-        <li>Open the PR in the public content repo so it can flow through the publishing pipeline.</li>
-      </ol>
-    </section>
 
-    <section class="detail-panel submit-panel">
-      <p class="detail-overline">Current taxonomy</p>
-      <h2 class="submit-title">Use an existing category when possible</h2>
-      <p class="submit-copy">
-        New categories should be rare. Check the current `categories/` directory in the public content repo before proposing a new bucket, and only add one when the existing taxonomy clearly does not fit.
-      </p>
+      <ol class="submit-steps">
+        <li>Create <code>categories/&lt;slug&gt;.json</code>.</li>
+        <li>Use it in the same PR.</li>
+        <li>Keep the slug lowercase and the label short.</li>
+      </ol>
     </section>
   </div>
 
