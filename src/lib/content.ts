@@ -73,6 +73,21 @@ const TOOL_ORDER = `
   t.name COLLATE NOCASE
 `;
 
+const ALLOWED_EXTERNAL_PROTOCOLS = new Set(["http:", "https:"]);
+
+function sanitizeExternalUrl(value: string | null | undefined) {
+  if (!value) {
+    return undefined;
+  }
+
+  try {
+    const url = new URL(value);
+    return ALLOWED_EXTERNAL_PROTOCOLS.has(url.protocol) ? url.toString() : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 function getDb() {
   if (!env.DB) {
     throw new Error("Missing Cloudflare D1 binding 'DB'.");
@@ -99,6 +114,12 @@ function parseTags(tagsJson: string): string[] {
 }
 
 function mapToolCard(row: ToolRow): ToolCardData {
+  const websiteUrl = sanitizeExternalUrl(row.website_url);
+
+  if (!websiteUrl) {
+    throw new Error(`Tool "${row.slug}" is missing a valid public website URL.`);
+  }
+
   return {
     entry: {
       slug: row.slug,
@@ -107,12 +128,12 @@ function mapToolCard(row: ToolRow): ToolCardData {
       bodyMd: row.body_md,
       categorySlug: row.category_slug,
       tags: parseTags(row.tags_json),
-      websiteUrl: row.website_url,
-      githubUrl: row.github_url ?? undefined,
+      websiteUrl,
+      githubUrl: sanitizeExternalUrl(row.github_url),
       pricing: row.pricing,
       submittedByGithub: row.submitted_by_github,
-      logoUrl: row.logo_url ?? undefined,
-      ogImageUrl: row.og_image_url ?? undefined,
+      logoUrl: sanitizeExternalUrl(row.logo_url),
+      ogImageUrl: sanitizeExternalUrl(row.og_image_url),
       sortOrder: row.sort_order ?? undefined,
       syncedAt: row.synced_at ?? undefined,
     },
@@ -157,7 +178,17 @@ async function queryToolCards(whereClause = "", bindings: unknown[] = []) {
     )
     .bind(...bindings);
   const { results = [] } = await statement.all<ToolRow>();
-  return results.map(mapToolCard);
+  const tools: ToolCardData[] = [];
+
+  for (const row of results) {
+    try {
+      tools.push(mapToolCard(row));
+    } catch {
+      // Skip malformed external URLs so they never reach rendering.
+    }
+  }
+
+  return tools;
 }
 
 export async function getCategories() {

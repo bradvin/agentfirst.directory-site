@@ -57,7 +57,7 @@ npm install
 npm run dev
 ```
 
-The checked-in config points at the `agentfirst-directory` D1 database. Local builds still use a local D1 binding so they work without Cloudflare auth; use Wrangler remote access explicitly when you need live data.
+The checked-in config uses a placeholder D1 database ID. Local builds still use a local D1 binding so they work without Cloudflare auth; use Wrangler remote access explicitly when you need live data. CI injects the real D1 database ID at deploy time.
 
 ## Repo split
 
@@ -76,4 +76,4 @@ The checked-in config points at the `agentfirst-directory` D1 database. Local bu
 
 - `CLOUDFLARE_API_TOKEN`
 - `CLOUDFLARE_ACCOUNT_ID`
-- `CLOUDFLARE_D1_DATABASE_NAME`
+- `CLOUDFLARE_D1_DATABASE_ID`
