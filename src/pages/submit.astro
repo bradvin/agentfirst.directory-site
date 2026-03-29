@@ -5,7 +5,7 @@ import { siteConfig } from "../lib/site";
 
 const path = "/submit";
 const title = `Submit a tool | ${siteConfig.name}`;
-const description = "Add a tool or category by opening a pull request.";
+const description = "Add a tool or category to the content repo by opening a pull request.";
 
 const contentRepoUrl = "https://github.com/bradvin/agentfirst.directory";
 const siteRepoUrl = "https://github.com/bradvin/agentfirst.directory-site";
@@ -41,11 +41,18 @@ tags:
   - "api"
 websiteUrl: "https://coolapi.dev"
 githubUrl: "https://github.com/cooldev/coolapi"
+logoUrl: "https://www.google.com/s2/favicons?sz=64&domain_url=https://coolapi.dev"
+ogImageUrl: "https://coolapi.dev/og-image.png"
 pricing: "freemium"
-submittedBy: "your-github-handle"
 ---
 
-Short summary of what the tool does.`;
+Short summary of what the tool does.
+
+## So agents can...
+
+- do outcome one
+- do outcome two
+- do outcome three`;
 
 const structuredData = [
   breadcrumbSchema([
@@ -113,9 +120,10 @@ const structuredData = [
           </p>
 
           <ol class="submit-steps">
+            <li>Pick the closest existing category in <code>categories/</code>.</li>
             <li>Add a tool file in <code>tools/</code>.</li>
-            <li>Reuse an existing category if it fits.</li>
-            <li>Add a category file only if needed.</li>
+            <li>Add a short factual body, ideally with a <code>## So agents can...</code> section.</li>
+            <li>Add a category file only if the current list clearly does not fit.</li>
             <li>Open a PR against <code>main</code>.</li>
           </ol>
         </div>
@@ -131,8 +139,8 @@ const structuredData = [
               </div>
               <div class="submit-fact">
                 <span class="submit-fact-label">Usually required</span>
-                <strong>Website URL</strong>
-                <span>Add a GitHub URL if it helps.</span>
+                <strong>Useful URLs</strong>
+                <span>Add <code>githubUrl</code> when the tool is open source.</span>
               </div>
               <div class="submit-fact">
                 <span class="submit-fact-label">Only if needed</span>
@@ -156,7 +164,7 @@ const structuredData = [
             <div class="submit-field"><code>tools/&lt;slug&gt;.md</code><span>One file per tool.</span></div>
             <div class="submit-field"><code>categories/&lt;slug&gt;.json</code><span>One file per category.</span></div>
             <div class="submit-field"><code>bradvin/agentfirst.directory</code><span>The content repo.</span></div>
-            <div class="submit-field"><code>Cloudflare D1</code><span>Updated after merge.</span></div>
+            <div class="submit-field"><code>main</code><span>Open the PR against the default branch.</span></div>
           </div>
         </div>
       </div>
@@ -185,7 +193,45 @@ const structuredData = [
             <div class="submit-field"><code>tags</code><span>At least one tag.</span></div>
             <div class="submit-field"><code>websiteUrl</code><span>Required URL.</span></div>
             <div class="submit-field"><code>pricing</code><span>One of <code>open-source</code>, <code>freemium</code>, <code>free</code>, or <code>paid</code>.</span></div>
-            <div class="submit-field"><code>submittedBy</code><span>Valid GitHub username.</span></div>
+          </div>
+        </div>
+
+        <div>
+          <p class="detail-overline">Optional frontmatter</p>
+          <div class="detail-panel submit-fields-panel">
+            <div class="submit-field"><code>githubUrl</code><span>Include it when the tool is open source.</span></div>
+            <div class="submit-field"><code>logoUrl</code><span>Add the canonical value if you already know it.</span></div>
+            <div class="submit-field"><code>ogImageUrl</code><span>Add the social preview image if you already know it.</span></div>
+            <div class="submit-field"><code>sortOrder</code><span>Optional integer when ordering matters.</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="detail-panel submit-panel">
+      <p class="detail-overline">Writing guidance</p>
+      <h2 class="submit-title">Keep the body factual and agent-specific</h2>
+      <p class="submit-copy">
+        Short, concrete descriptions work best. Prefer canonical URLs, avoid duplicate listings, and add a brief
+        agent-enablement section when it helps explain why the tool belongs in the directory.
+      </p>
+
+      <div class="submit-code-grid">
+        <div>
+          <p class="detail-overline">Suggested section</p>
+          <pre class="code-block"><code>{`## So agents can...
+
+- do outcome one
+- do outcome two
+- do outcome three`}</code></pre>
+        </div>
+
+        <div>
+          <p class="detail-overline">What happens after merge</p>
+          <div class="detail-panel submit-fields-panel">
+            <div class="submit-field"><code>PR author</code><span>Author attribution is derived automatically.</span></div>
+            <div class="submit-field"><code>logoUrl</code><span>Missing values can default from the website favicon.</span></div>
+            <div class="submit-field"><code>ogImageUrl</code><span>Missing values can be discovered from site metadata.</span></div>
           </div>
         </div>
       </div>
@@ -217,8 +263,9 @@ const structuredData = [
 
       <ol class="submit-steps">
         <li>Create <code>categories/&lt;slug&gt;.json</code>.</li>
-        <li>Use it in the same PR.</li>
-        <li>Keep the slug lowercase and the label short.</li>
+        <li>Use it in at least one tool in the same PR.</li>
+        <li>Keep the slug lowercase and the label concise.</li>
+        <li>Open the PR against <code>main</code>.</li>
       </ol>
     </section>
   </div>
