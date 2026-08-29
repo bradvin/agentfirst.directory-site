@@ -1,6 +1,6 @@
 import { env } from "cloudflare:workers";
 
-export type Pricing = "open-source" | "freemium" | "free" | "paid";
+export type Pricing = "open-source" | "source-available" | "freemium" | "free" | "paid";
 
 export interface Category {
   slug: string;
@@ -278,6 +278,8 @@ export function formatPricing(pricing: Pricing) {
   switch (pricing) {
     case "open-source":
       return "Open Source";
+    case "source-available":
+      return "Source Available";
     case "freemium":
       return "Freemium";
     case "free":
