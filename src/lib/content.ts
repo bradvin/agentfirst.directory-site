@@ -2,6 +2,7 @@ import { env } from "cloudflare:workers";
 import type { Classification } from "./classification";
 import { normalizeClassification } from "./classification";
 import { getStaticPageEntries } from "./static-pages";
+import { shuffleCopy, type RandomSource } from "./homepage-order";
 
 export type { Classification } from "./classification";
 
@@ -228,9 +229,9 @@ export async function getCategoryBySlug(slug: string) {
   return result ? mapCategory(result) : null;
 }
 
-export async function getHomepageData() {
+export async function getHomepageData(random: RandomSource = Math.random) {
   const [categories, tools] = await Promise.all([getCategories(), queryToolCards()]);
-  return { categories, tools };
+  return { categories, tools: shuffleCopy(tools, random) };
 }
 
 export async function getToolBySlug(slug: string) {
