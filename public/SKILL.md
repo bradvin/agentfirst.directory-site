@@ -1,6 +1,6 @@
 ---
 name: add-agentfirst-tool
-description: Add a new tool or propose a new category for agentfirst.directory by editing the content repository, creating the required markdown or JSON files, and opening a pull request with a concise justification.
+description: Add an evidence-backed, classified tool or propose a category for agentfirst.directory by editing the content repository and opening a pull request.
 compatibility: Requires git, GitHub access, and the ability to edit Markdown and JSON files.
 metadata:
   canonical-url: https://agentfirst.directory/SKILL.md
@@ -31,12 +31,14 @@ Only change the site repo when the user explicitly asks for website code changes
 ## Workflow
 
 1. Check whether the tool already exists in the content repo.
-2. Prefer an existing category when one fits.
-3. Create or update the tool markdown file.
-4. Add a short factual body and prefer including a `## So agents can...` section with concrete outcomes.
-5. Create a category JSON file only if needed, and include at least one tool that uses it in the same PR.
-6. Commit the changes on a branch and open a pull request against `main`.
-7. In the PR description, explain briefly why the tool belongs in the directory.
+2. Apply the evidence-based inclusion test at `https://agentfirst.directory/policy`.
+3. Choose exactly one supported classification.
+4. Prefer an existing category when one fits.
+5. Create or update the tool markdown file.
+6. Add a short factual body and prefer including a `## So agents can...` section with concrete outcomes.
+7. Create a category JSON file only if needed, and include at least one tool that uses it in the same PR.
+8. Commit the changes on a branch and open a pull request against `main`.
+9. In the PR description, cite first-party evidence and explain why the tool belongs in the directory.
 
 ## Tool file format
 
@@ -57,6 +59,7 @@ githubUrl: "https://github.com/cooldev/coolapi"
 logoUrl: "https://www.google.com/s2/favicons?sz=64&domain_url=https://coolapi.dev"
 ogImageUrl: "https://coolapi.dev/og-image.png"
 pricing: "freemium"
+classification: "agent-enabling"
 ---
 
 Short summary of what the tool does.
@@ -77,7 +80,17 @@ Short summary of what the tool does.
 - `tags` must contain at least one tag
 - `websiteUrl` must be a valid `http` or `https` URL
 - `pricing` must be one of `open-source`, `freemium`, `free`, or `paid`
+- `classification` must be one of `agent-native`, `agent-enabling`, or `agent-internet-protocol`
 - The markdown body must not be empty
+
+### Inclusion and classification rules
+
+- `agent-native`: agents are a core actor, runtime, abstraction, or participant
+- `agent-enabling`: the tool materially empowers an agent-first workflow
+- `agent-internet-protocol`: an interoperable protocol enables agents to communicate, transact, identify, coordinate, or interact online
+- Use first-party product docs, specifications, official websites, or maintained repositories as evidence
+- Generic technical compatibility, a thin MCP/API wrapper, or unsupported marketing does not qualify
+- Choose the most specific class the evidence supports; classification is not a quality score or endorsement
 
 Optional fields:
 
@@ -129,6 +142,9 @@ Then open a pull request against `main` in `bradvin/agentfirst.directory`.
 - Confirm the tool is not already listed
 - Reuse an existing category when possible
 - Make sure all URLs are valid
+- Confirm the tool passes the evidence-based inclusion test
+- Include exactly one valid `classification`
+- Cite first-party evidence for the material agent role
 - Keep the body concise and factual
 - Prefer adding a short `## So agents can...` section with concrete agent outcomes
 - Do not add author attribution manually; it is derived from the PR author

@@ -30,29 +30,32 @@ const categoryExample = `{
   "sortOrder": 110
 }`;
 
-const toolFileExample = String.raw`---
-slug: "coolapi"
-name: "CoolAPI"
-description: "An agent-first API for doing cool things"
-category: "agent-security"
-tags:
-  - "mcp"
-  - "security"
-  - "api"
-websiteUrl: "https://coolapi.dev"
-githubUrl: "https://github.com/cooldev/coolapi"
-logoUrl: "https://www.google.com/s2/favicons?sz=64&domain_url=https://coolapi.dev"
-ogImageUrl: "https://coolapi.dev/og-image.png"
-pricing: "freemium"
----
-
-Short summary of what the tool does.
-
-## So agents can...
-
-- do outcome one
-- do outcome two
-- do outcome three`;
+const toolFileExample = [
+  "---",
+  'slug: "coolapi"',
+  'name: "CoolAPI"',
+  'description: "An agent-first API for doing cool things"',
+  'category: "agent-security"',
+  "tags:",
+  '  - "mcp"',
+  '  - "security"',
+  '  - "api"',
+  'websiteUrl: "https://coolapi.dev"',
+  'githubUrl: "https://github.com/cooldev/coolapi"',
+  'logoUrl: "https://www.google.com/s2/favicons?sz=64&domain_url=https://coolapi.dev"',
+  'ogImageUrl: "https://coolapi.dev/og-image.png"',
+  'pricing: "freemium"',
+  'classification: "agent-enabling"',
+  "---",
+  "",
+  "Short summary of what the tool does.",
+  "",
+  "## So agents can...",
+  "",
+  "- do outcome one",
+  "- do outcome two",
+  "- do outcome three",
+].join("\n");
 
 const structuredData = [
   breadcrumbSchema([
@@ -120,8 +123,9 @@ const structuredData = [
           </p>
 
           <ol class="submit-steps">
+            <li>Confirm the tool passes the <a class="detail-link" href="/policy">evidence-based inclusion policy</a>.</li>
             <li>Pick the closest existing category in <code>categories/</code>.</li>
-            <li>Add a tool file in <code>tools/</code>.</li>
+            <li>Add a tool file in <code>tools/</code> with one required classification.</li>
             <li>Add a short factual body, ideally with a <code>## So agents can...</code> section.</li>
             <li>Add a category file only if the current list clearly does not fit.</li>
             <li>Open a PR against <code>main</code>.</li>
@@ -134,8 +138,8 @@ const structuredData = [
             <div class="submit-facts">
               <div class="submit-fact">
                 <span class="submit-fact-label">Required</span>
-                <strong>One tool file</strong>
-                <span>Add a markdown file in <code>tools/</code>.</span>
+                <strong>Evidence and classification</strong>
+                <span>Explain the material agent role and choose one supported class.</span>
               </div>
               <div class="submit-fact">
                 <span class="submit-fact-label">Usually required</span>
@@ -193,6 +197,7 @@ const structuredData = [
             <div class="submit-field"><code>tags</code><span>At least one tag.</span></div>
             <div class="submit-field"><code>websiteUrl</code><span>Required URL.</span></div>
             <div class="submit-field"><code>pricing</code><span>One of <code>open-source</code>, <code>freemium</code>, <code>free</code>, or <code>paid</code>.</span></div>
+            <div class="submit-field"><code>classification</code><span>One of <code>agent-native</code>, <code>agent-enabling</code>, or <code>agent-internet-protocol</code>.</span></div>
           </div>
         </div>
 
@@ -212,8 +217,9 @@ const structuredData = [
       <p class="detail-overline">Writing guidance</p>
       <h2 class="submit-title">Keep the body factual and agent-specific</h2>
       <p class="submit-copy">
-        Short, concrete descriptions work best. Prefer canonical URLs, avoid duplicate listings, and add a brief
-        agent-enablement section when it helps explain why the tool belongs in the directory.
+        Short, concrete descriptions work best. Prefer canonical URLs, avoid duplicate listings, and cite
+        first-party evidence for the material agent role. A generic API, thin wrapper, or unsupported marketing
+        claim is not enough.
       </p>
 
       <div class="submit-code-grid">
@@ -233,6 +239,29 @@ const structuredData = [
             <div class="submit-field"><code>logoUrl</code><span>Missing values can default from the website favicon.</span></div>
             <div class="submit-field"><code>ogImageUrl</code><span>Missing values can be discovered from site metadata.</span></div>
           </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="detail-panel submit-panel">
+      <p class="detail-overline">Inclusion guidance</p>
+      <h2 class="submit-title">Choose the class the evidence supports</h2>
+      <p class="submit-copy">
+        Read the <a class="detail-link" href="/policy">full inclusion policy</a> before opening a PR. Every accepted
+        listing must fit exactly one class.
+      </p>
+
+      <div class="submit-code-grid">
+        <div class="detail-panel submit-fields-panel">
+          <div class="submit-field"><code>agent-native</code><span>Agents are a core actor, runtime, abstraction, or participant.</span></div>
+          <div class="submit-field"><code>agent-enabling</code><span>The tool materially empowers an agent-first workflow.</span></div>
+          <div class="submit-field"><code>agent-internet-protocol</code><span>An interoperable protocol lets agents communicate, transact, identify, coordinate, or interact online.</span></div>
+        </div>
+
+        <div class="detail-panel submit-fields-panel">
+          <div class="submit-field"><strong>Show the agent role</strong><span>State what agents can do and why it matters.</span></div>
+          <div class="submit-field"><strong>Use first-party evidence</strong><span>Prefer official docs, specifications, websites, or maintained repositories.</span></div>
+          <div class="submit-field"><strong>Avoid compatibility claims</strong><span>Being callable by an agent does not by itself qualify a tool.</span></div>
         </div>
       </div>
     </section>

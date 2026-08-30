@@ -1,6 +1,7 @@
 ---
 import type { ToolCardData } from "../lib/content";
 import { toolHref } from "../lib/content";
+import { formatClassification } from "../lib/classification";
 
 interface Props {
   tools: ToolCardData[];
@@ -35,6 +36,13 @@ const { tools, emptyLabel = "No tools found.", variant = "default" } = Astro.pro
                   }
                   <div class="card-topline">
                     <h2 class="card-title">{tool.entry.name}</h2>
+                    {
+                      tool.entry.classification && (
+                        <span class="classification-badge">
+                          {formatClassification(tool.entry.classification)}
+                        </span>
+                      )
+                    }
                     <span class="card-license">{tool.pricingLabel}</span>
                   </div>
                 </div>
