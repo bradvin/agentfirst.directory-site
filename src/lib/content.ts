@@ -1,4 +1,9 @@
 import { env } from "cloudflare:workers";
+import type { Classification } from "./classification";
+import { normalizeClassification } from "./classification";
+import { getStaticPageEntries } from "./static-pages";
+
+export type { Classification } from "./classification";
 
 export type Pricing = "open-source" | "freemium" | "free" | "paid";
 
@@ -18,6 +23,7 @@ export interface Tool {
   websiteUrl: string;
   githubUrl?: string;
   pricing: Pricing;
+  classification?: Classification;
   submittedByGithub: string;
   logoUrl?: string;
   ogImageUrl?: string;
@@ -52,6 +58,7 @@ interface ToolRow {
   website_url: string;
   github_url: string | null;
   pricing: Pricing;
+  classification: Classification | null;
   submitted_by_github: string;
   logo_url: string | null;
   og_image_url: string | null;
@@ -131,6 +138,7 @@ function mapToolCard(row: ToolRow): ToolCardData {
       websiteUrl,
       githubUrl: sanitizeExternalUrl(row.github_url),
       pricing: row.pricing,
+      classification: normalizeClassification(row.classification),
       submittedByGithub: row.submitted_by_github,
       logoUrl: sanitizeExternalUrl(row.logo_url),
       ogImageUrl: sanitizeExternalUrl(row.og_image_url),
@@ -160,6 +168,7 @@ async function queryToolCards(whereClause = "", bindings: unknown[] = []) {
           t.website_url,
           t.github_url,
           t.pricing,
+          t.classification,
           t.submitted_by_github,
           t.logo_url,
           t.og_image_url,
@@ -234,7 +243,7 @@ export async function getToolsByCategory(slug: string) {
 }
 
 export function getSitemapStaticEntries(): SitemapEntry[] {
-  return [{ path: "/" }, { path: "/submit" }];
+  return getStaticPageEntries();
 }
 
 export async function getSitemapToolEntries() {

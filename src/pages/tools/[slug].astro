@@ -7,6 +7,7 @@ import { breadcrumbSchema, softwareApplicationSchema } from "../../lib/seo";
 import { cacheControl, setCacheControl } from "../../lib/cache";
 import { renderMarkdown } from "../../lib/markdown";
 import { formatPricing, getToolBySlug, getToolsByCategory } from "../../lib/content";
+import { formatClassification } from "../../lib/classification";
 import { siteConfig } from "../../lib/site";
 
 const slug = Astro.params.slug ?? "";
@@ -75,6 +76,13 @@ const structuredData = tool
               <div class="detail-copy">
                 <div class="detail-title-row">
                   <h1 class="detail-title">{tool.entry.name}</h1>
+                  {
+                    tool.entry.classification && (
+                      <span class="detail-badge classification-badge">
+                        {formatClassification(tool.entry.classification)}
+                      </span>
+                    )
+                  }
                   <span class="detail-badge">{formatPricing(tool.entry.pricing)}</span>
                 </div>
                 <p class="detail-summary">{tool.entry.description}</p>
@@ -133,6 +141,17 @@ const structuredData = tool
                     <span class="detail-fact-label">Category</span>
                     <a class="detail-link" href={`/category/${tool.category.slug}`}>{tool.category.label}</a>
                   </div>
+
+                  {
+                    tool.entry.classification && (
+                      <div class="detail-fact">
+                        <span class="detail-fact-label">Classification</span>
+                        <a class="detail-link" href="/policy">
+                          {formatClassification(tool.entry.classification)}
+                        </a>
+                      </div>
+                    )
+                  }
 
                   <div class="detail-fact">
                     <span class="detail-fact-label">Submitted by</span>

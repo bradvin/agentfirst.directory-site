@@ -1,6 +1,6 @@
 # agentfirst.directory-site
 
-Astro site for `agentfirst.directory`, deployed to Cloudflare Workers with D1-backed runtime reads. Site code and D1 schema live here. Approved content continues to live in the public `bradvin/agentfirst.directory` repo and is published into D1 by that repo's pipeline.
+Astro site for `agentfirst.directory`, an evidence-led directory of agent-native tools, agent-enabling infrastructure, and agent internet protocols. It is deployed to Cloudflare Workers with D1-backed runtime reads. Site code and D1 schema live here. Approved content continues to live in the public `bradvin/agentfirst.directory` repo and is published into D1 by that repo's pipeline.
 
 ## Stack
 
@@ -43,6 +43,7 @@ tags:
 websiteUrl: "https://crewai.com"
 githubUrl: "https://github.com/crewAIInc/crewAI"
 pricing: "open-source"
+classification: "agent-native"
 submittedBy: "bradvin"
 sortOrder: 90
 ---
@@ -50,12 +51,23 @@ sortOrder: 90
 CrewAI is a lean, lightning-fast framework built in Python for orchestrating role-playing autonomous AI agents.
 ```
 
+Every published tool must have one classification:
+
+- `agent-native`: agents are a core actor, runtime, abstraction, or participant.
+- `agent-enabling`: the tool materially empowers an agent-first workflow.
+- `agent-internet-protocol`: an interoperable protocol lets agents communicate, transact, identify, coordinate, or interact online.
+
+The staged `0003_add_tool_classification.sql` migration permits `NULL` only so a populated database can be upgraded before the content publisher backfills every row. Runtime reads keep old/null rows safe and do not fabricate a classification badge. The public policy and evidence test live at `/policy`.
+
 ## Local development
 
 ```bash
-npm install
+npm ci
+npm test
 npm run dev
 ```
+
+Use Node 24. `npm run ci` runs the migration/unit tests and Worker-targeted Astro build. For rendered verification, apply local D1 migrations, seed `test/fixtures/seed-classifications.sql`, start the local runtime, and run `npm run verify:rendered`. Never point that fixture at remote D1.
 
 The checked-in config uses a placeholder D1 database ID. Local builds still use a local D1 binding so they work without Cloudflare auth; use Wrangler remote access explicitly when you need live data. CI injects the real D1 database ID at deploy time.
 

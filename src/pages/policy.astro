@@ -1,0 +1,97 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { breadcrumbSchema } from "../lib/seo";
+import { siteConfig } from "../lib/site";
+
+const path = "/policy";
+const title = `Inclusion policy | ${siteConfig.name}`;
+const description =
+  "How agentfirst.directory classifies listings and applies an evidence-based inclusion test.";
+
+const structuredData = [
+  breadcrumbSchema([
+    { name: siteConfig.shortName, path: "/" },
+    { name: "Policy", path },
+  ]),
+];
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  canonicalPath={path}
+  structuredData={structuredData}
+>
+  <div class="shell-inner policy-shell">
+    <section class="page-intro page-intro-centered">
+      <p class="detail-overline">Editorial policy</p>
+      <h1 class="page-title">What belongs in an agent-first directory</h1>
+      <p class="page-copy">
+        We include products, infrastructure, and protocols that materially advance agent-first workflows.
+        Each listing must have public evidence for its claimed role and fit exactly one classification.
+      </p>
+    </section>
+
+    <section class="policy-classification-grid" aria-labelledby="classifications-heading">
+      <h2 id="classifications-heading" class="visually-hidden">The three classifications</h2>
+
+      <article class="detail-panel policy-classification-card">
+        <p class="detail-overline">Agent-native</p>
+        <h3>Agents are core participants</h3>
+        <p>
+          The product's core abstraction, actor, runtime, or participant is an agent. Removing agents would
+          fundamentally change what the product is.
+        </p>
+      </article>
+
+      <article class="detail-panel policy-classification-card">
+        <p class="detail-overline">Agent-enabling</p>
+        <h3>Infrastructure materially empowers agents</h3>
+        <p>
+          The product gives agents meaningful capabilities or removes a material constraint from agent-first
+          workflows, even when people and conventional applications can also use it.
+        </p>
+      </article>
+
+      <article class="detail-panel policy-classification-card">
+        <p class="detail-overline">Agent internet protocol</p>
+        <h3>Protocols let agents participate online</h3>
+        <p>
+          An interoperable protocol or standard enables agents to communicate, transact, identify, coordinate,
+          or interact across the internet.
+        </p>
+      </article>
+    </section>
+
+    <section class="detail-panel policy-panel">
+      <p class="detail-overline">Evidence-based inclusion test</p>
+      <h2>Evidence before labels</h2>
+      <ol class="policy-test-list">
+        <li><strong>Identify the agent role.</strong> State what agents do and why that role is material.</li>
+        <li><strong>Use first-party evidence.</strong> Verify the claim in product docs, a maintained repository, a specification, or the official website.</li>
+        <li><strong>Test materiality.</strong> Generic API access or ordinary automation is not enough; the capability must substantially improve an agent-first workflow.</li>
+        <li><strong>Choose one classification.</strong> Select the most specific class supported by the evidence, not the most flattering label.</li>
+      </ol>
+    </section>
+
+    <section class="detail-panel policy-panel policy-exclusions">
+      <p class="detail-overline">What does not qualify</p>
+      <h2>Compatibility alone is insufficient</h2>
+      <ul class="policy-test-list">
+        <li>A generic developer tool that an agent could happen to call.</li>
+        <li>A thin MCP or API wrapper with no material agent-first capability.</li>
+        <li>Unsupported marketing claims without first-party product evidence.</li>
+        <li>A conventional workflow with “AI” or “agent” added only as positioning.</li>
+      </ul>
+      <p>
+        Classification describes why an accepted listing belongs. It is not a quality score, endorsement, or
+        substitute for reviewing security, reliability, pricing, and fitness for a particular use.
+      </p>
+    </section>
+
+    <section class="policy-cta">
+      <p>Have an evidence-backed tool that passes the test?</p>
+      <a class="button button-primary" href="/submit">Read the submission guide</a>
+    </section>
+  </div>
+</BaseLayout>

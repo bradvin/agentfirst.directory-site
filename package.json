@@ -8,7 +8,9 @@
     "start": "wrangler types && astro dev",
     "build": "wrangler types && astro build",
     "preview": "wrangler types && astro preview",
-    "ci": "npm run build"
+    "test": "node --test",
+    "verify:rendered": "node verification/rendered-ui.mjs",
+    "ci": "npm test && npm run build"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^13.1.4",

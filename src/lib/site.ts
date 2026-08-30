@@ -3,7 +3,7 @@ export const siteConfig = {
   shortName: "agent-first",
   url: "https://agentfirst.directory",
   description:
-    "Curated products, services, and open-source repos where AI agents are first class citizens",
+    "Evidence-led directory of agent-native tools, agent-enabling infrastructure, and agent internet protocols",
   defaultSocialImage: "/og-default.png",
   defaultSocialImageAlt: "agentfirst.directory, the directory for agent-first tools",
   giscus: {

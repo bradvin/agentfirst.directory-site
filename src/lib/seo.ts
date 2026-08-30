@@ -1,4 +1,5 @@
 import type { Category, ToolCardData } from "./content";
+import { formatClassification } from "./classification";
 import { siteConfig } from "./site";
 
 export function absoluteUrl(path: string) {
@@ -63,6 +64,17 @@ export function softwareApplicationSchema(tool: ToolCardData) {
     operatingSystem: "Web",
     keywords: tool.entry.tags.join(", "),
     isAccessibleForFree: tool.entry.pricing !== "paid",
+    ...(tool.entry.classification
+      ? {
+          additionalProperty: [
+            {
+              "@type": "PropertyValue",
+              name: "Agent-first classification",
+              value: formatClassification(tool.entry.classification),
+            },
+          ],
+        }
+      : {}),
     ...(image ? { image } : {}),
     ...(sameAs.length > 0 ? { sameAs } : {}),
   };
