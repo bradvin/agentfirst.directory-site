@@ -2,14 +2,21 @@
 import type { ToolCardData } from "../lib/content";
 import { toolHref } from "../lib/content";
 import { formatClassification } from "../lib/classification";
+import { buildToolSearchText } from "../lib/homepage-search";
 
 interface Props {
   tools: ToolCardData[];
   emptyLabel?: string;
   variant?: "default" | "compact";
+  searchable?: boolean;
 }
 
-const { tools, emptyLabel = "No tools found.", variant = "default" } = Astro.props;
+const {
+  tools,
+  emptyLabel = "No tools found.",
+  variant = "default",
+  searchable = false,
+} = Astro.props;
 ---
 
 {
@@ -18,7 +25,19 @@ const { tools, emptyLabel = "No tools found.", variant = "default" } = Astro.pro
   ) : (
     <div class:list={["directory-list", variant === "compact" && "directory-list-compact"]}>
       {tools.map((tool) => (
-        <article class:list={["card", variant === "compact" && "card-compact"]}>
+        <article
+          class:list={["card", variant === "compact" && "card-compact"]}
+          data-search-text={
+            searchable
+              ? buildToolSearchText({
+                  name: tool.entry.name,
+                  description: tool.entry.description,
+                  categoryLabel: tool.category.label,
+                  tags: tool.entry.tags,
+                })
+              : undefined
+          }
+        >
           <a class:list={["card-main", variant === "compact" && "card-main-compact"]} href={toolHref(tool.entry)}>
             <div class="card-head">
               <div class="card-brand">
