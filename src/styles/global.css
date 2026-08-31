@@ -190,27 +190,14 @@ img {
   line-height: 1.7;
 }
 
-.policy-summary {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 18px;
-  margin: 0 auto 24px;
-  padding: 14px 16px;
-  border: 1px solid rgba(0, 230, 191, 0.14);
-  border-radius: 8px;
-  background: rgba(0, 230, 191, 0.045);
-  color: var(--muted);
+.hero-policy-copy {
+  display: block;
+  margin-top: 8px;
   font-size: 13px;
-  line-height: 1.6;
 }
 
-.policy-summary p {
-  margin: 0;
-}
-
-.policy-summary a {
-  flex: 0 0 auto;
+.hero-policy-copy a {
+  margin-left: 4px;
   font-family: "IBM Plex Mono", monospace;
   font-size: 12px;
 }
@@ -1144,7 +1131,6 @@ img {
     align-items: flex-start;
   }
 
-  .policy-summary,
   .policy-cta {
     align-items: flex-start;
     flex-direction: column;

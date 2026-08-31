@@ -42,17 +42,15 @@ const structuredData = [
           The directory for <span class="hero-accent">agent-first</span> tools
         </h1>
 
-        <p class="hero-copy-text">{siteConfig.description}</p>
+        <p class="hero-copy-text">
+          {siteConfig.description}.
+          <span class="hero-policy-copy">
+            Every listing must pass an evidence-based inclusion test.
+            <a class="detail-link" href="/policy">Read the inclusion policy →</a>
+          </span>
+        </p>
       </div>
     </section>
-
-    <aside class="policy-summary">
-      <p>
-        Every listing must pass an evidence-based inclusion test and fit one of
-        three classifications: agent-native, agent-enabling, or agent internet protocol.
-      </p>
-      <a class="detail-link" href="/policy">Read the inclusion policy →</a>
-    </aside>
 
     <CategoryChips categories={categories} includeOpenSource={false} />
 
