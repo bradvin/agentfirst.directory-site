@@ -1,0 +1,98 @@
+---
+interface Props {
+  total: number;
+}
+
+const { total } = Astro.props;
+---
+
+<div class="homepage-search" data-homepage-search>
+  <label class="homepage-search-label" for="homepage-search">Search tools</label>
+  <div class="homepage-search-controls">
+    <input
+      class="homepage-search-input"
+      id="homepage-search"
+      name="q"
+      type="search"
+      autocomplete="off"
+      placeholder="Search by name, description, category, or tag"
+    />
+    <button class="homepage-search-clear" type="button" data-search-clear hidden>Clear</button>
+  </div>
+  <p class="homepage-search-count" data-search-count aria-live="polite" aria-atomic="true">
+    {total} {total === 1 ? "tool" : "tools"}
+  </p>
+  <noscript>
+    <p class="homepage-search-note">Search requires JavaScript. All tools are listed below.</p>
+  </noscript>
+</div>
+
+<div class="homepage-search-empty" data-search-empty hidden>
+  <h2>No matching tools</h2>
+  <p>Try a different name, description, category, or tag.</p>
+  <button class="button button-primary" type="button" data-search-clear>Clear search</button>
+</div>
+
+<script>
+  import { matchesToolSearch } from "../lib/homepage-search";
+
+  const searchRoot = document.querySelector<HTMLElement>("[data-homepage-search]");
+  const resultsRoot = document.querySelector<HTMLElement>("[data-homepage-results]");
+  const emptyState = document.querySelector<HTMLElement>("[data-search-empty]");
+
+  if (searchRoot && resultsRoot && emptyState) {
+    const input = searchRoot.querySelector<HTMLInputElement>("[type='search']");
+    const status = searchRoot.querySelector<HTMLElement>("[data-search-count]");
+    const cards = Array.from(resultsRoot.querySelectorAll<HTMLElement>("[data-search-text]"));
+    const clearButtons = Array.from(document.querySelectorAll<HTMLButtonElement>("[data-search-clear]"));
+    const total = cards.length;
+
+    const updateUrl = (query: string) => {
+      const url = new URL(window.location.href);
+      if (query) {
+        url.searchParams.set("q", query);
+      } else {
+        url.searchParams.delete("q");
+      }
+      window.history.replaceState(window.history.state, "", `${url.pathname}${url.search}${url.hash}`);
+    };
+
+    const applySearch = (query: string, syncUrl = true) => {
+      const trimmedQuery = query.trim();
+      let visible = 0;
+
+      for (const card of cards) {
+        const matches = matchesToolSearch(card.dataset.searchText ?? "", trimmedQuery);
+        card.hidden = !matches;
+        if (matches) visible += 1;
+      }
+
+      const hasQuery = trimmedQuery !== "";
+      for (const button of clearButtons) button.hidden = !hasQuery;
+      emptyState.hidden = visible !== 0;
+
+      if (status) {
+        status.textContent = hasQuery
+          ? `${visible} of ${total} ${total === 1 ? "tool" : "tools"} shown`
+          : `${total} ${total === 1 ? "tool" : "tools"}`;
+      }
+
+      if (syncUrl) updateUrl(trimmedQuery);
+    };
+
+    if (input) {
+      const initialQuery = new URL(window.location.href).searchParams.get("q") ?? "";
+      input.value = initialQuery;
+      applySearch(initialQuery, false);
+      input.addEventListener("input", () => applySearch(input.value));
+
+      for (const button of clearButtons) {
+        button.addEventListener("click", () => {
+          input.value = "";
+          applySearch("");
+          input.focus();
+        });
+      }
+    }
+  }
+</script>

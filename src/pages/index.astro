@@ -1,6 +1,7 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import CategoryChips from "../components/CategoryChips.astro";
+import HomepageSearch from "../components/HomepageSearch.astro";
 import ToolList from "../components/ToolList.astro";
 import { getHomepageData, toolHref } from "../lib/content";
 import { cacheControl, setCacheControl } from "../lib/cache";
@@ -55,8 +56,10 @@ const structuredData = [
 
     <CategoryChips categories={categories} includeOpenSource={false} />
 
-    <section class="section-block">
-      <ToolList tools={toolCards} />
+    <HomepageSearch total={toolCards.length} />
+
+    <section class="section-block" data-homepage-results>
+      <ToolList tools={toolCards} searchable />
     </section>
   </div>
 </BaseLayout>
