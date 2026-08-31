@@ -69,6 +69,8 @@ npm run dev
 
 Use Node 24. `npm run ci` runs the migration/unit tests and Worker-targeted Astro build. For rendered verification, apply local D1 migrations, seed `test/fixtures/seed-classifications.sql`, start the local runtime, and run `npm run verify:rendered`. Never point that fixture at remote D1.
 
+Homepage tool cards are shuffled per uncached request. Because the existing homepage edge cache remains `s-maxage=300`, visitors served by the same edge cache share that order until the five-minute cache refresh.
+
 The checked-in config uses a placeholder D1 database ID. Local builds still use a local D1 binding so they work without Cloudflare auth; use Wrangler remote access explicitly when you need live data. CI injects the real D1 database ID at deploy time.
 
 ## Repo split
