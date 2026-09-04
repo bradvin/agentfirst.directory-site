@@ -15,7 +15,9 @@ test("submit grids allow long content to shrink without disabling local code scr
 
 test("submit code scrollers are keyboard focusable and labelled", () => {
   const codeBlocks = [...submitPage.matchAll(/<pre class="code-block"([^>]*)>/g)];
-  assert.equal(codeBlocks.length, 4);
+  const allPreBlocks = [...submitPage.matchAll(/<pre\b/g)];
+  assert.ok(codeBlocks.length > 0);
+  assert.equal(codeBlocks.length, allPreBlocks.length);
 
   for (const [, attributes] of codeBlocks) {
     assert.match(attributes, /\btabindex="0"/);
