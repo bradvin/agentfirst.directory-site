@@ -90,6 +90,7 @@ This document turns the 2026-09-03 full-site SEO audit into an implementation an
 - [x] Create distinct editorial hubs for inclusion policy, review methodology, corrections, and directory research.
 - [x] Avoid automatically generating thin tag archives or pairwise comparison pages.
 - [x] Improve related-tool selection using shared category, verified interfaces, tags, and classification rather than insertion order.
+- [x] Keep category listing, editorial guidance, evidence, and comparison sections in a shared responsive stack with consistent vertical spacing.
 
 ## 5. On-page SEO and social metadata
 
@@ -213,3 +214,4 @@ The failing 2026-09-03 baseline was remediated and rechecked on 2026-09-04. The 
 - 2026-09-04: Completed the post-merge production closeout. The live crawl again passed 60 sitemap pages and 62 unique internal links; apex HTTP and HTTPS `www` still redirect permanently to the canonical apex URL, and `/.DS_Store` returns `404`.
 - 2026-09-04: Corrected Astro's line-break whitespace trimming around inline links on the homepage, About, Corrections, Editorial Standards, open-source hub, and research pages. Added rendered assertions that reject anchors collapsed against surrounding prose; all local build and rendered-site checks pass.
 - 2026-09-04: Added Brad Vincent's `https://x.com/bradvin` profile immediately after the GitHub publisher profile on the About page and included both identities in the publisher `Person.sameAs` structured data, with rendered and schema regression coverage.
+- 2026-09-04: Fixed category-page section collisions by grouping the listing, guidance, evidence, and comparison blocks in a shared responsive stack. Browser measurements on Marketing & SEO showed all three section boundaries moving from `0px` to the intended `24px` gap; source-gate coverage now protects the layout rule.

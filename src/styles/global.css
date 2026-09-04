@@ -821,6 +821,11 @@ img {
   gap: 18px;
 }
 
+.category-content-stack {
+  display: grid;
+  gap: 24px;
+}
+
 .category-editorial-grid {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
