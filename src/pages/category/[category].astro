@@ -141,7 +141,7 @@ const structuredData = category
             {
               hasEditorialGuidance && (
                 <section class="category-editorial-grid" aria-label={`${category.label} editorial guidance`}>
-                  <article class="detail-panel category-guidance" id="definition">
+                  <article class="detail-panel category-guidance category-guidance-definition" id="definition">
                     <p class="detail-overline">Definition</p>
                     <h2>What belongs in {category.label}?</h2>
                     <div class="prose-compact" set:html={definitionHtml} />
@@ -208,7 +208,6 @@ const structuredData = category
                           <th scope="col">Interfaces</th>
                           <th scope="col">Deployment</th>
                           <th scope="col">Verification</th>
-                          <th scope="col">Human review date</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -220,7 +219,6 @@ const structuredData = category
                             <td>{tool.entry.interfaces.join(", ") || "Not yet recorded"}</td>
                             <td>{tool.entry.deploymentModes.join(", ") || "Not yet recorded"}</td>
                             <td>{tool.entry.verificationLevel?.replaceAll("-", " ") ?? "Not reviewed"}</td>
-                            <td>{tool.entry.reviewedAt?.slice(0, 10) ?? "Not recorded"}</td>
                           </tr>
                         ))}
                       </tbody>

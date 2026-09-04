@@ -84,6 +84,7 @@ This document turns the 2026-09-03 full-site SEO audit into an implementation an
 - [x] Add 2–4 category-specific use cases and 17 claim-level primary sources across all 16 current categories.
 - [!] Add last-reviewed dates only when a named human editorial review actually occurs; do not convert source-access or sync dates into review provenance.
 - [x] Add useful normalized comparison tables to category pages, showing unknown values rather than guessing.
+- [x] Keep category comparison tables focused by omitting the low-value human-review-date column.
 - [x] Mark empty categories `noindex` and omit them from navigation/sitemaps.
 - [!] Consolidate or substantively enrich one-tool categories after editorial review; this cannot be automated without changing search intent.
 - [!] Correct any mixed-intent categories through reviewed redirects before changing established URLs.
@@ -91,6 +92,7 @@ This document turns the 2026-09-03 full-site SEO audit into an implementation an
 - [x] Avoid automatically generating thin tag archives or pairwise comparison pages.
 - [x] Improve related-tool selection using shared category, verified interfaces, tags, and classification rather than insertion order.
 - [x] Keep category listing, editorial guidance, evidence, and comparison sections in a shared responsive stack with consistent vertical spacing.
+- [x] Give category definitions full-width emphasis, with scope and selection guidance in equal responsive columns below.
 
 ## 5. On-page SEO and social metadata
 
@@ -215,3 +217,5 @@ The failing 2026-09-03 baseline was remediated and rechecked on 2026-09-04. The 
 - 2026-09-04: Corrected Astro's line-break whitespace trimming around inline links on the homepage, About, Corrections, Editorial Standards, open-source hub, and research pages. Added rendered assertions that reject anchors collapsed against surrounding prose; all local build and rendered-site checks pass.
 - 2026-09-04: Added Brad Vincent's `https://x.com/bradvin` profile immediately after the GitHub publisher profile on the About page and included both identities in the publisher `Person.sameAs` structured data, with rendered and schema regression coverage.
 - 2026-09-04: Fixed category-page section collisions by grouping the listing, guidance, evidence, and comparison blocks in a shared responsive stack. Browser measurements on Marketing & SEO showed all three section boundaries moving from `0px` to the intended `24px` gap; source-gate coverage now protects the layout rule.
+- 2026-09-04: Removed the low-value Human review date column from category comparison tables, retaining the more useful verification status while reducing table width on desktop and mobile.
+- 2026-09-04: Reworked category editorial guidance so the definition spans the full content width and the scope and selection guide form equal columns beneath it, collapsing to a readable single column on smaller screens.
