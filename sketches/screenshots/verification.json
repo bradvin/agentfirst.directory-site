@@ -1,0 +1,80 @@
+[
+  {
+    "variant": "search-first-editorial",
+    "viewport": "desktop",
+    "dimensions": {
+      "innerWidth": 1440,
+      "scrollWidth": 1440,
+      "overflow": false
+    },
+    "visibleCardsAfterPixelSearch": 1,
+    "countText": "1 sample listing",
+    "axeViolations": [],
+    "errors": []
+  },
+  {
+    "variant": "search-first-editorial",
+    "viewport": "mobile",
+    "dimensions": {
+      "innerWidth": 390,
+      "scrollWidth": 390,
+      "overflow": false
+    },
+    "visibleCardsAfterPixelSearch": 1,
+    "countText": "1 sample listing",
+    "axeViolations": [],
+    "errors": []
+  },
+  {
+    "variant": "guided-split",
+    "viewport": "desktop",
+    "dimensions": {
+      "innerWidth": 1440,
+      "scrollWidth": 1440,
+      "overflow": false
+    },
+    "visibleCardsAfterPixelSearch": 1,
+    "countText": "1 sample listing",
+    "axeViolations": [],
+    "errors": []
+  },
+  {
+    "variant": "guided-split",
+    "viewport": "mobile",
+    "dimensions": {
+      "innerWidth": 390,
+      "scrollWidth": 390,
+      "overflow": false
+    },
+    "visibleCardsAfterPixelSearch": 1,
+    "countText": "1 sample listing",
+    "axeViolations": [],
+    "errors": []
+  },
+  {
+    "variant": "directory-workspace",
+    "viewport": "desktop",
+    "dimensions": {
+      "innerWidth": 1440,
+      "scrollWidth": 1440,
+      "overflow": false
+    },
+    "visibleCardsAfterPixelSearch": 1,
+    "countText": "1 sample listing",
+    "axeViolations": [],
+    "errors": []
+  },
+  {
+    "variant": "directory-workspace",
+    "viewport": "mobile",
+    "dimensions": {
+      "innerWidth": 390,
+      "scrollWidth": 390,
+      "overflow": false
+    },
+    "visibleCardsAfterPixelSearch": 1,
+    "countText": "1 sample listing",
+    "axeViolations": [],
+    "errors": []
+  }
+]
