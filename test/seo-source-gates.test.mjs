@@ -126,3 +126,13 @@ test("category comparison tables omit low-value human review dates", () => {
   assert.doesNotMatch(categoryPage, /Human review date/);
   assert.doesNotMatch(categoryPage, /tool\.entry\.reviewedAt/);
 });
+
+test("category definition spans above the equal-width guidance columns", () => {
+  const categoryPage = read("src/pages/category/[category].astro");
+  const styles = read("src/styles/global.css");
+
+  assert.match(categoryPage, /class="detail-panel category-guidance category-guidance-definition" id="definition"/);
+  assert.match(styles, /\.category-editorial-grid\s*\{[\s\S]*?grid-template-columns:\s*repeat\(2, minmax\(0, 1fr\)\)/);
+  assert.match(styles, /\.category-guidance-definition\s*\{[\s\S]*?grid-column:\s*1 \/ -1/);
+  assert.match(styles, /@media \(max-width: 900px\)[\s\S]*?\.category-editorial-grid,[\s\S]*?grid-template-columns:\s*1fr/);
+});
