@@ -1043,6 +1043,13 @@ img {
   gap: 20px;
 }
 
+.submit-shell,
+.submit-panel,
+.submit-grid > *,
+.submit-code-grid > * {
+  min-width: 0;
+}
+
 .submit-skill-panel {
   gap: 14px;
 }
@@ -1191,6 +1198,11 @@ img {
   font-size: 12px;
   line-height: 1.7;
   font-family: "IBM Plex Mono", monospace;
+}
+
+.code-block:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 .comments-panel {
