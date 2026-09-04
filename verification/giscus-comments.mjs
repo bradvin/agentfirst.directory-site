@@ -38,7 +38,8 @@ try {
       if (
         url === "https://giscus.app/client.js" ||
         url === "https://giscus.app/default.css" ||
-        url.startsWith("https://giscus.app/en/widget?")
+        url.startsWith("https://giscus.app/en/widget?") ||
+        url.startsWith("https://giscus.app/themes/")
       ) {
         requiredResponses.set(url, response.status());
       }
@@ -114,8 +115,18 @@ try {
     assert.ok(required.some(([url, status]) => url === "https://giscus.app/client.js" && status === 200), `${width}px: client.js did not load`);
     assert.ok(required.some(([url, status]) => url === "https://giscus.app/default.css" && status === 200), `${width}px: default.css did not load`);
     assert.ok(required.some(([url, status]) => url.startsWith("https://giscus.app/en/widget?") && status === 200), `${width}px: widget document did not load`);
+    assert.ok(
+      required.some(([url, status]) => url.startsWith("https://giscus.app/themes/") && status === 200),
+      `${width}px: no Giscus theme stylesheet completed`,
+    );
+    const nonBenignGiscusFailures = failedRequests.filter(
+      ({ url, error }) =>
+        url.startsWith("https://giscus.app/") &&
+        // Giscus can abort its preferred-color-scheme request after resolving the active theme.
+        !(url.startsWith("https://giscus.app/themes/") && error === "net::ERR_ABORTED"),
+    );
     assert.deepEqual(
-      failedRequests.filter(({ url }) => url.startsWith("https://giscus.app/")),
+      nonBenignGiscusFailures,
       [],
       `${width}px: required Giscus request failed`,
     );
