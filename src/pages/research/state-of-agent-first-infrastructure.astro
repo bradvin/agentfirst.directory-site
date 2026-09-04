@@ -1,0 +1,258 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { cacheControl, setCacheControl } from "../../lib/cache";
+import {
+  categoryEditorialEntries,
+  editorialPolicy,
+  getCategoryEditorial,
+} from "../../lib/category-editorial";
+import {
+  formatPricing,
+  getHomepageData,
+} from "../../lib/content";
+import { formatClassification, type Classification } from "../../lib/classification";
+import { pageGraphSchema } from "../../lib/seo";
+import { siteConfig } from "../../lib/site";
+
+const path = "/research/state-of-agent-first-infrastructure";
+const title = `State of Agent-First Infrastructure | ${siteConfig.name}`;
+const pageName = "State of Agent-First Infrastructure";
+const description =
+  "A live, reproducible snapshot of the agentfirst.directory taxonomy, with category definitions and research limitations.";
+const contentRepoUrl = "https://github.com/bradvin/agentfirst.directory";
+const commitHistoryUrl = `${contentRepoUrl}/commits/main`;
+
+const { categories, tools } = await getHomepageData();
+setCacheControl(Astro.response.headers, cacheControl.homepage);
+
+const classificationOrder: Classification[] = [
+  "agent-native",
+  "agent-enabling",
+  "agent-internet-protocol",
+];
+const classificationCounts = new Map<Classification, number>(
+  classificationOrder.map((classification) => [classification, 0]),
+);
+let unclassifiedCount = 0;
+
+for (const tool of tools) {
+  if (tool.entry.classification) {
+    classificationCounts.set(
+      tool.entry.classification,
+      (classificationCounts.get(tool.entry.classification) ?? 0) + 1,
+    );
+  } else {
+    unclassifiedCount += 1;
+  }
+}
+
+const pricingCounts = new Map<string, number>();
+for (const tool of tools) {
+  const label = formatPricing(tool.entry.pricing);
+  pricingCounts.set(label, (pricingCounts.get(label) ?? 0) + 1);
+}
+
+const toolCountsByCategory = new Map<string, number>();
+for (const tool of tools) {
+  toolCountsByCategory.set(
+    tool.category.slug,
+    (toolCountsByCategory.get(tool.category.slug) ?? 0) + 1,
+  );
+}
+
+const categorySnapshot = categories.map((category) => ({
+  category,
+  editorial: getCategoryEditorial(category.slug),
+  toolCount: toolCountsByCategory.get(category.slug) ?? 0,
+}));
+
+const sourceDates = [
+  ...categories.flatMap((category) => [category.contentModifiedAt, category.publishedAt]),
+  ...tools.flatMap((tool) => [tool.entry.contentModifiedAt, tool.entry.publishedAt]),
+].filter((value): value is string => Boolean(value));
+const snapshotGeneratedAt = new Date(
+  sourceDates.toSorted().at(-1) ?? `${editorialPolicy.effectiveDate}T00:00:00.000Z`,
+);
+const snapshotDate = new Intl.DateTimeFormat("en-GB", {
+  dateStyle: "long",
+  timeZone: "UTC",
+}).format(snapshotGeneratedAt);
+
+const structuredData = [
+  pageGraphSchema({
+    path,
+    name: pageName,
+    description,
+    type: "WebPage",
+    dateModified: snapshotGeneratedAt.toISOString(),
+    about: "Agent-first infrastructure",
+    breadcrumbs: [
+      { name: siteConfig.shortName, path: "/" },
+      { name: pageName, path },
+    ],
+  }),
+];
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  canonicalPath={path}
+  structuredData={structuredData}
+>
+  <div class="shell-inner policy-shell">
+    <section class="page-intro page-intro-centered">
+      <p class="detail-overline">Research snapshot · Data current to {snapshotDate} UTC</p>
+      <h1 class="page-title">State of Agent-First Infrastructure</h1>
+      <p class="page-copy">
+        A live count of the directory's published records and a transparent explanation of what those records can—and
+        cannot—show. This is a taxonomy snapshot, not a ranking, adoption survey, or estimate of the whole market.
+      </p>
+    </section>
+
+    <section class="policy-classification-grid" aria-label="Current directory totals">
+      <article class="detail-panel policy-classification-card">
+        <p class="detail-overline">Published records</p>
+        <h3>{tools.length} tools</h3>
+        <p>One record is counted for each published tool in the live directory index.</p>
+      </article>
+
+      <article class="detail-panel policy-classification-card">
+        <p class="detail-overline">Active taxonomy</p>
+        <h3>{categories.length} categories</h3>
+        <p>Only indexable categories containing at least one published, indexable listing are counted.</p>
+      </article>
+
+      <article class="detail-panel policy-classification-card">
+        <p class="detail-overline">Required classification</p>
+        <h3>{classificationOrder.length} classes</h3>
+        <p>Agent-native, agent-enabling, and agent internet protocol describe why a listing qualifies.</p>
+      </article>
+    </section>
+
+    <section class="detail-panel policy-panel">
+      <p class="detail-overline">Classification distribution</p>
+      <h2>How published listings qualify</h2>
+      <div class="detail-facts-list">
+        {
+          classificationOrder.map((classification) => (
+            <div class="detail-fact">
+              <span class="detail-fact-label">{formatClassification(classification)}</span>
+              <strong>{classificationCounts.get(classification) ?? 0} listings</strong>
+            </div>
+          ))
+        }
+        {
+          unclassifiedCount > 0 && (
+            <div class="detail-fact">
+              <span class="detail-fact-label">Unclassified legacy records</span>
+              <strong>{unclassifiedCount} listings</strong>
+            </div>
+          )
+        }
+      </div>
+    </section>
+
+    <section class="detail-panel policy-panel">
+      <p class="detail-overline">Pricing labels</p>
+      <h2>How listings describe access</h2>
+      <div class="detail-facts-list">
+        {
+          Array.from(pricingCounts.entries())
+            .sort(([left], [right]) => left.localeCompare(right))
+            .map(([label, count]) => (
+              <div class="detail-fact">
+                <span class="detail-fact-label">{label}</span>
+                <strong>{count} listings</strong>
+              </div>
+            ))
+        }
+      </div>
+      <p>
+        These are broad editorial labels, not a price comparison. Plans, limits, licences, and usage charges can change;
+        confirm current terms with the provider.
+      </p>
+    </section>
+
+    <section class="section-block" aria-labelledby="category-coverage-heading">
+      <div class="section-heading">
+        <div>
+          <p class="detail-overline">Category coverage</p>
+          <h2 id="category-coverage-heading">What each category means</h2>
+        </div>
+      </div>
+
+      <div class="policy-classification-grid">
+        {
+          categorySnapshot.map(({ category, editorial, toolCount }) => (
+            <article class="detail-panel policy-classification-card">
+              <p class="detail-overline">{toolCount} published {toolCount === 1 ? "tool" : "tools"}</p>
+              <h3>
+                <a class="detail-link" href={`/category/${category.slug}`}>{category.label}</a>
+              </h3>
+              <p>
+                {editorial?.definition ??
+                  `This category groups approved ${category.label.toLowerCase()} listings in the current directory taxonomy.`}
+              </p>
+              {editorial && <p><strong>Include when:</strong> {editorial.includeWhen[0]}</p>}
+              {editorial && <p><strong>Exclude when:</strong> {editorial.excludeWhen[0]}</p>}
+            </article>
+          ))
+        }
+      </div>
+    </section>
+
+    <section class="detail-panel policy-panel" id="methodology">
+      <p class="detail-overline">Methodology</p>
+      <h2>How this snapshot is produced</h2>
+      <ol class="policy-test-list">
+        <li>
+          <strong>Source.</strong> Approved category and tool records originate in the
+          <a class="detail-link" href={contentRepoUrl} rel="noreferrer" target="_blank">public content repository</a>
+          and are published into the site's live index.
+        </li>
+        <li><strong>Unit.</strong> Each currently published tool record counts once, under exactly one category.</li>
+        <li>
+          <strong>Eligibility.</strong> A record must pass the directory's
+          <a class="detail-link" href="/policy">evidence-based inclusion test</a> and receive one classification.
+        </li>
+        <li>
+          <strong>Counts.</strong> Totals are calculated from the same live records used to render the directory. They
+          change when content is added, reclassified, unpublished, or removed.
+        </li>
+        <li>
+          <strong>Reproduction.</strong> For a stable citation, record the access date and the
+          <a class="detail-link" href={commitHistoryUrl} rel="noreferrer" target="_blank">content-repository commit</a>
+          inspected rather than treating this live page as an immutable release.
+        </li>
+      </ol>
+    </section>
+
+    <section class="detail-panel policy-panel policy-exclusions" id="limitations">
+      <p class="detail-overline">Limitations</p>
+      <h2>What the data does not establish</h2>
+      <ul class="policy-test-list">
+        <li>The directory is curated and incomplete; counts are not total market size.</li>
+        <li>Inclusion and classification do not measure quality, security, reliability, revenue, usage, or adoption.</li>
+        <li>Most listing facts are documentation-reviewed unless a dated hands-on test is explicitly described.</li>
+        <li>Pricing labels are broad and can become stale between reviews.</li>
+        <li>Category size reflects editorial coverage as well as real activity in that part of the ecosystem.</li>
+        <li>A live snapshot cannot by itself support trend claims without comparable historical releases.</li>
+      </ul>
+    </section>
+
+    <section class="detail-panel policy-panel">
+      <p class="detail-overline">Taxonomy reference</p>
+      <h2>All authored category guidance is public</h2>
+      <p>
+        The current reference defines {categoryEditorialEntries.length} known category slugs. Category definitions
+        describe editorial scope; they do not imply that every category already has sufficient published coverage.
+      </p>
+    </section>
+
+    <section class="policy-cta">
+      <p>Found a missing record or a count based on stale content?</p>
+      <a class="button button-primary" href="/corrections">Report a correction</a>
+    </section>
+  </div>
+</BaseLayout>

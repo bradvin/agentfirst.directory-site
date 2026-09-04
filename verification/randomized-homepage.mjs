@@ -19,6 +19,23 @@ function jsonLdDocuments(html) {
     .map((match) => JSON.parse(match[1]));
 }
 
+function schemaOfType(html, type) {
+  const matches = [];
+  const visit = (value) => {
+    if (Array.isArray(value)) {
+      value.forEach(visit);
+      return;
+    }
+
+    if (!value || typeof value !== "object") return;
+    if (value["@type"] === type || value["@type"]?.includes?.(type)) matches.push(value);
+    Object.values(value).forEach(visit);
+  };
+
+  jsonLdDocuments(html).forEach(visit);
+  return matches[0];
+}
+
 const expectedHomepageSlugs = ["fiber", "hermes-agent", "legacy-tool", "x402"];
 const homepageOrders = [];
 for (let attempt = 0; attempt < 8; attempt += 1) {
@@ -27,10 +44,12 @@ for (let attempt = 0; attempt < 8; attempt += 1) {
   assert.deepEqual([...homepageSlugs].sort(), expectedHomepageSlugs);
   assert.equal(homepage.response.headers.get("cache-control"), "public, s-maxage=300, stale-while-revalidate=86400");
 
-  const itemList = jsonLdDocuments(homepage.body).find((document) => document["@type"] === "ItemList");
+  const itemList = schemaOfType(homepage.body, "ItemList");
   assert.ok(itemList, "homepage ItemList JSON-LD missing");
   const jsonLdSlugs = itemList.itemListElement.map((item) => new URL(item.url).pathname.split("/").at(-1));
-  assert.deepEqual(jsonLdSlugs, homepageSlugs, "JSON-LD order must match rendered homepage cards");
+  assert.equal(itemList.itemListOrder, "https://schema.org/ItemListUnordered");
+  assert.ok(itemList.itemListElement.every((item) => item.position === undefined));
+  assert.deepEqual(jsonLdSlugs, expectedHomepageSlugs, "unranked JSON-LD must have stable membership");
   homepageOrders.push(homepageSlugs.join(","));
 
   if (new Set(homepageOrders).size > 1) break;
@@ -57,4 +76,4 @@ const sitemapSlugs = [...sitemap.body.matchAll(/<loc>https:\/\/agentfirst\.direc
   .map((match) => match[1]);
 assert.deepEqual(sitemapSlugs, ["fiber", "hermes-agent", "legacy-tool", "x402"]);
 
-console.log("Randomized homepage assertions passed: permutation, JSON-LD parity, cache, and deterministic non-homepage paths.");
+console.log("Randomized homepage assertions passed: permutation, stable unranked JSON-LD, cache, and deterministic non-homepage paths.");

@@ -1,18 +1,29 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import { breadcrumbSchema } from "../lib/seo";
+import { editorialPolicy } from "../lib/category-editorial";
+import { pageGraphSchema } from "../lib/seo";
 import { siteConfig } from "../lib/site";
 
 const path = "/policy";
 const title = `Inclusion policy | ${siteConfig.name}`;
+const pageName = "Agent-first inclusion policy";
 const description =
   "How agentfirst.directory classifies listings and applies an evidence-based inclusion test.";
 
 const structuredData = [
-  breadcrumbSchema([
-    { name: siteConfig.shortName, path: "/" },
-    { name: "Policy", path },
-  ]),
+  pageGraphSchema({
+    path,
+    name: pageName,
+    description,
+    type: "WebPage",
+    datePublished: editorialPolicy.effectiveDate,
+    dateModified: editorialPolicy.effectiveDate,
+    lastReviewed: editorialPolicy.effectiveDate,
+    breadcrumbs: [
+      { name: siteConfig.shortName, path: "/" },
+      { name: "Policy", path },
+    ],
+  }),
 ];
 ---
 
@@ -24,7 +35,9 @@ const structuredData = [
 >
   <div class="shell-inner policy-shell">
     <section class="page-intro page-intro-centered">
-      <p class="detail-overline">Editorial policy</p>
+      <p class="detail-overline">
+        Editorial policy {editorialPolicy.version} · Effective {editorialPolicy.effectiveDateLabel}
+      </p>
       <h1 class="page-title">What belongs in an agent-first directory</h1>
       <p class="page-copy">
         We include products, infrastructure, and protocols that materially advance agent-first workflows.
@@ -32,7 +45,18 @@ const structuredData = [
       </p>
     </section>
 
-    <section class="policy-classification-grid" aria-labelledby="classifications-heading">
+    <section class="detail-panel policy-panel">
+      <p class="detail-overline">Working definition</p>
+      <h2>Agent-first means the agent role is material</h2>
+      <p>
+        A product is agent-first when an AI agent is a core actor, or when the product removes a substantial constraint
+        from an agent workflow. A protocol is agent-first when it gives independent systems a documented way to let
+        agents communicate, transact, identify, coordinate, or interact. Merely exposing an API that an agent could
+        call is not enough.
+      </p>
+    </section>
+
+    <section class="policy-classification-grid" id="classification-model" aria-labelledby="classifications-heading">
       <h2 id="classifications-heading" class="visually-hidden">The three classifications</h2>
 
       <article class="detail-panel policy-classification-card">
@@ -41,6 +65,13 @@ const structuredData = [
         <p>
           The product's core abstraction, actor, runtime, or participant is an agent. Removing agents would
           fundamentally change what the product is.
+        </p>
+        <p>
+          <strong>Example:</strong> an orchestrator that assigns work across agent runtimes, or a service that provisions
+          persistent communication identities for agents.
+        </p>
+        <p>
+          <strong>Counterexample:</strong> a conventional task manager or inbox with a generic API that an agent can call.
         </p>
       </article>
 
@@ -51,6 +82,14 @@ const structuredData = [
           The product gives agents meaningful capabilities or removes a material constraint from agent-first
           workflows, even when people and conventional applications can also use it.
         </p>
+        <p>
+          <strong>Example:</strong> an isolated execution environment designed for agent-controlled code runs, or a
+          memory layer that preserves and retrieves agent state across sessions.
+        </p>
+        <p>
+          <strong>Counterexample:</strong> a general virtual machine, database, or storage API with no substantive
+          agent-oriented capability.
+        </p>
       </article>
 
       <article class="detail-panel policy-classification-card">
@@ -60,10 +99,18 @@ const structuredData = [
           An interoperable protocol or standard enables agents to communicate, transact, identify, coordinate,
           or interact across the internet.
         </p>
+        <p>
+          <strong>Example:</strong> an open specification for agent-user events or machine-readable payment negotiation
+          with independently implementable messages and behaviour.
+        </p>
+        <p>
+          <strong>Counterexample:</strong> a vendor-specific integration endpoint or proprietary payload without an
+          interoperable specification.
+        </p>
       </article>
     </section>
 
-    <section class="detail-panel policy-panel">
+    <section class="detail-panel policy-panel" id="inclusion-test">
       <p class="detail-overline">Evidence-based inclusion test</p>
       <h2>Evidence before labels</h2>
       <ol class="policy-test-list">
@@ -72,6 +119,10 @@ const structuredData = [
         <li><strong>Test materiality.</strong> Generic API access or ordinary automation is not enough; the capability must substantially improve an agent-first workflow.</li>
         <li><strong>Choose one classification.</strong> Select the most specific class supported by the evidence, not the most flattering label.</li>
       </ol>
+      <p>
+        Category and classification answer different questions. A category describes the capability area; a
+        classification explains why the listing belongs in an agent-first directory.
+      </p>
     </section>
 
     <section class="detail-panel policy-panel policy-exclusions">
@@ -86,6 +137,17 @@ const structuredData = [
       <p>
         Classification describes why an accepted listing belongs. It is not a quality score, endorsement, or
         substitute for reviewing security, reliability, pricing, and fitness for a particular use.
+      </p>
+    </section>
+
+    <section class="detail-panel policy-panel">
+      <p class="detail-overline">Accountability</p>
+      <h2>How this policy is applied</h2>
+      <p>
+        Read the <a class="detail-link" href="/editorial-standards">editorial standards</a> for source hierarchy,
+        conflicts, sponsorship, ordering, and review cadence. If a published claim is wrong or a product has changed,
+        use the <a class="detail-link" href="/corrections">corrections and appeals process</a>. Policy changes are
+        versioned from the effective date shown above.
       </p>
     </section>
 

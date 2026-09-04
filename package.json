@@ -9,17 +9,21 @@
     "build": "wrangler types && astro build",
     "preview": "wrangler types && astro preview",
     "test": "node --test",
-    "verify:rendered": "node verification/rendered-ui.mjs",
-    "ci": "npm test && npm run build"
+    "verify:rendered": "node verification/rendered-ui.mjs && node verification/homepage-search.mjs && node verification/randomized-homepage.mjs && node verification/seo-crawl.mjs",
+    "generate:icons": "node scripts/generate-icons.mjs",
+    "check": "wrangler types && astro check",
+    "ci": "npm test && npm run check && npm run build"
   },
   "dependencies": {
-    "@astrojs/cloudflare": "^13.1.4",
-    "astro": "6.0.8",
-    "markdown-it": "^14.1.1"
+    "@astrojs/cloudflare": "^14.3.0",
+    "astro": "^7.3.1",
+    "markdown-it": "^14.3.1"
   },
   "devDependencies": {
+    "@astrojs/check": "^0.9.10",
+    "@types/markdown-it": "^14.2.0",
     "@types/node": "25.5.0",
     "typescript": "6.0.2",
-    "wrangler": "4.77.0"
+    "wrangler": "^4.128.0"
   }
 }

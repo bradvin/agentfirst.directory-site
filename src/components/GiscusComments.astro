@@ -30,6 +30,7 @@ const isConfigured = Boolean(giscus.repo && giscus.repoId && giscus.category && 
   {
     isConfigured && (
       <script
+        is:inline
         src="https://giscus.app/client.js"
         data-repo={giscus.repo}
         data-repo-id={giscus.repoId}

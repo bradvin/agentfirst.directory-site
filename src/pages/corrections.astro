@@ -1,0 +1,144 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { editorialPolicy } from "../lib/category-editorial";
+import { pageGraphSchema } from "../lib/seo";
+import { siteConfig } from "../lib/site";
+
+const path = "/corrections";
+const title = `Corrections and appeals | ${siteConfig.name}`;
+const pageName = "Corrections and appeals";
+const description =
+  "How to report an inaccurate listing, request a review, appeal a classification decision, or document a removal.";
+const contentRepoUrl = "https://github.com/bradvin/agentfirst.directory";
+const newIssueUrl = `${contentRepoUrl}/issues/new`;
+const newPullRequestUrl = `${contentRepoUrl}/compare`;
+const commitHistoryUrl = `${contentRepoUrl}/commits/main`;
+
+const structuredData = [
+  pageGraphSchema({
+    path,
+    name: pageName,
+    description,
+    type: "WebPage",
+    datePublished: editorialPolicy.effectiveDate,
+    dateModified: editorialPolicy.effectiveDate,
+    lastReviewed: editorialPolicy.effectiveDate,
+    breadcrumbs: [
+      { name: siteConfig.shortName, path: "/" },
+      { name: "Corrections", path },
+    ],
+  }),
+];
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  canonicalPath={path}
+  structuredData={structuredData}
+>
+  <div class="shell-inner policy-shell">
+    <section class="page-intro page-intro-centered">
+      <p class="detail-overline">
+        Editorial policy {editorialPolicy.version} · Effective {editorialPolicy.effectiveDateLabel}
+      </p>
+      <h1 class="page-title">Corrections, appeals, and removals</h1>
+      <p class="page-copy">
+        Directory claims should be specific enough to challenge. Report the page, the disputed statement, and the
+        strongest first-party source available so the public record can be corrected.
+      </p>
+    </section>
+
+    <section class="policy-classification-grid" aria-label="Ways to request a correction">
+      <article class="detail-panel policy-classification-card">
+        <p class="detail-overline">Report</p>
+        <h3>Open a public issue</h3>
+        <p>
+          Use a
+          <a class="detail-link" href={newIssueUrl} rel="noreferrer" target="_blank">GitHub issue</a> for an incorrect
+          fact, broken link, changed product, disputed classification, duplicate, or removal request.
+        </p>
+      </article>
+
+      <article class="detail-panel policy-classification-card">
+        <p class="detail-overline">Propose</p>
+        <h3>Submit a precise edit</h3>
+        <p>
+          If the correction is clear, propose an edit through the
+          <a class="detail-link" href={newPullRequestUrl} rel="noreferrer" target="_blank">public repository</a> and
+          cite the source that supports each material change.
+        </p>
+      </article>
+
+      <article class="detail-panel policy-classification-card">
+        <p class="detail-overline">Inspect</p>
+        <h3>Review the change history</h3>
+        <p>
+          Published edits remain visible in the
+          <a class="detail-link" href={commitHistoryUrl} rel="noreferrer" target="_blank">commit history</a>. A public
+          correction may update or remove the claim rather than silently preserving obsolete wording.
+        </p>
+      </article>
+    </section>
+
+    <section class="detail-panel policy-panel">
+      <p class="detail-overline">A useful report</p>
+      <h2>Include enough detail to reproduce the issue</h2>
+      <ol class="policy-test-list">
+        <li><strong>Page:</strong> the exact agentfirst.directory URL or content-repository file.</li>
+        <li><strong>Claim:</strong> the sentence, field, classification, price, licence, or link believed to be wrong.</li>
+        <li><strong>Evidence:</strong> a specific official document, specification, repository file, release note, or pricing page.</li>
+        <li><strong>Timing:</strong> when the change took effect or when the source was checked, if known.</li>
+        <li><strong>Relationship:</strong> disclose whether you represent, work for, own, advise, or invest in the listed project.</li>
+      </ol>
+    </section>
+
+    <section class="detail-panel policy-panel">
+      <p class="detail-overline">Review process</p>
+      <h2>Evidence determines the response</h2>
+      <p>
+        The maintainer reviews the reported claim against the current inclusion policy and available first-party
+        evidence. The result may be a factual correction, added qualification, link repair, category change,
+        reclassification, temporary unpublication, removal, or no change. The directory does not promise a response
+        time, and complex or contested claims may remain marked as uncertain while stronger evidence is sought.
+      </p>
+    </section>
+
+    <section class="detail-panel policy-panel">
+      <p class="detail-overline">Appeals</p>
+      <h2>A decision can be reconsidered</h2>
+      <p>
+        A submitter or vendor may appeal a rejection, classification, or removal by identifying the policy criterion
+        at issue and providing stronger first-party evidence. An appeal is a request for another evidence review, not
+        a guarantee of listing, preferred wording, placement, or deletion.
+      </p>
+    </section>
+
+    <section class="detail-panel policy-panel policy-exclusions">
+      <p class="detail-overline">Removal</p>
+      <h2>Listings may be removed when they stop being defensible</h2>
+      <ul class="policy-test-list">
+        <li>The product or protocol is no longer publicly available or maintained.</li>
+        <li>Its documented agent role no longer meets the inclusion test.</li>
+        <li>Material claims cannot be verified from a maintained first-party source.</li>
+        <li>The page is a duplicate, impersonation, malicious destination, or persistently broken resource.</li>
+        <li>Keeping the listing would make the directory materially inaccurate or unsafe to navigate.</li>
+      </ul>
+    </section>
+
+    <section class="detail-panel policy-panel">
+      <p class="detail-overline">Security and privacy</p>
+      <h2>Do not publish secrets or private reports</h2>
+      <p>
+        GitHub issues and pull requests are public. Do not include credentials, personal data, embargoed vulnerability
+        details, or confidential vendor material. Report product vulnerabilities through the vendor's security process;
+        use this corrections channel only for the accuracy or safety of the directory listing itself.
+      </p>
+    </section>
+
+    <section class="policy-cta">
+      <p>Have a specific, source-backed correction?</p>
+      <a class="button button-primary" href={newIssueUrl} rel="noreferrer" target="_blank">Open an issue</a>
+    </section>
+  </div>
+</BaseLayout>

@@ -1,0 +1,90 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import CategoryChips from "../components/CategoryChips.astro";
+import ToolList from "../components/ToolList.astro";
+import { cacheControl, setCacheControl } from "../lib/cache";
+import { getCategories, getPublishedTools, isOpenSourceTool } from "../lib/content";
+import {
+  homepageItemListSchema,
+  pageGraphSchema,
+} from "../lib/seo";
+import { siteConfig } from "../lib/site";
+
+const path = "/open-source-ai-agent-tools";
+const title = "Open-source AI agent tools and infrastructure";
+const description =
+  "Compare open-source tools, frameworks, protocols, and infrastructure for AI agents, with evidence links and explicit review status.";
+const [categories, publishedTools] = await Promise.all([getCategories(), getPublishedTools()]);
+const tools = publishedTools.filter(isOpenSourceTool);
+const modifiedDates = tools
+  .flatMap((tool) => [tool.entry.contentModifiedAt, tool.entry.publishedAt])
+  .filter((value): value is string => Boolean(value));
+const modifiedAt = modifiedDates.toSorted().at(-1);
+
+setCacheControl(Astro.response.headers, cacheControl.category);
+if (modifiedAt) {
+  Astro.response.headers.set("Last-Modified", new Date(modifiedAt).toUTCString());
+}
+
+const collection = homepageItemListSchema(tools, path, { name: title, description });
+const structuredData = [pageGraphSchema({
+  path,
+  name: title,
+  description,
+  type: "CollectionPage",
+  breadcrumbs: [
+    { name: siteConfig.shortName, path: "/" },
+    { name: "Open-source AI agent tools", path },
+  ],
+  entities: [collection],
+  dateModified: modifiedAt,
+})];
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  canonicalPath={path}
+  socialImageAlt="Open-source tools and infrastructure for AI agents"
+  noindex={tools.length === 0}
+  structuredData={structuredData}
+>
+  <div class="shell-inner">
+    <section class="page-intro page-intro-centered">
+      <p class="detail-overline">Editorial collection</p>
+      <h1 class="page-title">Open-source AI agent tools</h1>
+      <p class="page-copy">{description}</p>
+      <p class="review-line">{tools.length} published {tools.length === 1 ? "listing" : "listings"}</p>
+    </section>
+
+    <CategoryChips categories={categories} openSourceActive />
+
+    <section class="detail-panel policy-panel" id="methodology">
+      <p class="detail-overline">How this collection works</p>
+      <h2>Repository access is necessary, but licence details still matter</h2>
+      <p>
+        This page includes published records whose editorial pricing model is <strong>open source</strong>. It is not a
+        legal conclusion that every asset, hosted service, model, dependency, or trademark is covered by the same
+        licence. Check each profile's repository, licence source, evidence date, and deployment notes before reuse.
+      </p>
+      <p>
+        Position is not a ranking. Read the <a class="detail-link" href="/editorial-standards">editorial standards</a>
+        and <a class="detail-link" href="/policy">agent-first inclusion test</a> for the collection rules.
+      </p>
+    </section>
+
+    <section class="section-block" aria-labelledby="open-source-list-heading">
+      <div class="section-heading">
+        <div>
+          <p class="detail-overline">Directory listings</p>
+          <h2 id="open-source-list-heading">Browse open-source agent infrastructure</h2>
+        </div>
+      </div>
+      <ToolList
+        tools={tools}
+        headingLevel={3}
+        emptyLabel="No open-source listings are currently published."
+      />
+    </section>
+  </div>
+</BaseLayout>

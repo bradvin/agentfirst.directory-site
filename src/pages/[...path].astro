@@ -1,0 +1,44 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import NotFoundState from "../components/NotFoundState.astro";
+import { getRedirectRule } from "../lib/redirects";
+import { siteConfig } from "../lib/site";
+
+const pathname = Astro.url.pathname;
+const rule = await getRedirectRule(pathname);
+
+if (rule?.destinationPath && (rule.statusCode === 301 || rule.statusCode === 308)) {
+  return Astro.redirect(rule.destinationPath, rule.statusCode);
+}
+
+const isGone = rule?.statusCode === 410;
+Astro.response.status = isGone ? 410 : 404;
+Astro.response.headers.set("Cache-Control", "public, max-age=0, s-maxage=180");
+const title = `${isGone ? "Gone" : "Not found"} | ${siteConfig.name}`;
+const description = isGone
+  ? "This directory page has been permanently retired and has no replacement."
+  : "The requested page does not exist in the agent-first directory.";
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  canonicalPath={pathname}
+  noindex
+>
+  <div class="shell-inner">
+    {
+      isGone ? (
+        <section class="empty-state" aria-labelledby="gone-heading">
+          <p class="detail-overline">410 — Gone</p>
+          <h1 id="gone-heading">This page has been retired</h1>
+          <p>{description}</p>
+          {rule?.note && <p>{rule.note}</p>}
+          <a class="button button-primary" href="/">Browse current tools</a>
+        </section>
+      ) : (
+        <NotFoundState />
+      )
+    }
+  </div>
+</BaseLayout>

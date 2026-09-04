@@ -6,12 +6,48 @@ import { shuffleCopy, type RandomSource } from "./homepage-order";
 
 export type { Classification } from "./classification";
 
-export type Pricing = "open-source" | "source-available" | "freemium" | "free" | "paid";
+export type Pricing = "open-source" | "source-available" | "freemium" | "free" | "paid" | "unknown";
+
+export type VerificationLevel =
+  | "documentation-reviewed"
+  | "vendor-confirmed"
+  | "hands-on-tested";
+
+export type ToolEntityType =
+  | "software-application"
+  | "web-application"
+  | "software-source-code"
+  | "web-api"
+  | "service"
+  | "technical-standard"
+  | "protocol";
+
+export interface EvidenceSource {
+  title: string;
+  url: string;
+  claim: string;
+  accessedAt?: string;
+  sourceType?: string;
+}
 
 export interface Category {
   slug: string;
   label: string;
   sortOrder?: number;
+  seoTitle?: string;
+  descriptionMd?: string;
+  definitionMd?: string;
+  scopeMd?: string;
+  inclusionMd?: string;
+  exclusionMd?: string;
+  selectionGuideMd?: string;
+  useCases: string[];
+  sources: EvidenceSource[];
+  reviewedBy?: string;
+  reviewedAt?: string;
+  publishedAt?: string;
+  contentModifiedAt?: string;
+  isIndexable: boolean;
 }
 
 export interface Tool {
@@ -28,6 +64,31 @@ export interface Tool {
   submittedByGithub: string;
   logoUrl?: string;
   ogImageUrl?: string;
+  logoWidth?: number;
+  logoHeight?: number;
+  ogImageWidth?: number;
+  ogImageHeight?: number;
+  entityType?: ToolEntityType;
+  developerName?: string;
+  docsUrl?: string;
+  pricingUrl?: string;
+  licenseUrl?: string;
+  interfaces: string[];
+  deploymentModes: string[];
+  evidenceSources: EvidenceSource[];
+  verificationLevel?: VerificationLevel;
+  classificationRationaleMd?: string;
+  inclusionRationaleMd?: string;
+  bestForMd?: string;
+  notBestForMd?: string;
+  limitationsMd?: string;
+  unknownsMd?: string;
+  reviewedBy?: string;
+  reviewedAt?: string;
+  publishedAt?: string;
+  contentModifiedAt?: string;
+  sourcePath: string;
+  isIndexable: boolean;
   sortOrder?: number;
   syncedAt?: string;
 }
@@ -47,6 +108,20 @@ interface CategoryRow {
   slug: string;
   label: string;
   sort_order: number | null;
+  seo_title: string | null;
+  description_md: string | null;
+  definition_md: string | null;
+  scope_md: string | null;
+  inclusion_md: string | null;
+  exclusion_md: string | null;
+  selection_guide_md: string | null;
+  use_cases_json: string | null;
+  sources_json: string | null;
+  reviewed_by: string | null;
+  reviewed_at: string | null;
+  published_at: string | null;
+  content_modified_at: string | null;
+  is_indexable: number;
 }
 
 interface ToolRow {
@@ -63,10 +138,36 @@ interface ToolRow {
   submitted_by_github: string;
   logo_url: string | null;
   og_image_url: string | null;
+  logo_width: number | null;
+  logo_height: number | null;
+  og_image_width: number | null;
+  og_image_height: number | null;
+  entity_type: ToolEntityType | null;
+  developer_name: string | null;
+  docs_url: string | null;
+  pricing_url: string | null;
+  license_url: string | null;
+  interfaces_json: string | null;
+  deployment_modes_json: string | null;
+  evidence_json: string | null;
+  verification_level: VerificationLevel | null;
+  classification_rationale_md: string | null;
+  inclusion_rationale_md: string | null;
+  best_for_md: string | null;
+  not_best_for_md: string | null;
+  limitations_md: string | null;
+  unknowns_md: string | null;
+  reviewed_by: string | null;
+  reviewed_at: string | null;
+  published_at: string | null;
+  content_modified_at: string | null;
+  source_path: string;
+  is_indexable: number;
   sort_order: number | null;
   synced_at: string | null;
   category_label: string;
   category_sort_order: number | null;
+  category_is_indexable: number;
 }
 
 const CATEGORY_ORDER = `
@@ -109,16 +210,89 @@ function mapCategory(row: CategoryRow): Category {
     slug: row.slug,
     label: row.label,
     sortOrder: row.sort_order ?? undefined,
+    seoTitle: row.seo_title ?? undefined,
+    descriptionMd: row.description_md ?? undefined,
+    definitionMd: row.definition_md ?? undefined,
+    scopeMd: row.scope_md ?? undefined,
+    inclusionMd: row.inclusion_md ?? undefined,
+    exclusionMd: row.exclusion_md ?? undefined,
+    selectionGuideMd: row.selection_guide_md ?? undefined,
+    useCases: parseStringArray(row.use_cases_json),
+    sources: parseEvidenceSources(row.sources_json),
+    reviewedBy: row.reviewed_by ?? undefined,
+    reviewedAt: normalizeDate(row.reviewed_at),
+    publishedAt: normalizeDate(row.published_at),
+    contentModifiedAt: normalizeDate(row.content_modified_at),
+    isIndexable: row.is_indexable !== 0,
   };
 }
 
-function parseTags(tagsJson: string): string[] {
+function parseStringArray(value: string | null | undefined): string[] {
+  if (!value) {
+    return [];
+  }
+
   try {
-    const tags = JSON.parse(tagsJson);
-    return Array.isArray(tags) ? tags.filter((tag) => typeof tag === "string") : [];
+    const items = JSON.parse(value);
+    return Array.isArray(items)
+      ? items.filter((item): item is string => typeof item === "string" && item.trim().length > 0)
+      : [];
   } catch {
     return [];
   }
+}
+
+function parseEvidenceSources(value: string | null | undefined): EvidenceSource[] {
+  if (!value) {
+    return [];
+  }
+
+  try {
+    const sources = JSON.parse(value);
+
+    if (!Array.isArray(sources)) {
+      return [];
+    }
+
+    return sources.flatMap((source) => {
+      if (!source || typeof source !== "object") {
+        return [];
+      }
+
+      const record = source as Record<string, unknown>;
+      const title = typeof record.title === "string" ? record.title.trim() : "";
+      const claim = typeof record.claim === "string" ? record.claim.trim() : "";
+      const url = typeof record.url === "string" ? sanitizeExternalUrl(record.url) : undefined;
+
+      if (!title || !claim || !url) {
+        return [];
+      }
+
+      return [{
+        title,
+        claim,
+        url,
+        accessedAt: typeof record.accessedAt === "string" ? normalizeDate(record.accessedAt) : undefined,
+        sourceType: typeof record.sourceType === "string" ? record.sourceType : undefined,
+      }];
+    });
+  } catch {
+    return [];
+  }
+}
+
+function normalizeDate(value: string | null | undefined) {
+  if (!value) {
+    return undefined;
+  }
+
+  const normalized = /^\d{4}-\d{2}-\d{2}$/.test(value)
+    ? `${value}T00:00:00.000Z`
+    : value.includes("T")
+      ? value
+      : `${value.replace(" ", "T")}Z`;
+  const date = new Date(normalized);
+  return Number.isNaN(date.valueOf()) ? undefined : date.toISOString();
 }
 
 function mapToolCard(row: ToolRow): ToolCardData {
@@ -135,7 +309,7 @@ function mapToolCard(row: ToolRow): ToolCardData {
       description: row.description,
       bodyMd: row.body_md,
       categorySlug: row.category_slug,
-      tags: parseTags(row.tags_json),
+      tags: parseStringArray(row.tags_json),
       websiteUrl,
       githubUrl: sanitizeExternalUrl(row.github_url),
       pricing: row.pricing,
@@ -143,6 +317,31 @@ function mapToolCard(row: ToolRow): ToolCardData {
       submittedByGithub: row.submitted_by_github,
       logoUrl: sanitizeExternalUrl(row.logo_url),
       ogImageUrl: sanitizeExternalUrl(row.og_image_url),
+      logoWidth: row.logo_width ?? undefined,
+      logoHeight: row.logo_height ?? undefined,
+      ogImageWidth: row.og_image_width ?? undefined,
+      ogImageHeight: row.og_image_height ?? undefined,
+      entityType: row.entity_type ?? undefined,
+      developerName: row.developer_name ?? undefined,
+      docsUrl: sanitizeExternalUrl(row.docs_url),
+      pricingUrl: sanitizeExternalUrl(row.pricing_url),
+      licenseUrl: sanitizeExternalUrl(row.license_url),
+      interfaces: parseStringArray(row.interfaces_json),
+      deploymentModes: parseStringArray(row.deployment_modes_json),
+      evidenceSources: parseEvidenceSources(row.evidence_json),
+      verificationLevel: row.verification_level ?? undefined,
+      classificationRationaleMd: row.classification_rationale_md ?? undefined,
+      inclusionRationaleMd: row.inclusion_rationale_md ?? undefined,
+      bestForMd: row.best_for_md ?? undefined,
+      notBestForMd: row.not_best_for_md ?? undefined,
+      limitationsMd: row.limitations_md ?? undefined,
+      unknownsMd: row.unknowns_md ?? undefined,
+      reviewedBy: row.reviewed_by ?? undefined,
+      reviewedAt: normalizeDate(row.reviewed_at),
+      publishedAt: normalizeDate(row.published_at),
+      contentModifiedAt: normalizeDate(row.content_modified_at),
+      sourcePath: row.source_path,
+      isIndexable: row.is_indexable !== 0,
       sortOrder: row.sort_order ?? undefined,
       syncedAt: row.synced_at ?? undefined,
     },
@@ -150,12 +349,19 @@ function mapToolCard(row: ToolRow): ToolCardData {
       slug: row.category_slug,
       label: row.category_label,
       sortOrder: row.category_sort_order ?? undefined,
+      useCases: [],
+      sources: [],
+      isIndexable: row.category_is_indexable !== 0,
     },
     pricingLabel: formatPricing(row.pricing),
   };
 }
 
-async function queryToolCards(whereClause = "", bindings: unknown[] = []) {
+async function queryToolCards(
+  whereClause = "",
+  bindings: unknown[] = [],
+  { includeNoindex = false }: { includeNoindex?: boolean } = {},
+) {
   const statement = getDb()
     .prepare(
       `
@@ -173,15 +379,42 @@ async function queryToolCards(whereClause = "", bindings: unknown[] = []) {
           t.submitted_by_github,
           t.logo_url,
           t.og_image_url,
+          t.logo_width,
+          t.logo_height,
+          t.og_image_width,
+          t.og_image_height,
+          t.entity_type,
+          t.developer_name,
+          t.docs_url,
+          t.pricing_url,
+          t.license_url,
+          t.interfaces_json,
+          t.deployment_modes_json,
+          t.evidence_json,
+          t.verification_level,
+          t.classification_rationale_md,
+          t.inclusion_rationale_md,
+          t.best_for_md,
+          t.not_best_for_md,
+          t.limitations_md,
+          t.unknowns_md,
+          t.reviewed_by,
+          t.reviewed_at,
+          t.published_at,
+          t.content_modified_at,
+          t.source_path,
+          t.is_indexable,
           t.sort_order,
           t.synced_at,
           c.label AS category_label,
-          c.sort_order AS category_sort_order
+          c.sort_order AS category_sort_order,
+          c.is_indexable AS category_is_indexable
         FROM tools t
         INNER JOIN categories c
           ON c.slug = t.category_slug
          AND c.is_active = 1
         WHERE t.is_published = 1
+        ${includeNoindex ? "" : "AND t.is_indexable = 1 AND c.is_indexable = 1"}
         ${whereClause}
         ORDER BY ${TOOL_ORDER}
       `,
@@ -204,9 +437,34 @@ async function queryToolCards(whereClause = "", bindings: unknown[] = []) {
 export async function getCategories() {
   const statement = getDb().prepare(
     `
-      SELECT slug, label, sort_order
-      FROM categories
-      WHERE is_active = 1
+      SELECT
+        c.slug,
+        c.label,
+        c.sort_order,
+        c.seo_title,
+        c.description_md,
+        c.definition_md,
+        c.scope_md,
+        c.inclusion_md,
+        c.exclusion_md,
+        c.selection_guide_md,
+        c.use_cases_json,
+        c.sources_json,
+        c.reviewed_by,
+        c.reviewed_at,
+        c.published_at,
+        c.content_modified_at,
+        c.is_indexable
+      FROM categories c
+      WHERE c.is_active = 1
+        AND c.is_indexable = 1
+        AND EXISTS (
+          SELECT 1
+          FROM tools t
+          WHERE t.category_slug = c.slug
+            AND t.is_published = 1
+            AND t.is_indexable = 1
+        )
       ORDER BY ${CATEGORY_ORDER}
     `,
   );
@@ -218,7 +476,24 @@ export async function getCategoryBySlug(slug: string) {
   const statement = getDb()
     .prepare(
       `
-        SELECT slug, label, sort_order
+        SELECT
+          slug,
+          label,
+          sort_order,
+          seo_title,
+          description_md,
+          definition_md,
+          scope_md,
+          inclusion_md,
+          exclusion_md,
+          selection_guide_md,
+          use_cases_json,
+          sources_json,
+          reviewed_by,
+          reviewed_at,
+          published_at,
+          content_modified_at,
+          is_indexable
         FROM categories
         WHERE slug = ?1
           AND is_active = 1
@@ -234,8 +509,12 @@ export async function getHomepageData(random: RandomSource = Math.random) {
   return { categories, tools: shuffleCopy(tools, random) };
 }
 
+export async function getPublishedTools() {
+  return queryToolCards();
+}
+
 export async function getToolBySlug(slug: string) {
-  const [tool] = await queryToolCards("AND t.slug = ?1", [slug]);
+  const [tool] = await queryToolCards("AND t.slug = ?1", [slug], { includeNoindex: true });
   return tool ?? null;
 }
 
@@ -243,40 +522,63 @@ export async function getToolsByCategory(slug: string) {
   return queryToolCards("AND t.category_slug = ?1", [slug]);
 }
 
+export async function getRelatedTools(tool: ToolCardData, limit = 3) {
+  const candidates = await queryToolCards("AND t.slug <> ?1", [tool.entry.slug]);
+  const toolTags = new Set(tool.entry.tags.map((tag) => tag.toLowerCase()));
+  const toolInterfaces = new Set(tool.entry.interfaces.map((item) => item.toLowerCase()));
+
+  return candidates
+    .map((candidate) => {
+      const sharedTags = candidate.entry.tags.filter((tag) => toolTags.has(tag.toLowerCase())).length;
+      const sharedInterfaces = candidate.entry.interfaces.filter((item) =>
+        toolInterfaces.has(item.toLowerCase()),
+      ).length;
+      const score =
+        (candidate.category.slug === tool.category.slug ? 5 : 0) +
+        sharedTags * 2 +
+        sharedInterfaces * 2 +
+        (candidate.entry.classification === tool.entry.classification ? 1 : 0);
+
+      return { candidate, score };
+    })
+    .filter(({ score }) => score > 0)
+    .sort((left, right) => right.score - left.score || left.candidate.entry.name.localeCompare(right.candidate.entry.name))
+    .slice(0, limit)
+    .map(({ candidate }) => candidate);
+}
+
 export function getSitemapStaticEntries(): SitemapEntry[] {
   return getStaticPageEntries();
 }
 
 export async function getSitemapToolEntries() {
-  const statement = getDb().prepare(
-    `
-      SELECT slug, synced_at
-      FROM tools
-      WHERE is_published = 1
-      ORDER BY slug COLLATE NOCASE
-    `,
-  );
-  const { results = [] } = await statement.all<{ slug: string; synced_at: string | null }>();
-  return results.map((row) => ({
-    path: `/tools/${row.slug}`,
-    lastModified: row.synced_at ?? undefined,
+  const tools = await queryToolCards();
+  return tools
+    .toSorted((left, right) => left.entry.slug.localeCompare(right.entry.slug))
+    .map((tool) => ({
+    path: `/tools/${tool.entry.slug}`,
+    lastModified: tool.entry.contentModifiedAt ?? tool.entry.publishedAt,
   }));
 }
 
 export async function getSitemapCategoryEntries() {
-  const statement = getDb().prepare(
-    `
-      SELECT slug, synced_at
-      FROM categories
-      WHERE is_active = 1
-      ORDER BY slug COLLATE NOCASE
-    `,
+  const categories = await getCategories();
+  const categoryTools = await Promise.all(
+    categories.map(async (category) => ({ category, tools: await getToolsByCategory(category.slug) })),
   );
-  const { results = [] } = await statement.all<{ slug: string; synced_at: string | null }>();
-  return results.map((row) => ({
-    path: `/category/${row.slug}`,
-    lastModified: row.synced_at ?? undefined,
-  }));
+
+  return categoryTools.map(({ category, tools }) => {
+    const dates = [
+      category.contentModifiedAt,
+      category.publishedAt,
+      ...tools.flatMap((tool) => [tool.entry.contentModifiedAt, tool.entry.publishedAt]),
+    ].filter((value): value is string => Boolean(value));
+
+    return {
+      path: `/category/${category.slug}`,
+      lastModified: dates.toSorted().at(-1),
+    };
+  });
 }
 
 export function isOpenSourceTool(tool: Tool | ToolCardData) {
@@ -296,6 +598,8 @@ export function formatPricing(pricing: Pricing) {
       return "Free";
     case "paid":
       return "Paid";
+    case "unknown":
+      return "Pricing not documented";
     default:
       return pricing;
   }

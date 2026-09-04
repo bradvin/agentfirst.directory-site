@@ -3,7 +3,14 @@ export const siteConfig = {
   shortName: "agent-first",
   url: "https://agentfirst.directory",
   description:
-    "An evidence-led directory of tools built for AI agents: agent-native tools, agent-enabling infrastructure, and agent internet protocols",
+    "Discover and compare evidence-reviewed tools built for AI agents, including agent-native software, enabling infrastructure, and open agent protocols.",
+  publisherName: "Brad Vincent",
+  publisherType: "Person",
+  publisherUrl: "https://agentfirst.directory/about",
+  publisherDescription: "Publisher and maintainer of agentfirst.directory.",
+  publisherGithubUrl: "https://github.com/bradvin",
+  contentRepositoryUrl: "https://github.com/bradvin/agentfirst.directory",
+  siteRepositoryUrl: "https://github.com/bradvin/agentfirst.directory-site",
   defaultSocialImage: "/og-default.png",
   defaultSocialImageAlt: "agentfirst.directory, the directory for agent-first tools",
   giscus: {

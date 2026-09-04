@@ -1,0 +1,116 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { pageGraphSchema } from "../lib/seo";
+import { siteConfig } from "../lib/site";
+
+const path = "/about";
+const title = `About | ${siteConfig.name}`;
+const pageName = `About ${siteConfig.name}`;
+const description =
+  "Who publishes agentfirst.directory, why the directory exists, and how its public editorial workflow works.";
+const publisherUrl = "https://github.com/bradvin";
+const contentRepoUrl = "https://github.com/bradvin/agentfirst.directory";
+const siteRepoUrl = "https://github.com/bradvin/agentfirst.directory-site";
+const issuesUrl = "https://github.com/bradvin/agentfirst.directory/issues";
+
+const structuredData = [
+  pageGraphSchema({
+    path,
+    name: pageName,
+    description,
+    type: "AboutPage",
+    breadcrumbs: [
+      { name: siteConfig.shortName, path: "/" },
+      { name: "About", path },
+    ],
+  }),
+];
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  canonicalPath={path}
+  structuredData={structuredData}
+>
+  <div class="shell-inner policy-shell">
+    <section class="page-intro page-intro-centered">
+      <p class="detail-overline">About the directory</p>
+      <h1 class="page-title">A public directory with a narrow evidence test</h1>
+      <p class="page-copy">
+        agentfirst.directory documents products, infrastructure, and protocols that give AI agents a material role
+        or capability. It is a discovery resource, not a security certification, product endorsement, or complete
+        census of the market.
+      </p>
+    </section>
+
+    <section class="detail-panel policy-panel">
+      <p class="detail-overline">Publisher</p>
+      <h2>Published by Brad Vincent</h2>
+      <p>
+        <a class="detail-link" href={publisherUrl} rel="noreferrer" target="_blank">Brad Vincent (@bradvin)</a>
+        publishes and maintains the directory. Community members can propose additions and corrections through the
+        public content repository; publication decisions remain subject to the same evidence-based inclusion policy.
+      </p>
+    </section>
+
+    <section class="policy-classification-grid" aria-label="How the directory operates">
+      <article class="detail-panel policy-classification-card">
+        <p class="detail-overline">Open source trail</p>
+        <h3>Content changes are reviewable</h3>
+        <p>
+          Listing files and their history live in the
+          <a class="detail-link" href={contentRepoUrl} rel="noreferrer" target="_blank">public content repository</a>.
+          The website implementation is maintained in a
+          <a class="detail-link" href={siteRepoUrl} rel="noreferrer" target="_blank">separate public repository</a>.
+        </p>
+      </article>
+
+      <article class="detail-panel policy-classification-card">
+        <p class="detail-overline">Editorial boundary</p>
+        <h3>Inclusion is not a recommendation</h3>
+        <p>
+          A listing means public evidence supports one agent-first classification. It does not mean the directory has
+          tested the product or verified its security, reliability, pricing, legal terms, or suitability for a task.
+        </p>
+      </article>
+
+      <article class="detail-panel policy-classification-card">
+        <p class="detail-overline">Corrections</p>
+        <h3>Claims can be challenged</h3>
+        <p>
+          Readers, vendors, and contributors can
+          <a class="detail-link" href={issuesUrl} rel="noreferrer" target="_blank">open a public issue</a> with a
+          specific claim and supporting source. See the <a class="detail-link" href="/corrections">corrections policy</a>
+          for the review process.
+        </p>
+      </article>
+    </section>
+
+    <section class="detail-panel policy-panel">
+      <p class="detail-overline">Purpose</p>
+      <h2>Why agent-first needs a stricter definition</h2>
+      <p>
+        Almost any API can be called by an agent. That fact alone does not make a product agent-first. The directory
+        asks what the agent actually does, whether that role is material, and whether a maintained first-party source
+        supports the claim. This keeps the taxonomy useful while still covering infrastructure that agents depend on.
+      </p>
+      <div class="feature-actions">
+        <a class="button button-primary" href="/policy">Read the inclusion policy</a>
+        <a class="button button-secondary" href="/editorial-standards">Read the editorial standards</a>
+      </div>
+    </section>
+
+    <section class="detail-panel policy-panel">
+      <p class="detail-overline">Reuse and attribution</p>
+      <h2>Public access is not an undeclared data licence</h2>
+      <p>
+        No separate open licence currently grants bulk republication of the directory's editorial copy or compiled
+        data. The public repositories and live JSON/CSV exports make the work inspectable and citable; they do not by
+        themselves change its reuse rights. Linking to pages and short attributed quotations are welcome. Product
+        names, logos, documentation, and other vendor materials remain subject to their owners' terms. Any future
+        immutable dataset release will publish explicit reuse terms alongside the download.
+      </p>
+    </section>
+  </div>
+</BaseLayout>

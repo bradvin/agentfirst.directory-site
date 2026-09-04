@@ -2,9 +2,7 @@ name: Build Worker
 
 on:
   pull_request:
-  push:
-    branches:
-      - main
+  workflow_call:
 
 jobs:
   validate:
@@ -23,5 +21,36 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build site
-        run: npm run build
+      - name: Run unit tests and build
+        run: npm run ci
+
+      - name: Prepare isolated local D1 fixture
+        run: |
+          npx wrangler d1 migrations apply DB --local --persist-to "$RUNNER_TEMP/wrangler-state"
+          npx wrangler d1 execute DB --local --persist-to "$RUNNER_TEMP/wrangler-state" --file=test/fixtures/seed-classifications.sql
+
+      - name: Verify rendered site
+        run: |
+          npx wrangler dev --config dist/server/wrangler.json --local --persist-to "$RUNNER_TEMP/wrangler-state" --host 127.0.0.1 --ip 127.0.0.1 --port 4321 > "$RUNNER_TEMP/wrangler-dev.log" 2>&1 &
+          server_pid=$!
+          cleanup() {
+            kill "$server_pid" 2>/dev/null || true
+            wait "$server_pid" 2>/dev/null || true
+          }
+          trap cleanup EXIT
+
+          ready=0
+          for attempt in {1..60}; do
+            if curl --fail --silent --output /dev/null http://127.0.0.1:4321/; then
+              ready=1
+              break
+            fi
+            sleep 1
+          done
+
+          if [ "$ready" -ne 1 ]; then
+            cat "$RUNNER_TEMP/wrangler-dev.log"
+            exit 1
+          fi
+
+          BASE_URL=http://127.0.0.1:4321 npm run verify:rendered
