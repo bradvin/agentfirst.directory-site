@@ -3,25 +3,44 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import GiscusComments from "../../components/GiscusComments.astro";
 import NotFoundState from "../../components/NotFoundState.astro";
 import ToolList from "../../components/ToolList.astro";
-import { breadcrumbSchema, softwareApplicationSchema } from "../../lib/seo";
+import { absoluteUrl, pageGraphSchema, toolEntitySchema } from "../../lib/seo";
 import { cacheControl, setCacheControl } from "../../lib/cache";
 import { renderMarkdown } from "../../lib/markdown";
-import { formatPricing, getToolBySlug, getToolsByCategory } from "../../lib/content";
+import { formatPricing, getRelatedTools, getToolBySlug } from "../../lib/content";
 import { formatClassification } from "../../lib/classification";
+import { getRedirectRule } from "../../lib/redirects";
 import { siteConfig } from "../../lib/site";
 
 const slug = Astro.params.slug ?? "";
 const tool = await getToolBySlug(slug);
-const relatedTools = tool
-  ? (await getToolsByCategory(tool.category.slug))
-      .filter((entry) => entry.entry.slug !== tool.entry.slug)
-      .slice(0, 3)
-  : [];
+const requestedPath = Astro.url.pathname;
+const redirectRule = tool ? null : await getRedirectRule(requestedPath);
+
+if (redirectRule?.destinationPath && (redirectRule.statusCode === 301 || redirectRule.statusCode === 308)) {
+  return Astro.redirect(redirectRule.destinationPath, redirectRule.statusCode);
+}
+
+const isGone = redirectRule?.statusCode === 410;
+const relatedTools = tool ? await getRelatedTools(tool) : [];
 const path = tool ? `/tools/${tool.entry.slug}` : Astro.url.pathname;
-const title = tool ? `${tool.entry.name} | ${siteConfig.name}` : `Not found | ${siteConfig.name}`;
+const title = tool
+  ? `${tool.entry.name} — ${tool.category.label} | AI Agent Tools`
+  : `${isGone ? "Gone" : "Not found"} | ${siteConfig.name}`;
+const metaDescriptionSuffix = "Review its AI-agent fit, pricing, evidence, and limitations.";
+const buildDescription = (summary: string) => {
+  const normalized = summary.replace(/[.!?]+$/, "").trim();
+  const available = 160 - metaDescriptionSuffix.length - 2;
+  const shortened = normalized.length <= available
+    ? normalized
+    : `${normalized.slice(0, available - 1).replace(/\s+\S*$/, "")}…`;
+
+  return `${shortened.endsWith("…") ? shortened : `${shortened}.`} ${metaDescriptionSuffix}`;
+};
 const description = tool
-  ? tool.entry.description
-  : "The requested tool does not exist in the approved directory.";
+  ? buildDescription(tool.entry.description)
+  : isGone
+    ? "This tool profile has been permanently retired and has no replacement."
+    : "The requested tool does not exist in the approved directory.";
 const submitterUrl = tool ? `https://github.com/${tool.entry.submittedByGithub}` : undefined;
 const visitUrl = tool
   ? (() => {
@@ -30,23 +49,89 @@ const visitUrl = tool
       return url.toString();
     })()
   : undefined;
-const resolvedOgImageUrl = tool?.entry.ogImageUrl;
+const resolvedOgImageUrl = tool?.entry.ogImageUrl
+  ? `/media/tools/${tool.entry.slug}/hero`
+  : undefined;
+const resolvedLogoUrl = tool?.entry.logoUrl
+  ? `/media/tools/${tool.entry.slug}/card`
+  : undefined;
 const bodyHtml = tool ? renderMarkdown(tool.entry.bodyMd) : "";
+const qualificationHtml = tool
+  ? renderMarkdown(tool.entry.inclusionRationaleMd ?? tool.entry.classificationRationaleMd ?? "")
+  : "";
+const bestForHtml = tool ? renderMarkdown(tool.entry.bestForMd ?? "") : "";
+const notBestForHtml = tool ? renderMarkdown(tool.entry.notBestForMd ?? "") : "";
+const limitationsHtml = tool ? renderMarkdown(tool.entry.limitationsMd ?? "") : "";
+const unknownsHtml = tool ? renderMarkdown(tool.entry.unknownsMd ?? "") : "";
+const sourceRepositoryUrl = tool
+  ? `${siteConfig.contentRepositoryUrl}/blob/main/${tool.entry.sourcePath}`
+  : undefined;
+const sourceHistoryUrl = tool
+  ? `${siteConfig.contentRepositoryUrl}/commits/main/${tool.entry.sourcePath}`
+  : undefined;
+const visibleSources = tool
+  ? tool.entry.evidenceSources.length > 0
+    ? tool.entry.evidenceSources
+    : [
+        {
+          title: `${tool.entry.name} official website`,
+          url: tool.entry.websiteUrl,
+          claim: "Primary first-party reference for the product description and capabilities summarized in this profile.",
+          sourceType: "official-website",
+        },
+        ...(tool.entry.githubUrl
+          ? [{
+              title: `${tool.entry.name} source repository`,
+              url: tool.entry.githubUrl,
+              claim: "Primary source for repository, licensing, and implementation information where applicable.",
+              sourceType: "repository",
+            }]
+          : []),
+      ]
+  : [];
+
+function displayDate(value?: string) {
+  return value
+    ? new Intl.DateTimeFormat("en", { dateStyle: "medium", timeZone: "UTC" }).format(new Date(value))
+    : undefined;
+}
 
 if (!tool) {
-  Astro.response.status = 404;
+  Astro.response.status = isGone ? 410 : 404;
 } else {
   setCacheControl(Astro.response.headers, cacheControl.tool);
+  if (tool.entry.contentModifiedAt) {
+    Astro.response.headers.set("Last-Modified", new Date(tool.entry.contentModifiedAt).toUTCString());
+  }
 }
 
 const structuredData = tool
   ? [
-      breadcrumbSchema([
-        { name: siteConfig.shortName, path: "/" },
-        { name: tool.category.label, path: `/category/${tool.category.slug}` },
-        { name: tool.entry.name, path },
-      ]),
-      softwareApplicationSchema(tool),
+      pageGraphSchema({
+        path,
+        name: `${tool.entry.name} agent-first profile`,
+        description,
+        type: "ItemPage",
+        breadcrumbs: [
+          { name: siteConfig.shortName, path: "/" },
+          { name: tool.category.label, path: `/category/${tool.category.slug}` },
+          { name: tool.entry.name, path },
+        ],
+        entities: [toolEntitySchema(tool)],
+        image: resolvedOgImageUrl
+          ? {
+              url: absoluteUrl(resolvedOgImageUrl),
+              width: 1200,
+              height: 630,
+              caption: `${tool.entry.name} preview`,
+            }
+          : undefined,
+        datePublished: tool.entry.publishedAt,
+        dateModified: tool.entry.contentModifiedAt,
+        lastReviewed: tool.entry.reviewedAt,
+        reviewedBy: tool.entry.reviewedBy,
+        citations: tool.entry.evidenceSources,
+      }),
     ]
   : [];
 ---
@@ -56,6 +141,10 @@ const structuredData = tool
   description={description}
   canonicalPath={path}
   ogImageUrl={resolvedOgImageUrl}
+  socialImageAlt={tool ? `${tool.entry.name} — ${tool.entry.description}` : undefined}
+  ogImageWidth={resolvedOgImageUrl ? 1200 : undefined}
+  ogImageHeight={resolvedOgImageUrl ? 630 : undefined}
+  noindex={!tool || !tool.entry.isIndexable || !tool.category.isIndexable}
   structuredData={structuredData}
 >
   <div class="shell-inner detail-shell">
@@ -66,7 +155,7 @@ const structuredData = tool
             <a class="breadcrumb-link" href={`/category/${tool.category.slug}`}>{tool.category.label}</a>
             <span class="breadcrumb-separator" aria-hidden="true">›</span>
             <span class="breadcrumb-current">
-              {tool.entry.logoUrl && <img class="breadcrumb-logo" src={tool.entry.logoUrl} alt="" loading="lazy" />}
+              {resolvedLogoUrl && <img class="breadcrumb-logo" src={resolvedLogoUrl} alt="" width="16" height="16" />}
               <span>{tool.entry.name}</span>
             </span>
           </nav>
@@ -123,8 +212,14 @@ const structuredData = tool
                   <img
                     class="detail-og-image"
                     src={resolvedOgImageUrl}
+                    srcset={`/media/tools/${tool.entry.slug}/hero-small 640w, ${resolvedOgImageUrl} 1200w`}
+                    sizes="(max-width: 900px) calc(100vw - 48px), 50vw"
                     alt={`${tool.entry.name} preview`}
-                    loading="lazy"
+                    width="1200"
+                    height="630"
+                    loading="eager"
+                    fetchpriority="high"
+                    decoding="async"
                   />
                 </div>
               )
@@ -132,10 +227,84 @@ const structuredData = tool
           </section>
 
           <div class="detail-grid">
-            <article class="detail-panel prose-panel" set:html={bodyHtml} />
+            <div class="detail-content-stack">
+              <section class="detail-panel prose-panel" id="overview" aria-labelledby="overview-heading">
+                <p class="detail-overline">Listing overview</p>
+                <h2 id="overview-heading">What {tool.entry.name} provides</h2>
+                <p class="evidence-note">
+                  This summary reflects the submitted listing and public product material. Only statements mapped to
+                  evidence in the source record below should be read as documentation-reviewed facts.
+                </p>
+                <div set:html={bodyHtml} />
+              </section>
+
+              <section class="detail-panel evidence-panel" id="why-this-qualifies" aria-labelledby="qualification-heading">
+                <p class="detail-overline">Editorial verdict</p>
+                <h2 id="qualification-heading">Why {tool.entry.name} qualifies as agent-first</h2>
+                {
+                  qualificationHtml ? (
+                    <div class="prose-compact" set:html={qualificationHtml} />
+                  ) : (
+                    <p>
+                      This profile is classified as{" "}
+                      <a class="detail-link" href="/policy#classification-model">
+                        {tool.entry.classification ? formatClassification(tool.entry.classification) : "pending review"}
+                      </a>
+                      {" "}under the directory's evidence-based inclusion policy. Its claim-level editorial rationale is being migrated into the public record; use the first-party sources below to verify material capabilities in the meantime.
+                    </p>
+                  )
+                }
+              </section>
+
+              {
+                (bestForHtml || notBestForHtml || limitationsHtml || unknownsHtml) && (
+                  <section class="detail-panel evidence-panel" id="fit-and-limitations" aria-labelledby="fit-heading">
+                    <p class="detail-overline">Decision guide</p>
+                    <h2 id="fit-heading">Fit and limitations</h2>
+                    <div class="decision-grid">
+                      {bestForHtml && <div><h3>Best for</h3><div class="prose-compact" set:html={bestForHtml} /></div>}
+                      {notBestForHtml && <div><h3>Not best for</h3><div class="prose-compact" set:html={notBestForHtml} /></div>}
+                      {limitationsHtml && <div><h3>Known limitations</h3><div class="prose-compact" set:html={limitationsHtml} /></div>}
+                      {unknownsHtml && <div><h3>Not yet verified</h3><div class="prose-compact" set:html={unknownsHtml} /></div>}
+                    </div>
+                  </section>
+                )
+              }
+
+              <section class="detail-panel evidence-panel" id="sources" aria-labelledby="sources-heading">
+                <p class="detail-overline">Evidence record</p>
+                <h2 id="sources-heading">Sources and verification links</h2>
+                {
+                  tool.entry.evidenceSources.length > 0 ? (
+                    <p class="evidence-note">
+                      Sources are first-party unless labeled otherwise. A linked source supports the specific claim
+                      shown beside it; it is not a blanket endorsement of every vendor claim.
+                    </p>
+                  ) : (
+                    <p class="evidence-note">
+                      A claim-level editorial review has not yet been recorded. These first-party links are supplied
+                      for direct verification while that migration remains pending.
+                    </p>
+                  )
+                }
+                <ol class="evidence-list">
+                  {visibleSources.map((source) => (
+                    <li id={`source-${visibleSources.indexOf(source) + 1}`}>
+                      <a class="detail-link" href={source.url} rel="noreferrer" target="_blank">{source.title}</a>
+                      <p>{source.claim}</p>
+                      <span>
+                        {source.sourceType?.replaceAll("-", " ") ?? "first-party source"}
+                        {source.accessedAt ? ` · accessed ${displayDate(source.accessedAt)}` : ""}
+                      </span>
+                    </li>
+                  ))}
+                </ol>
+              </section>
+            </div>
 
             <aside class="detail-sidebar">
-              <article class="detail-panel detail-facts-panel">
+              <article class="detail-panel detail-facts-panel" id="verified-facts">
+                <h2 class="visually-hidden">Verified profile facts</h2>
                 <div class="detail-facts-list">
                   <div class="detail-fact">
                     <span class="detail-fact-label">Category</span>
@@ -154,6 +323,34 @@ const structuredData = tool
                   }
 
                   <div class="detail-fact">
+                    <span class="detail-fact-label">Pricing model</span>
+                    {
+                      tool.entry.pricingUrl ? (
+                        <a class="detail-link" href={tool.entry.pricingUrl} rel="noreferrer" target="_blank">
+                          {formatPricing(tool.entry.pricing)}
+                        </a>
+                      ) : (
+                        <span>{formatPricing(tool.entry.pricing)}</span>
+                      )
+                    }
+                  </div>
+
+                  {tool.entry.developerName && <div class="detail-fact"><span class="detail-fact-label">Developer</span><span>{tool.entry.developerName}</span></div>}
+                  {tool.entry.interfaces.length > 0 && <div class="detail-fact"><span class="detail-fact-label">Interfaces</span><span>{tool.entry.interfaces.join(", ")}</span></div>}
+                  {tool.entry.deploymentModes.length > 0 && <div class="detail-fact"><span class="detail-fact-label">Deployment</span><span>{tool.entry.deploymentModes.join(", ")}</span></div>}
+                  {tool.entry.docsUrl && <div class="detail-fact"><span class="detail-fact-label">Documentation</span><a class="detail-link" href={tool.entry.docsUrl} rel="noreferrer" target="_blank">Official docs</a></div>}
+                  {tool.entry.licenseUrl && <div class="detail-fact"><span class="detail-fact-label">License</span><a class="detail-link" href={tool.entry.licenseUrl} rel="noreferrer" target="_blank">License source</a></div>}
+
+                  <div class="detail-fact">
+                    <span class="detail-fact-label">Verification</span>
+                    <span>{tool.entry.verificationLevel?.replaceAll("-", " ") ?? "Evidence migration pending"}</span>
+                  </div>
+
+                  {tool.entry.reviewedBy && <div class="detail-fact"><span class="detail-fact-label">Reviewed by</span><span>{tool.entry.reviewedBy}</span></div>}
+                  {tool.entry.reviewedAt && <div class="detail-fact"><span class="detail-fact-label">Last reviewed</span><time datetime={tool.entry.reviewedAt}>{displayDate(tool.entry.reviewedAt)}</time></div>}
+                  {tool.entry.contentModifiedAt && <div class="detail-fact"><span class="detail-fact-label">Profile updated</span><time datetime={tool.entry.contentModifiedAt}>{displayDate(tool.entry.contentModifiedAt)}</time></div>}
+
+                  <div class="detail-fact">
                     <span class="detail-fact-label">Submitted by</span>
                     <a class="detail-link" href={submitterUrl} rel="noreferrer" target="_blank">
                       @{tool.entry.submittedByGithub}
@@ -168,6 +365,12 @@ const structuredData = tool
                       ))}
                     </div>
                   </div>
+
+                  <div class="detail-fact">
+                    <span class="detail-fact-label">Editorial record</span>
+                    <a class="detail-link" href={sourceRepositoryUrl} rel="noreferrer" target="_blank">View source</a>
+                    <a class="detail-link" href={sourceHistoryUrl} rel="noreferrer" target="_blank">View history</a>
+                  </div>
                 </div>
               </article>
             </aside>
@@ -177,13 +380,17 @@ const structuredData = tool
             <div class="section-heading">
               <h2>Related tools</h2>
             </div>
-            <ToolList tools={relatedTools} variant="compact" emptyLabel="No related tools published yet." />
+            <ToolList tools={relatedTools} variant="compact" headingLevel={3} emptyLabel="No related tools published yet." />
           </section>
 
           <GiscusComments term={tool.entry.slug} />
         </>
       ) : (
-        <NotFoundState />
+        <NotFoundState
+          title={isGone ? "This tool profile has been retired" : undefined}
+          description={description}
+          actionLabel="Browse current tools"
+        />
       )
     }
   </div>

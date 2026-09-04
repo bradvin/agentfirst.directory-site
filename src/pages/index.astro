@@ -3,29 +3,33 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import CategoryChips from "../components/CategoryChips.astro";
 import HomepageSearch from "../components/HomepageSearch.astro";
 import ToolList from "../components/ToolList.astro";
-import { getHomepageData, toolHref } from "../lib/content";
+import { getHomepageData } from "../lib/content";
 import { cacheControl, setCacheControl } from "../lib/cache";
-import { itemListSchema, websiteSchema } from "../lib/seo";
+import {
+  homepageCollectionSchema,
+  publisherSchema,
+  schemaGraph,
+  websiteSchema,
+} from "../lib/seo";
 import { siteConfig } from "../lib/site";
 
 const { categories, tools: toolCards } = await getHomepageData();
 setCacheControl(Astro.response.headers, cacheControl.homepage);
 
 const structuredData = [
-  websiteSchema(),
-  itemListSchema(
-    toolCards.map((tool) => ({
-      name: tool.entry.name,
-      path: toolHref(tool.entry),
-      description: tool.entry.description,
-    })),
-    "/",
+  schemaGraph(
+    publisherSchema(),
+    websiteSchema(),
+    homepageCollectionSchema(toolCards, "/", {
+      name: "AI Agent Tools Directory",
+      description: siteConfig.description,
+    }),
   ),
 ];
 ---
 
 <BaseLayout
-  title={`${siteConfig.name} | The directory for agent-first tools`}
+  title={`AI Agent Tools Directory | ${siteConfig.name}`}
   description={siteConfig.description}
   canonicalPath="/"
   structuredData={structuredData}
@@ -39,11 +43,11 @@ const structuredData = [
         </p>
 
         <h1 class="hero-title">
-          The directory for <span class="hero-accent">agent-first</span> tools
+          The directory for <span class="hero-accent">agent-first</span> AI tools
         </h1>
 
         <p class="hero-copy-text">
-          {siteConfig.description}.
+          {siteConfig.description}
           <span class="hero-policy-copy">
             Every listing must pass an evidence-based inclusion test.
             <a class="detail-link" href="/policy">Read the inclusion policy →</a>
@@ -52,7 +56,7 @@ const structuredData = [
       </div>
     </section>
 
-    <CategoryChips categories={categories} includeOpenSource={false} />
+    <CategoryChips categories={categories} />
 
     <HomepageSearch total={toolCards.length} />
 

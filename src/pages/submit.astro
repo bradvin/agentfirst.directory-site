@@ -11,6 +11,7 @@ const contentRepoUrl = "https://github.com/bradvin/agentfirst.directory";
 const siteRepoUrl = "https://github.com/bradvin/agentfirst.directory-site";
 const skillUrl = "https://agentfirst.directory/SKILL.md";
 const skillCopyText = "Read https://agentfirst.directory/SKILL.md to add a new tool";
+const accessDate = new Date().toISOString().slice(0, 10);
 
 const prWorkflowExample = `git clone https://github.com/bradvin/agentfirst.directory.git
 cd agentfirst.directory
@@ -27,7 +28,25 @@ git push origin add-coolapi`;
 const categoryExample = `{
   "slug": "agent-security",
   "label": "Agent Security",
-  "sortOrder": 110
+  "sortOrder": 110,
+  "seoTitle": "Security tools for AI agents",
+  "descriptionMd": "Security controls and review systems designed for agent-driven work.",
+  "definitionMd": "Products whose core purpose is controlling or inspecting agent actions and access.",
+  "scopeMd": "First-class agent security workflows, not generic security APIs.",
+  "inclusionMd": "Include when documented controls materially govern agent permissions or actions.",
+  "exclusionMd": "Exclude conventional security products connected only through generic API access.",
+  "selectionGuideMd": "Compare policy scope, enforcement points, audit evidence, identity, and recovery.",
+  "useCases": ["Constrain agent permissions", "Audit agent actions"],
+  "sources": [
+    {
+      "title": "OWASP Agentic Security Initiative",
+      "url": "https://genai.owasp.org/initiatives/agentic-security-initiative/",
+      "claim": "OWASP documents security risks and controls that arise from autonomous agent workflows.",
+      "accessedAt": "${accessDate}",
+      "sourceType": "official-guidance"
+    }
+  ],
+  "isIndexable": true
 }`;
 
 const toolFileExample = [
@@ -46,6 +65,20 @@ const toolFileExample = [
   'ogImageUrl: "https://coolapi.dev/og-image.png"',
   'pricing: "freemium"',
   'classification: "agent-enabling"',
+  'entityType: "web-api"',
+  'developerName: "CoolDev"',
+  'docsUrl: "https://coolapi.dev/docs"',
+  'interfaces: ["API", "MCP"]',
+  'deploymentModes: ["hosted"]',
+  'classificationRationaleMd: "Documented agent-oriented execution through API and MCP interfaces."',
+  'bestForMd: "Agents that need the documented controlled API workflow."',
+  'limitationsMd: "The public documentation does not describe a self-hosted deployment option."',
+  'evidenceSources:',
+  '  - title: "CoolAPI agent documentation"',
+  '    url: "https://coolapi.dev/docs/agents"',
+  '    claim: "CoolAPI documents API and MCP interfaces for agent workflows."',
+  `    accessedAt: "${accessDate}"`,
+  '    sourceType: "official-docs"',
   "---",
   "",
   "Short summary of what the tool does.",
@@ -125,7 +158,7 @@ const structuredData = [
           <ol class="submit-steps">
             <li>Confirm the tool passes the <a class="detail-link" href="/policy">evidence-based inclusion policy</a>.</li>
             <li>Pick the closest existing category in <code>categories/</code>.</li>
-            <li>Add a tool file in <code>tools/</code> with one required classification.</li>
+            <li>Add a tool file in <code>tools/</code> with one classification and a claim-level evidence record.</li>
             <li>Add a short factual body, ideally with a <code>## So agents can...</code> section.</li>
             <li>Add a category file only if the current list clearly does not fit.</li>
             <li>Open a PR against <code>main</code>.</li>
@@ -138,13 +171,13 @@ const structuredData = [
             <div class="submit-facts">
               <div class="submit-fact">
                 <span class="submit-fact-label">Required</span>
-                <strong>Evidence and classification</strong>
-                <span>Explain the material agent role and choose one supported class.</span>
+                <strong>Claim-level evidence and classification</strong>
+                <span>Link each material claim to a first-party source and explain the supported agent role.</span>
               </div>
               <div class="submit-fact">
                 <span class="submit-fact-label">Usually required</span>
-                <strong>Useful URLs</strong>
-                <span>Add <code>githubUrl</code> when the tool is open source.</span>
+                <strong>Verified product facts</strong>
+                <span>Add documentation, pricing, license, interface, and deployment fields when the sources support them.</span>
               </div>
               <div class="submit-fact">
                 <span class="submit-fact-label">Only if needed</span>
@@ -196,7 +229,7 @@ const structuredData = [
             <div class="submit-field"><code>category</code><span>Existing category slug.</span></div>
             <div class="submit-field"><code>tags</code><span>At least one tag.</span></div>
             <div class="submit-field"><code>websiteUrl</code><span>Required URL.</span></div>
-            <div class="submit-field"><code>pricing</code><span>One of <code>open-source</code>, <code>freemium</code>, <code>free</code>, or <code>paid</code>.</span></div>
+            <div class="submit-field"><code>pricing</code><span>One of <code>open-source</code>, <code>source-available</code>, <code>freemium</code>, <code>free</code>, <code>paid</code>, or <code>unknown</code>.</span></div>
             <div class="submit-field"><code>classification</code><span>One of <code>agent-native</code>, <code>agent-enabling</code>, or <code>agent-internet-protocol</code>.</span></div>
           </div>
         </div>

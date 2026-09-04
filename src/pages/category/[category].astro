@@ -4,12 +4,23 @@ import CategoryChips from "../../components/CategoryChips.astro";
 import NotFoundState from "../../components/NotFoundState.astro";
 import ToolList from "../../components/ToolList.astro";
 import {
+  formatPricing,
   getCategories,
   getCategoryBySlug,
   getToolsByCategory,
 } from "../../lib/content";
 import { cacheControl, setCacheControl } from "../../lib/cache";
-import { breadcrumbSchema, collectionPageSchema } from "../../lib/seo";
+import { getCategoryEditorial, editorialPolicy } from "../../lib/category-editorial";
+import { renderMarkdown } from "../../lib/markdown";
+import {
+  breadcrumbSchema,
+  collectionPageSchema,
+  publisherSchema,
+  schemaGraph,
+  websiteSchema,
+} from "../../lib/seo";
+import { formatClassification } from "../../lib/classification";
+import { getRedirectRule } from "../../lib/redirects";
 import { siteConfig } from "../../lib/site";
 
 const categorySlug = Astro.params.category ?? "";
@@ -18,32 +29,84 @@ const [categories, category] = await Promise.all([
   getCategoryBySlug(categorySlug),
 ]);
 const tools = category ? await getToolsByCategory(category.slug) : [];
+const requestedPath = Astro.url.pathname;
+const redirectRule = category ? null : await getRedirectRule(requestedPath);
+
+if (redirectRule?.destinationPath && (redirectRule.statusCode === 301 || redirectRule.statusCode === 308)) {
+  return Astro.redirect(redirectRule.destinationPath, redirectRule.statusCode);
+}
+
+const isGone = redirectRule?.statusCode === 410;
+const editorial = category ? getCategoryEditorial(category.slug) : undefined;
 const path = category ? `/category/${category.slug}` : Astro.url.pathname;
 const description = category
-  ? `Browse approved ${category.label.toLowerCase()} tools built for agent-first workflows.`
-  : "The requested category does not exist in the approved directory.";
+  ? category.descriptionMd ?? editorial?.description ?? `Browse approved ${category.label} tools built for agent-first workflows.`
+  : isGone
+    ? "This category has been permanently retired and has no replacement."
+    : "The requested category does not exist in the approved directory.";
+const seoTitle = category
+  ? category.seoTitle ?? editorial?.seoTitle ?? `${category.label} tools for AI agents`
+  : isGone ? "Category gone" : "Category not found";
+const shouldNoindex = !category || !category.isIndexable || tools.length === 0;
+const contentDates = category
+  ? [
+      category.contentModifiedAt,
+      category.publishedAt,
+      ...tools.flatMap((tool) => [tool.entry.contentModifiedAt, tool.entry.publishedAt]),
+    ].filter((value): value is string => Boolean(value))
+  : [];
+const pageModifiedAt = contentDates.toSorted().at(-1);
+const augmentedCategory = category
+  ? { ...category, seoTitle, descriptionMd: description, contentModifiedAt: pageModifiedAt }
+  : undefined;
+const listMarkdown = (items: readonly string[]) => items.map((item) => `- ${item}`).join("\n");
+const definitionHtml = category
+  ? renderMarkdown(category.definitionMd ?? editorial?.definition ?? "")
+  : "";
+const scopeHtml = category ? renderMarkdown(category.scopeMd ?? "") : "";
+const inclusionHtml = category
+  ? renderMarkdown(category.inclusionMd ?? listMarkdown(editorial?.includeWhen ?? []))
+  : "";
+const exclusionHtml = category
+  ? renderMarkdown(category.exclusionMd ?? listMarkdown(editorial?.excludeWhen ?? []))
+  : "";
+const selectionGuideHtml = category
+  ? renderMarkdown(category.selectionGuideMd ?? listMarkdown(editorial?.selectionQuestions ?? []))
+  : "";
+const hasEditorialGuidance = Boolean(
+  definitionHtml || scopeHtml || inclusionHtml || exclusionHtml || selectionGuideHtml || category?.useCases.length,
+);
 
 if (!category) {
-  Astro.response.status = 404;
+  Astro.response.status = isGone ? 410 : 404;
 } else {
   setCacheControl(Astro.response.headers, cacheControl.category);
+  if (pageModifiedAt) {
+    Astro.response.headers.set("Last-Modified", new Date(pageModifiedAt).toUTCString());
+  }
 }
 
 const structuredData = category
   ? [
-      breadcrumbSchema([
+      schemaGraph(
+        publisherSchema(),
+        websiteSchema(),
+        breadcrumbSchema([
         { name: siteConfig.shortName, path: "/" },
         { name: category.label, path },
-      ]),
-      collectionPageSchema(category, tools, path),
+        ]),
+        collectionPageSchema(augmentedCategory ?? category, tools, path),
+      ),
     ]
   : [];
 ---
 
 <BaseLayout
-  title={category ? `${category.label} tools | ${siteConfig.name}` : `Not found | ${siteConfig.name}`}
+  title={category ? seoTitle : `${seoTitle} | ${siteConfig.name}`}
   description={description}
   canonicalPath={path}
+  socialImageAlt={category ? `${category.label} tools for AI agents` : undefined}
+  noindex={shouldNoindex}
   structuredData={structuredData}
 >
   <div class="shell-inner">
@@ -54,12 +117,14 @@ const structuredData = category
             <p class="detail-overline">Category</p>
             <h1 class="page-title">{category.label}</h1>
             <p class="page-copy">{description}</p>
+            <p class="review-line">
+              Editorial scope version {editorialPolicy.version} · effective {editorialPolicy.effectiveDateLabel}
+            </p>
           </section>
 
           <CategoryChips
             categories={categories}
             currentCategorySlug={category.slug}
-            includeOpenSource={false}
           />
 
           <section class="section-block">
@@ -69,11 +134,107 @@ const structuredData = category
                 <h2>{tools.length} {category.label} Tools</h2>
               </div>
             </div>
-            <ToolList tools={tools} emptyLabel="No approved tools in this category yet." />
+            <ToolList tools={tools} headingLevel={3} emptyLabel="No approved tools in this category yet. This page is excluded from search indexes until it becomes a useful collection." />
           </section>
+
+          {
+            hasEditorialGuidance && (
+              <section class="category-editorial-grid" aria-label={`${category.label} editorial guidance`}>
+                <article class="detail-panel category-guidance" id="definition">
+                  <p class="detail-overline">Definition</p>
+                  <h2>What belongs in {category.label}?</h2>
+                  <div class="prose-compact" set:html={definitionHtml} />
+                  {scopeHtml && <div class="prose-compact" set:html={scopeHtml} />}
+                </article>
+
+                <article class="detail-panel category-guidance" id="inclusion-criteria">
+                  <p class="detail-overline">Scope</p>
+                  <h2>Inclusion and exclusion criteria</h2>
+                  <h3>Include when</h3>
+                  <div class="prose-compact" set:html={inclusionHtml} />
+                  <h3>Exclude when</h3>
+                  <div class="prose-compact" set:html={exclusionHtml} />
+                </article>
+
+                <article class="detail-panel category-guidance" id="how-to-choose">
+                  <p class="detail-overline">Selection guide</p>
+                  <h2>How to compare these tools</h2>
+                  <div class="prose-compact" set:html={selectionGuideHtml} />
+                  {
+                    category.useCases.length > 0 && (
+                      <>
+                        <h3>Typical use cases</h3>
+                        <ul>{category.useCases.map((item) => <li>{item}</li>)}</ul>
+                      </>
+                    )
+                  }
+                </article>
+              </section>
+            )
+          }
+
+          {
+            category.sources.length > 0 && (
+              <section class="detail-panel evidence-panel" id="category-sources" aria-labelledby="category-sources-heading">
+                <p class="detail-overline">Category evidence</p>
+                <h2 id="category-sources-heading">Sources for this category guidance</h2>
+                <ol class="evidence-list">
+                  {category.sources.map((source, index) => (
+                    <li id={`category-source-${index + 1}`}>
+                      <a class="detail-link" href={source.url} rel="noreferrer" target="_blank">{source.title}</a>
+                      <p>{source.claim}</p>
+                      {source.accessedAt && <span>accessed {source.accessedAt.slice(0, 10)}</span>}
+                    </li>
+                  ))}
+                </ol>
+              </section>
+            )
+          }
+
+          {
+            tools.length > 0 && (
+              <section class="detail-panel comparison-panel" id="comparison" aria-labelledby="comparison-heading">
+                <p class="detail-overline">Comparable facts</p>
+                <h2 id="comparison-heading">{category.label} comparison</h2>
+                <p class="evidence-note">Unknown values are shown explicitly rather than inferred from marketing copy. Open a profile to inspect its claim-level sources.</p>
+                <div class="table-scroll" tabindex="0">
+                  <table class="comparison-table">
+                    <thead>
+                      <tr>
+                        <th scope="col">Tool</th>
+                        <th scope="col">Classification</th>
+                        <th scope="col">Pricing</th>
+                        <th scope="col">Interfaces</th>
+                        <th scope="col">Deployment</th>
+                        <th scope="col">Verification</th>
+                        <th scope="col">Human review date</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {tools.map((tool) => (
+                        <tr>
+                          <th scope="row"><a class="detail-link" href={`/tools/${tool.entry.slug}#sources`}>{tool.entry.name}</a></th>
+                          <td>{tool.entry.classification ? formatClassification(tool.entry.classification) : "Pending"}</td>
+                          <td>{formatPricing(tool.entry.pricing)}</td>
+                          <td>{tool.entry.interfaces.join(", ") || "Not yet recorded"}</td>
+                          <td>{tool.entry.deploymentModes.join(", ") || "Not yet recorded"}</td>
+                          <td>{tool.entry.verificationLevel?.replaceAll("-", " ") ?? "Not reviewed"}</td>
+                          <td>{tool.entry.reviewedAt?.slice(0, 10) ?? "Not recorded"}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </section>
+            )
+          }
         </>
       ) : (
-        <NotFoundState />
+        <NotFoundState
+          title={isGone ? "This category has been retired" : undefined}
+          description={description}
+          actionLabel="Browse current categories"
+        />
       )
     }
   </div>

@@ -22,5 +22,9 @@ test("only getHomepageData randomizes the deterministic tool query result", () =
   assert.doesNotMatch(toolBody, /shuffleCopy/);
   assert.equal((contentSource.match(/shuffleCopy\(tools, random\)/g) ?? []).length, 1);
   assert.match(contentSource, /ORDER BY \$\{TOOL_ORDER\}/);
-  assert.match(contentSource, /ORDER BY slug COLLATE NOCASE/g);
+  assert.match(
+    contentSource,
+    /toSorted\(\(left, right\) => left\.entry\.slug\.localeCompare\(right\.entry\.slug\)\)/,
+  );
+  assert.match(contentSource, /AND t\.is_indexable = 1/);
 });

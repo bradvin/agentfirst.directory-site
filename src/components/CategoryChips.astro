@@ -7,18 +7,20 @@ interface Props {
   currentCategorySlug?: string;
   includeOpenSource?: boolean;
   openSourceHref?: string;
+  openSourceActive?: boolean;
 }
 
 const {
   categories,
   currentCategorySlug,
   includeOpenSource = true,
-  openSourceHref = "/#open-source-repos",
+  openSourceHref = "/open-source-ai-agent-tools",
+  openSourceActive = false,
 } = Astro.props;
 ---
 
 <nav class="chip-row" aria-label="Categories">
-  <a class:list={["chip", !currentCategorySlug && "is-active"]} href="/">All</a>
+  <a class:list={["chip", !currentCategorySlug && !openSourceActive && "is-active"]} href="/">All</a>
   {
     categories.map((category) => (
       <a
@@ -34,7 +36,7 @@ const {
   }
   {
     includeOpenSource && (
-      <a class="chip" href={openSourceHref}>
+      <a class:list={["chip", openSourceActive && "is-active"]} href={openSourceHref}>
         Open Source Repos
       </a>
     )

@@ -1,0 +1,189 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { editorialPolicy } from "../lib/category-editorial";
+import { pageGraphSchema } from "../lib/seo";
+import { siteConfig } from "../lib/site";
+
+const path = "/editorial-standards";
+const title = `Editorial standards | ${siteConfig.name}`;
+const pageName = "Editorial standards";
+const description =
+  "How agentfirst.directory researches, reviews, classifies, orders, corrects, and removes directory listings.";
+const contentRepoUrl = "https://github.com/bradvin/agentfirst.directory";
+const pullRequestsUrl = `${contentRepoUrl}/pulls`;
+
+const structuredData = [
+  pageGraphSchema({
+    path,
+    name: pageName,
+    description,
+    type: "WebPage",
+    datePublished: editorialPolicy.effectiveDate,
+    dateModified: editorialPolicy.effectiveDate,
+    lastReviewed: editorialPolicy.effectiveDate,
+    breadcrumbs: [
+      { name: siteConfig.shortName, path: "/" },
+      { name: pageName, path },
+    ],
+  }),
+];
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  canonicalPath={path}
+  structuredData={structuredData}
+>
+  <div class="shell-inner policy-shell">
+    <section class="page-intro page-intro-centered">
+      <p class="detail-overline">
+        Editorial policy {editorialPolicy.version} · Effective {editorialPolicy.effectiveDateLabel}
+      </p>
+      <h1 class="page-title">How listings are researched and reviewed</h1>
+      <p class="page-copy">
+        The directory applies one public inclusion test to vendor submissions, community contributions, and
+        maintainer-authored entries. Passing that test establishes taxonomy fit; it does not establish product quality.
+      </p>
+    </section>
+
+    <section class="detail-panel policy-panel">
+      <p class="detail-overline">Evidence standard</p>
+      <h2>Material claims need a maintained first-party source</h2>
+      <ol class="policy-test-list">
+        <li>
+          <strong>Prefer the closest source.</strong> Product documentation, protocol specifications, release notes,
+          source repositories, licence files, and official pricing pages take priority over summaries and directories.
+        </li>
+        <li>
+          <strong>Match evidence to the claim.</strong> A homepage mention of “agents” does not support detailed claims
+          about permissions, interfaces, deployment, pricing, or interoperability.
+        </li>
+        <li>
+          <strong>Separate fact from positioning.</strong> Vendor terminology may be reported with attribution, but it
+          is not converted into an independent performance or quality judgment.
+        </li>
+        <li>
+          <strong>Use secondary sources only as context.</strong> Third-party coverage may help find a lead or explain
+          a market, but it cannot replace first-party evidence for inclusion.
+        </li>
+      </ol>
+    </section>
+
+    <section class="policy-classification-grid" aria-label="Editorial review stages">
+      <article class="detail-panel policy-classification-card">
+        <p class="detail-overline">1 · Scope</p>
+        <h3>Identify the agent role</h3>
+        <p>
+          The reviewer states what an agent, agent builder, or interoperable agent system can materially do because the
+          product or protocol exists.
+        </p>
+      </article>
+
+      <article class="detail-panel policy-classification-card">
+        <p class="detail-overline">2 · Verify</p>
+        <h3>Check the specific evidence</h3>
+        <p>
+          The reviewer checks maintained first-party material and rejects thin integrations, unsupported marketing,
+          and generic technical compatibility.
+        </p>
+      </article>
+
+      <article class="detail-panel policy-classification-card">
+        <p class="detail-overline">3 · Classify</p>
+        <h3>Choose one defensible class</h3>
+        <p>
+          Each accepted listing receives the most specific supported classification. Classification is not a rating,
+          award, recommendation, or substitute for due diligence.
+        </p>
+      </article>
+    </section>
+
+    <section class="detail-panel policy-panel">
+      <p class="detail-overline">Experience and verification</p>
+      <h2>Documentation review is not hands-on testing</h2>
+      <p>
+        Unless a listing explicitly describes a dated test and its conditions, it should be read as a review of public
+        documentation, not evidence that the directory installed, purchased, benchmarked, or security-tested the tool.
+        Superlatives and comparative claims require a disclosed method and supporting evidence; otherwise they are not
+        editorial conclusions.
+      </p>
+    </section>
+
+    <section class="detail-panel policy-panel">
+      <p class="detail-overline">Review cadence</p>
+      <h2>Review happens at submission and when material change is found</h2>
+      <p>
+        Every proposed listing is reviewed when it enters the directory. Existing entries are rechecked when a reader,
+        vendor, contributor, or maintainer reports a material change or correction. The directory does not currently
+        promise a fixed recurring re-review interval, so fast-changing facts such as price, availability, limits, and
+        licence terms should be confirmed on the linked first-party source before a decision is made.
+      </p>
+    </section>
+
+    <section class="detail-panel policy-panel">
+      <p class="detail-overline">Conflicts, sponsorship, and affiliate links</p>
+      <h2>Commercial relationships do not change the inclusion test</h2>
+      <ul class="policy-test-list">
+        <li>Contributors should disclose employment, ownership, investment, or another material vendor relationship in the pull request.</li>
+        <li>A maintainer relationship to a listed tool does not exempt the entry from evidence and classification requirements.</li>
+        <li>The directory does not currently sell rankings or sponsored placement.</li>
+        <li>Outbound listing links are not currently paid affiliate links. Any future compensated link or placement must be clearly labelled.</li>
+        <li>Advertising or sponsorship, if introduced, will not guarantee acceptance and will not alter editorial classification.</li>
+      </ul>
+    </section>
+
+    <section class="detail-panel policy-panel">
+      <p class="detail-overline">Ordering</p>
+      <h2>Position is not a score</h2>
+      <p>
+        Homepage listings are shuffled. Category and tool ordering can use an explicit maintenance value and otherwise
+        falls back to readable label or name ordering. Placement does not represent quality, popularity, payment,
+        market share, or editorial preference. Any future ranked recommendation will require a separate published
+        methodology and will be labelled as a ranking.
+      </p>
+    </section>
+
+    <section class="detail-panel policy-panel">
+      <p class="detail-overline">Public record</p>
+      <h2>Changes are proposed in public</h2>
+      <p>
+        Directory content is stored in a
+        <a class="detail-link" href={contentRepoUrl} rel="noreferrer" target="_blank">public GitHub repository</a>.
+        Proposed additions and material edits can be examined in
+        <a class="detail-link" href={pullRequestsUrl} rel="noreferrer" target="_blank">pull requests</a>, including
+        the contributor identity and discussion available there. Public history is useful provenance, but submitter
+        identity is not the same as editorial authorship or independent verification.
+      </p>
+    </section>
+
+    <section class="detail-panel policy-panel">
+      <p class="detail-overline">Corrections, appeals, and removals</p>
+      <h2>Stronger evidence can change a decision</h2>
+      <p>
+        A reader or vendor may challenge a fact, classification, rejection, or removal with a specific first-party
+        source. The maintainer may correct the wording, add a caveat, reclassify, temporarily unpublish, or remove an
+        entry when evidence no longer supports it. A vendor request alone does not require publication or deletion of
+        accurate public-interest information. The full process is documented in the
+        <a class="detail-link" href="/corrections">corrections policy</a>.
+      </p>
+    </section>
+
+    <section class="detail-panel policy-panel" id="data-reuse">
+      <p class="detail-overline">Content and data rights</p>
+      <h2>No separate bulk-reuse licence has been declared</h2>
+      <p>
+        The repositories and live JSON/CSV exports are public for inspection, citation, and contribution, but their
+        availability does not grant a separate open content or compiled-data licence for bulk republication. Link to
+        the canonical page and attribute short quotations. Product names, logos, documentation, and other third-party
+        materials remain subject to their owners' terms. Any future immutable research release will state explicit
+        reuse terms next to that release.
+      </p>
+    </section>
+
+    <section class="policy-cta">
+      <p>Want to inspect or improve the evidence behind a listing?</p>
+      <a class="button button-primary" href="/submit">Read the contribution guide</a>
+    </section>
+  </div>
+</BaseLayout>
