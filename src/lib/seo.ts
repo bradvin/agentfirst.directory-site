@@ -142,7 +142,7 @@ export interface PublisherSchemaOptions {
 
 export function publisherSchema(options: PublisherSchemaOptions = {}): SchemaNode {
   const logo = schemaImage(options.logo);
-  const sameAs = (options.sameAs ?? [siteConfig.publisherGithubUrl]).filter(Boolean);
+  const sameAs = (options.sameAs ?? [siteConfig.publisherGithubUrl, siteConfig.publisherXUrl]).filter(Boolean);
 
   return {
     "@context": SCHEMA_CONTEXT,

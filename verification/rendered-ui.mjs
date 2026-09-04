@@ -191,6 +191,9 @@ for (const path of ["/about", "/editorial-standards", "/corrections", "/open-sou
       : "WebPage";
   assert.ok(schemaOfType(page, pageType), `${path} ${pageType} schema missing`);
   assert.ok(schemaOfType(page, "BreadcrumbList"), `${path} breadcrumb schema missing`);
+  if (path === "/about") {
+    assert.match(page, /href="https:\/\/x\.com\/bradvin"[^>]*>@bradvin on X<\/a>/);
+  }
 }
 
 const sitemap = await get("/sitemap-pages.xml");

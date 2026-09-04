@@ -111,7 +111,7 @@ test("pageGraphSchema connects publisher, WebSite, WebPage, breadcrumbs, and mai
   assert.equal(publisher?.name, "Brad Vincent");
   assert.equal(publisher?.url, "https://agentfirst.directory/about");
   assert.equal(publisher?.description, "Publisher and maintainer of agentfirst.directory.");
-  assert.deepEqual(publisher?.sameAs, ["https://github.com/bradvin"]);
+  assert.deepEqual(publisher?.sameAs, ["https://github.com/bradvin", "https://x.com/bradvin"]);
   assert.deepEqual(website?.publisher, { "@id": publisher["@id"] });
   assert.deepEqual(page?.isPartOf, { "@id": website["@id"] });
   assert.deepEqual(page?.breadcrumb, { "@id": breadcrumb["@id"] });

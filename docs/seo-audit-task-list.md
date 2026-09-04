@@ -71,6 +71,7 @@ This document turns the 2026-09-03 full-site SEO audit into an implementation an
 - [x] Render visible facts, qualification, best-fit, limitations, and sources sections.
 - [x] Visually distinguish submitted/public-product summaries from claim-level documentation-reviewed facts.
 - [x] Add an About page identifying the publisher and editorial responsibility.
+- [x] Link the publisher's GitHub and X profiles visibly on the About page and in the publisher `Person.sameAs` graph.
 - [x] Add a versioned Editorial Standards and Review Methodology page.
 - [x] Document corrections, appeals, stale-entry review, and removal policies.
 - [x] Document conflicts of interest, sponsorships, affiliate links, vendor submissions, and ordering.
@@ -211,3 +212,4 @@ The failing 2026-09-03 baseline was remediated and rechecked on 2026-09-04. The 
 - 2026-09-04: Securely replaced `CLOUDFLARE_API_TOKEN` in both GitHub repositories from the 1Password AgentFirst Production environment without writing the value to either checkout. The failed site workflow was rerun successfully: validation, build, migration, and Worker deployment all passed on `main`.
 - 2026-09-04: Completed the post-merge production closeout. The live crawl again passed 60 sitemap pages and 62 unique internal links; apex HTTP and HTTPS `www` still redirect permanently to the canonical apex URL, and `/.DS_Store` returns `404`.
 - 2026-09-04: Corrected Astro's line-break whitespace trimming around inline links on the homepage, About, Corrections, Editorial Standards, open-source hub, and research pages. Added rendered assertions that reject anchors collapsed against surrounding prose; all local build and rendered-site checks pass.
+- 2026-09-04: Added Brad Vincent's `https://x.com/bradvin` profile immediately after the GitHub publisher profile on the About page and included both identities in the publisher `Person.sameAs` structured data, with rendered and schema regression coverage.
