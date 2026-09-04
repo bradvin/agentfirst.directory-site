@@ -110,3 +110,11 @@ test("tool-card headings are contextual and card images use the controlled media
   assert.match(categoryPage, /<ToolList tools=\{tools\} headingLevel=\{3\}/);
   assert.match(toolPage, /<ToolList tools=\{relatedTools\} variant="compact" headingLevel=\{3\}/);
 });
+
+test("category content sections retain consistent vertical spacing", () => {
+  const categoryPage = read("src/pages/category/[category].astro");
+  const styles = read("src/styles/global.css");
+
+  assert.match(categoryPage, /<div class="category-content-stack">[\s\S]*?<section class="section-block">/);
+  assert.match(styles, /\.category-content-stack\s*\{[\s\S]*?display:\s*grid;[\s\S]*?gap:\s*24px;/);
+});
