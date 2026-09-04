@@ -1196,6 +1196,20 @@ img {
 .comments-panel {
   display: grid;
   gap: 12px;
+  min-width: 0;
+}
+
+.comments-panel .giscus {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.comments-panel .giscus-frame {
+  display: block;
+  width: 100%;
+  min-height: 380px;
+  max-width: 100%;
+  border: 0;
 }
 
 .comments-heading {

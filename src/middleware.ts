@@ -16,6 +16,7 @@ const contentSecurityPolicy = [
   "img-src 'self' data: https:",
   "font-src 'self' https://fonts.gstatic.com",
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+  "style-src-elem 'self' 'unsafe-inline' https://fonts.googleapis.com https://giscus.app",
   "script-src 'self' 'unsafe-inline' https://giscus.app https://static.cloudflareinsights.com",
   "frame-src https://giscus.app",
   "connect-src 'self' https://giscus.app https://api.github.com https://github.com https://cloudflareinsights.com",
