@@ -118,3 +118,11 @@ test("category content sections retain consistent vertical spacing", () => {
   assert.match(categoryPage, /<div class="category-content-stack">[\s\S]*?<section class="section-block">/);
   assert.match(styles, /\.category-content-stack\s*\{[\s\S]*?display:\s*grid;[\s\S]*?gap:\s*24px;/);
 });
+
+test("category comparison tables omit low-value human review dates", () => {
+  const categoryPage = read("src/pages/category/[category].astro");
+
+  assert.match(categoryPage, /<th scope="col">Verification<\/th>/);
+  assert.doesNotMatch(categoryPage, /Human review date/);
+  assert.doesNotMatch(categoryPage, /tool\.entry\.reviewedAt/);
+});
