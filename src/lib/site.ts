@@ -9,6 +9,7 @@ export const siteConfig = {
   publisherUrl: "https://agentfirst.directory/about",
   publisherDescription: "Publisher and maintainer of agentfirst.directory.",
   publisherGithubUrl: "https://github.com/bradvin",
+  publisherXUrl: "https://x.com/bradvin",
   contentRepositoryUrl: "https://github.com/bradvin/agentfirst.directory",
   siteRepositoryUrl: "https://github.com/bradvin/agentfirst.directory-site",
   defaultSocialImage: "/og-default.png",

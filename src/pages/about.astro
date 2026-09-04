@@ -8,7 +8,8 @@ const title = `About | ${siteConfig.name}`;
 const pageName = `About ${siteConfig.name}`;
 const description =
   "Who publishes agentfirst.directory, why the directory exists, and how its public editorial workflow works.";
-const publisherUrl = "https://github.com/bradvin";
+const publisherUrl = siteConfig.publisherGithubUrl;
+const publisherXUrl = siteConfig.publisherXUrl;
 const contentRepoUrl = "https://github.com/bradvin/agentfirst.directory";
 const siteRepoUrl = "https://github.com/bradvin/agentfirst.directory-site";
 const issuesUrl = "https://github.com/bradvin/agentfirst.directory/issues";
@@ -48,7 +49,8 @@ const structuredData = [
       <p class="detail-overline">Publisher</p>
       <h2>Published by Brad Vincent</h2>
       <p>
-        <a class="detail-link" href={publisherUrl} rel="noreferrer" target="_blank">Brad Vincent (@bradvin)</a>{" "}
+        <a class="detail-link" href={publisherUrl} rel="noreferrer" target="_blank">Brad Vincent (@bradvin)</a>{" · "}
+        <a class="detail-link" href={publisherXUrl} rel="noreferrer" target="_blank">@bradvin on X</a>{" "}
         publishes and maintains the directory. Community members can propose additions and corrections through the
         public content repository; publication decisions remain subject to the same evidence-based inclusion policy.
       </p>
