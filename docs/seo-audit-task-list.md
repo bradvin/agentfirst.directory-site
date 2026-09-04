@@ -101,6 +101,7 @@ This document turns the 2026-09-03 full-site SEO audit into an implementation an
 - [x] Add Open Graph image dimensions and MIME type when the served format is known.
 - [x] Add favicon, web manifest, and Apple touch icon coverage.
 - [x] Correct low-contrast small labels and metadata text.
+- [x] Preserve semantic whitespace around inline prose links on editorial pages and enforce it with rendered regression checks.
 
 ## 6. Structured data
 
@@ -209,3 +210,4 @@ The failing 2026-09-03 baseline was remediated and rechecked on 2026-09-04. The 
 - 2026-09-04: Merged the site implementation through protected-branch PR #5 after its required validation check passed. The first post-merge deploy uploaded the Worker but failed while reading zone routes because GitHub Actions still held the older Cloudflare token.
 - 2026-09-04: Securely replaced `CLOUDFLARE_API_TOKEN` in both GitHub repositories from the 1Password AgentFirst Production environment without writing the value to either checkout. The failed site workflow was rerun successfully: validation, build, migration, and Worker deployment all passed on `main`.
 - 2026-09-04: Completed the post-merge production closeout. The live crawl again passed 60 sitemap pages and 62 unique internal links; apex HTTP and HTTPS `www` still redirect permanently to the canonical apex URL, and `/.DS_Store` returns `404`.
+- 2026-09-04: Corrected Astro's line-break whitespace trimming around inline links on the homepage, About, Corrections, Editorial Standards, open-source hub, and research pages. Added rendered assertions that reject anchors collapsed against surrounding prose; all local build and rendered-site checks pass.

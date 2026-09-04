@@ -84,7 +84,21 @@ function assertNoInventedAppClaims(schema) {
   assert.equal(schema.review, undefined);
 }
 
+function assertInlineLinkSpacing(html, path) {
+  assert.doesNotMatch(
+    html,
+    /[A-Za-z0-9.,;:!?]<a\b/,
+    `${path} has an inline link collapsed against preceding prose`,
+  );
+  assert.doesNotMatch(
+    html,
+    /<\/a>[A-Za-z0-9]/,
+    `${path} has an inline link collapsed against following prose`,
+  );
+}
+
 const homepage = await get("/");
+assertInlineLinkSpacing(homepage, "/");
 assert.match(homepage, /<title>AI Agent Tools Directory \| agentfirst\.directory<\/title>/);
 assert.match(homepage, /<link rel="canonical" href="https:\/\/agentfirst\.directory\/">/);
 assert.match(homepage, /<link rel="apple-touch-icon" href="\/apple-touch-icon\.png">/);
@@ -169,6 +183,7 @@ assert.match(policy, /does not qualify/i);
 
 for (const path of ["/about", "/editorial-standards", "/corrections", "/open-source-ai-agent-tools", "/research/state-of-agent-first-infrastructure"] ) {
   const page = await get(path);
+  assertInlineLinkSpacing(page, path);
   const pageType = path === "/about"
     ? "AboutPage"
     : path === "/open-source-ai-agent-tools"
