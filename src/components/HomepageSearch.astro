@@ -40,6 +40,10 @@ const { total } = Astro.props;
   </noscript>
 </div>
 
+<div class="homepage-active-category" data-active-category aria-live="polite" hidden>
+  <a class="homepage-active-category-link" data-active-category-link href="/"></a>
+</div>
+
 <div class="homepage-search-empty" data-search-empty hidden>
   <h2>No matching tools</h2>
   <p>Try a different name, description, category, or tag.</p>
@@ -54,8 +58,10 @@ const { total } = Astro.props;
   const emptyState = document.querySelector<HTMLElement>("[data-search-empty]");
   const categorySidebar = document.querySelector<HTMLElement>("[data-category-sidebar]");
   const toggle = document.querySelector<HTMLButtonElement>("[data-category-toggle]");
+  const activeCategory = document.querySelector<HTMLElement>("[data-active-category]");
+  const activeCategoryLink = activeCategory?.querySelector<HTMLAnchorElement>("[data-active-category-link]");
 
-  if (searchRoot && resultsRoot && emptyState && categorySidebar && toggle) {
+  if (searchRoot && resultsRoot && emptyState && categorySidebar && toggle && activeCategory && activeCategoryLink) {
     const input = searchRoot.querySelector<HTMLInputElement>("[type='search']");
     const status = searchRoot.querySelector<HTMLElement>("[data-search-count]");
     const cards = Array.from(resultsRoot.querySelectorAll<HTMLElement>("[data-search-text]"));
@@ -89,10 +95,24 @@ const { total } = Astro.props;
 
     const setCategory = (category: string) => {
       selectedCategory = category;
+      let selectedButton: HTMLButtonElement | undefined;
       for (const button of categoryButtons) {
         const active = button.dataset.categoryFilter === selectedCategory;
         button.classList.toggle("is-active", active);
         button.setAttribute("aria-pressed", String(active));
+        if (active) selectedButton = button;
+      }
+
+      const categoryLabel = selectedButton?.dataset.categoryLabel;
+      const categoryHref = selectedButton?.dataset.categoryHref;
+      if (selectedCategory === "all" || !categoryLabel || !categoryHref) {
+        activeCategory.hidden = true;
+        activeCategoryLink.textContent = "";
+        activeCategoryLink.href = "/";
+      } else {
+        activeCategoryLink.textContent = `View all ${categoryLabel} tools →`;
+        activeCategoryLink.href = categoryHref;
+        activeCategory.hidden = false;
       }
     };
 

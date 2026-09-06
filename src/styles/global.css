@@ -1560,6 +1560,26 @@ img {
   font-size: 11px;
 }
 
+.homepage-active-category {
+  margin: -2px 0 14px;
+  font: 600 12px/1.4 "IBM Plex Mono", monospace;
+}
+
+.homepage-active-category[hidden] {
+  display: none;
+}
+
+.homepage-active-category-link {
+  color: var(--accent);
+  text-decoration: underline;
+  text-decoration-color: rgba(0, 230, 191, 0.38);
+  text-underline-offset: 3px;
+}
+
+.homepage-active-category-link:hover {
+  text-decoration-color: currentColor;
+}
+
 .homepage-category-toggle {
   cursor: pointer;
 }

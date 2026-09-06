@@ -38,6 +38,8 @@ for (const tool of tools) {
             class="homepage-category-filter"
             type="button"
             data-category-filter={category.slug}
+            data-category-label={category.label}
+            data-category-href={`/category/${category.slug}`}
             aria-pressed="false"
           >
             <span>{category.label}</span>
