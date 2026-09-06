@@ -7,7 +7,7 @@ import { buildToolSearchText } from "../lib/homepage-search";
 interface Props {
   tools: ToolCardData[];
   emptyLabel?: string;
-  variant?: "default" | "compact";
+  variant?: "default" | "compact" | "workspace";
   searchable?: boolean;
   headingLevel?: 2 | 3 | 4 | 5 | 6;
 }
@@ -21,16 +21,19 @@ const {
 } = Astro.props;
 
 const HeadingTag = `h${headingLevel}` as "h2" | "h3" | "h4" | "h5" | "h6";
+const isCompact = variant === "compact";
+const isWorkspace = variant === "workspace";
 ---
 
 {
   tools.length === 0 ? (
     <div class="empty-state">{emptyLabel}</div>
   ) : (
-    <div class:list={["directory-list", variant === "compact" && "directory-list-compact"]}>
+    <div class:list={["directory-list", isCompact && "directory-list-compact", isWorkspace && "directory-list-workspace"]}>
       {tools.map((tool) => (
         <article
-          class:list={["card", variant === "compact" && "card-compact"]}
+          class:list={["card", isCompact && "card-compact", isWorkspace && "card-workspace"]}
+          data-category-slug={searchable ? tool.category.slug : undefined}
           data-search-text={
             searchable
               ? buildToolSearchText({
@@ -42,60 +45,81 @@ const HeadingTag = `h${headingLevel}` as "h2" | "h3" | "h4" | "h5" | "h6";
               : undefined
           }
         >
-          <a class:list={["card-main", variant === "compact" && "card-main-compact"]} href={toolHref(tool.entry)}>
-            <div class="card-head">
-              <div class="card-brand">
-                <div class="card-logo" aria-hidden="true">
-                  {tool.entry.logoUrl ? (
-                    <img
-                      src={`/media/tools/${tool.entry.slug}/card`}
-                      alt=""
-                      width="44"
-                      height="44"
-                      loading="lazy"
-                      decoding="async"
-                    />
-                  ) : (
-                    <span>{tool.entry.name.slice(0, 1)}</span>
-                  )}
+          {isWorkspace ? (
+            <a class="card-main card-main-workspace" href={toolHref(tool.entry)}>
+              <div class="workspace-card-head">
+                <div>
+                  <p class="card-category">{tool.category.label}</p>
+                  <HeadingTag class="card-title">{tool.entry.name}</HeadingTag>
                 </div>
+                {tool.entry.classification && (
+                  <span class="classification-badge">
+                    {formatClassification(tool.entry.classification)}
+                  </span>
+                )}
+              </div>
+              <p class="card-description">{tool.entry.description}</p>
+              <div class="card-footer workspace-card-footer">
+                {tool.entry.tags.length > 0 && (
+                  <div class="tag-list">
+                    {tool.entry.tags.map((tag) => (
+                      <span class="tag">#{tag}</span>
+                    ))}
+                  </div>
+                )}
+                <span class="card-license">{tool.pricingLabel}</span>
+              </div>
+            </a>
+          ) : (
+            <a class:list={["card-main", isCompact && "card-main-compact"]} href={toolHref(tool.entry)}>
+              <div class="card-head">
+                <div class="card-brand">
+                  <div class="card-logo" aria-hidden="true">
+                    {tool.entry.logoUrl ? (
+                      <img
+                        src={`/media/tools/${tool.entry.slug}/card`}
+                        alt=""
+                        width="44"
+                        height="44"
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    ) : (
+                      <span>{tool.entry.name.slice(0, 1)}</span>
+                    )}
+                  </div>
 
-                <div class="card-body">
-                  {
-                    variant !== "compact" && <p class="card-category">{tool.category.label}</p>
-                  }
-                  <div class="card-topline">
-                    <HeadingTag class="card-title">{tool.entry.name}</HeadingTag>
-                    {
-                      tool.entry.classification && (
+                  <div class="card-body">
+                    {!isCompact && <p class="card-category">{tool.category.label}</p>}
+                    <div class="card-topline">
+                      <HeadingTag class="card-title">{tool.entry.name}</HeadingTag>
+                      {tool.entry.classification && (
                         <span class="classification-badge">
                           {formatClassification(tool.entry.classification)}
                         </span>
-                      )
-                    }
-                    <span class="card-license">{tool.pricingLabel}</span>
+                      )}
+                      <span class="card-license">{tool.pricingLabel}</span>
+                    </div>
                   </div>
                 </div>
+
+                <span class="card-arrow" aria-hidden="true">
+                  <svg viewBox="0 0 16 16">
+                    <path
+                      d="M5 3.5 9.5 8 5 12.5M9 8H2.5"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="1.4"
+                    />
+                  </svg>
+                </span>
               </div>
 
-              <span class="card-arrow" aria-hidden="true">
-                <svg viewBox="0 0 16 16">
-                  <path
-                    d="M5 3.5 9.5 8 5 12.5M9 8H2.5"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="1.4"
-                  />
-                </svg>
-              </span>
-            </div>
+              <p class="card-description">{tool.entry.description}</p>
 
-            <p class="card-description">{tool.entry.description}</p>
-
-            {
-              variant !== "compact" && (
+              {!isCompact && (
                 <div class="card-footer">
                   <div class="tag-list">
                     {tool.entry.tags.map((tag) => (
@@ -103,9 +127,9 @@ const HeadingTag = `h${headingLevel}` as "h2" | "h3" | "h4" | "h5" | "h6";
                     ))}
                   </div>
                 </div>
-              )
-            }
-          </a>
+              )}
+            </a>
+          )}
         </article>
       ))}
     </div>

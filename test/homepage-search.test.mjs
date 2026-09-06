@@ -1,11 +1,13 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import {
+import * as homepageSearch from "../src/lib/homepage-search.ts";
+
+const {
   buildToolSearchText,
   matchesToolSearch,
   normalizeSearchText,
-} from "../src/lib/homepage-search.ts";
+} = homepageSearch;
 
 test("normalizes search text for case-insensitive matching", () => {
   assert.equal(normalizeSearchText("  Agent\nNATIVE  "), "agent native");
@@ -37,4 +39,52 @@ test("matches immediate case-insensitive queries across every searchable field",
 
   assert.equal(matchesToolSearch(searchText, "payments"), false);
   assert.equal(matchesToolSearch(searchText, "   "), true);
+});
+
+test("combines the search query and selected category", () => {
+  assert.equal(typeof homepageSearch.matchesHomepageFilters, "function");
+  const { matchesHomepageFilters } = homepageSearch;
+  const searchText = buildToolSearchText({
+    name: "Hermes Agent",
+    description: "An autonomous assistant",
+    categoryLabel: "Agent Infrastructure",
+    tags: ["Open Source", "CLI"],
+  });
+
+  assert.equal(
+    matchesHomepageFilters({
+      searchText,
+      categorySlug: "agent-infrastructure",
+      query: "hermes",
+      selectedCategory: "agent-infrastructure",
+    }),
+    true,
+  );
+  assert.equal(
+    matchesHomepageFilters({
+      searchText,
+      categorySlug: "agent-infrastructure",
+      query: "payments",
+      selectedCategory: "agent-infrastructure",
+    }),
+    false,
+  );
+  assert.equal(
+    matchesHomepageFilters({
+      searchText,
+      categorySlug: "agent-infrastructure",
+      query: "hermes",
+      selectedCategory: "protocols",
+    }),
+    false,
+  );
+  assert.equal(
+    matchesHomepageFilters({
+      searchText,
+      categorySlug: "agent-infrastructure",
+      query: "hermes",
+      selectedCategory: "all",
+    }),
+    true,
+  );
 });

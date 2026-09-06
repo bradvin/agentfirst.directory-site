@@ -1,6 +1,6 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import CategoryChips from "../components/CategoryChips.astro";
+import CategoryFilters from "../components/CategoryFilters.astro";
 import HomepageSearch from "../components/HomepageSearch.astro";
 import ToolList from "../components/ToolList.astro";
 import { getHomepageData } from "../lib/content";
@@ -33,35 +33,31 @@ const structuredData = [
   description={siteConfig.description}
   canonicalPath="/"
   structuredData={structuredData}
+  pageClass="homepage-workspace-page"
 >
   <div class="shell-inner">
-    <section class="hero">
-      <div class="hero-copy">
-        <p class="hero-pill">
-          <span class="pill-dot"></span>
-          {toolCards.length} agent-first tools listed
-        </p>
-
-        <h1 class="hero-title">
+    <section class="homepage-intro">
+      <div class="homepage-intro-copy">
+        <p class="homepage-kicker">{toolCards.length} evidence-reviewed listings</p>
+        <h1 class="homepage-title">
           The directory for <span class="hero-accent">agent-first</span> AI tools
         </h1>
-
-        <p class="hero-copy-text">
-          {siteConfig.description}{" "}
-          <span class="hero-policy-copy">
-            Every listing must pass an evidence-based inclusion test.{" "}
-            <a class="detail-link" href="/policy">Read the inclusion policy →</a>
-          </span>
-        </p>
+        <p class="homepage-description">{siteConfig.description}</p>
+      </div>
+      <div class="homepage-intro-actions">
+        <a class="button button-primary" href="/submit">Submit a tool</a>
+        <a class="button button-secondary" href="/policy">Inclusion policy</a>
       </div>
     </section>
 
-    <CategoryChips categories={categories} />
-
-    <HomepageSearch total={toolCards.length} />
-
-    <section class="section-block" data-homepage-results>
-      <ToolList tools={toolCards} searchable />
+    <section class="homepage-workspace" aria-label="Tool directory">
+      <CategoryFilters categories={categories} tools={toolCards} />
+      <div class="homepage-directory">
+        <HomepageSearch total={toolCards.length} />
+        <section data-homepage-results aria-label="Directory results">
+          <ToolList tools={toolCards} variant="workspace" searchable />
+        </section>
+      </div>
     </section>
   </div>
 </BaseLayout>
