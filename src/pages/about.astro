@@ -37,11 +37,11 @@ const structuredData = [
   <div class="shell-inner policy-shell">
     <section class="page-intro page-intro-centered">
       <p class="detail-overline">About the directory</p>
-      <h1 class="page-title">A public directory with a narrow evidence test</h1>
+      <h1 class="page-title">A public directory with an evidence-based inclusion test</h1>
       <p class="page-copy">
         agentfirst.directory documents products, infrastructure, and protocols that give AI agents a material role
-        or capability. It is a discovery resource, not a security certification, product endorsement, or complete
-        census of the market.
+        or capability. It is a discovery resource. It is not a security certification, product endorsement, or
+        complete census of the market.
       </p>
     </section>
 
@@ -49,10 +49,12 @@ const structuredData = [
       <p class="detail-overline">Publisher</p>
       <h2>Published by Brad Vincent</h2>
       <p>
-        <a class="detail-link" href={publisherUrl} rel="noreferrer" target="_blank">Brad Vincent (@bradvin)</a>{" · "}
-        <a class="detail-link" href={publisherXUrl} rel="noreferrer" target="_blank">@bradvin on X</a>{" "}
-        publishes and maintains the directory. Community members can propose additions and corrections through the
-        public content repository; publication decisions remain subject to the same evidence-based inclusion policy.
+        I publish and maintain agentfirst.directory. You can find me on GitHub as{" "}
+        <a class="detail-link" href={publisherUrl} rel="noreferrer" target="_blank">Brad Vincent (@bradvin)</a> and on X
+        as <a class="detail-link" href={publisherXUrl} rel="noreferrer" target="_blank">@bradvin</a>. Community members
+        can propose additions and corrections through the{" "}
+        <a class="detail-link" href={contentRepoUrl} rel="noreferrer" target="_blank">public content repository</a>.
+        Publication decisions remain subject to the same evidence-based inclusion policy.
       </p>
     </section>
 
@@ -91,11 +93,11 @@ const structuredData = [
 
     <section class="detail-panel policy-panel">
       <p class="detail-overline">Purpose</p>
-      <h2>Why agent-first needs a stricter definition</h2>
+      <h2>Why the directory uses a stricter definition</h2>
       <p>
-        Almost any API can be called by an agent. That fact alone does not make a product agent-first. The directory
-        asks what the agent actually does, whether that role is material, and whether a maintained first-party source
-        supports the claim. This keeps the taxonomy useful while still covering infrastructure that agents depend on.
+        Almost any API can be called by an agent. That alone does not make a product agent-first. The directory checks
+        what the agent actually does, whether that role is material, and whether a maintained first-party source
+        supports the claim. That keeps the taxonomy useful without excluding infrastructure agents depend on.
       </p>
       <div class="feature-actions">
         <a class="button button-primary" href="/policy">Read the inclusion policy</a>
@@ -105,7 +107,7 @@ const structuredData = [
 
     <section class="detail-panel policy-panel">
       <p class="detail-overline">Reuse and attribution</p>
-      <h2>Public access is not an undeclared data licence</h2>
+      <h2>Public access does not grant a separate data licence</h2>
       <p>
         No separate open licence currently grants bulk republication of the directory's editorial copy or compiled
         data. The public repositories and live JSON/CSV exports make the work inspectable and citable; they do not by

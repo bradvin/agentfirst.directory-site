@@ -192,7 +192,7 @@ for (const path of ["/about", "/editorial-standards", "/corrections", "/open-sou
   assert.ok(schemaOfType(page, pageType), `${path} ${pageType} schema missing`);
   assert.ok(schemaOfType(page, "BreadcrumbList"), `${path} breadcrumb schema missing`);
   if (path === "/about") {
-    assert.match(page, /href="https:\/\/x\.com\/bradvin"[^>]*>@bradvin on X<\/a>/);
+    assert.match(page, /href="https:\/\/x\.com\/bradvin"[^>]*>@bradvin<\/a>/);
   }
 }
 
