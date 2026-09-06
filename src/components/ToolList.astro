@@ -48,9 +48,25 @@ const isWorkspace = variant === "workspace";
           {isWorkspace ? (
             <a class="card-main card-main-workspace" href={toolHref(tool.entry)}>
               <div class="workspace-card-head">
-                <div>
-                  <p class="card-category">{tool.category.label}</p>
-                  <HeadingTag class="card-title">{tool.entry.name}</HeadingTag>
+                <div class="card-brand workspace-card-brand">
+                  <div class="card-logo" aria-hidden="true">
+                    {tool.entry.logoUrl ? (
+                      <img
+                        src={`/media/tools/${tool.entry.slug}/card`}
+                        alt=""
+                        width="44"
+                        height="44"
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    ) : (
+                      <span>{tool.entry.name.slice(0, 1)}</span>
+                    )}
+                  </div>
+                  <div>
+                    <p class="card-category">{tool.category.label}</p>
+                    <HeadingTag class="card-title">{tool.entry.name}</HeadingTag>
+                  </div>
                 </div>
                 {tool.entry.classification && (
                   <span class="classification-badge">
