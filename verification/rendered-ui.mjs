@@ -232,7 +232,24 @@ assert.match(csvEndpoint.body, /Hermes Agent documentation/);
 
 const openSourceHub = await get("/open-source-ai-agent-tools");
 assert.match(openSourceHub, /<h1 class="page-title">Open-source AI agent tools<\/h1>/);
+assert.match(openSourceHub, /<h2>An open-source label does not cover everything<\/h2>/);
+assert.match(openSourceHub, /This page includes all listings that are categorized as open source\./);
+assert.match(
+  openSourceHub,
+  /That label does not mean every asset, hosted service, model, dependency, or trademark uses the same licence\./,
+);
+assert.match(openSourceHub, /Browse open-source tools for AI agents/);
+assert.doesNotMatch(openSourceHub, /—/u);
 assert.match(cardFor(openSourceHub, "hermes-agent"), /Hermes Agent/);
+
+const researchPage = await get("/research/state-of-agent-first-infrastructure");
+assert.match(
+  researchPage,
+  /A live count of the directory's published records, with an explanation of what those records can show and what they cannot show\./,
+);
+assert.match(researchPage, /not a ranking, adoption survey, or estimate of the whole market/);
+assert.match(researchPage, /All category guidance written for the directory is public/);
+assert.doesNotMatch(researchPage, /—/u);
 assert.doesNotMatch(openSourceHub, /href="\/tools\/fiber"/);
 
 const feed = await request("/feed.xml");
