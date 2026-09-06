@@ -10,6 +10,7 @@
     "preview": "wrangler types && astro preview",
     "test": "node --test",
     "verify:rendered": "node verification/rendered-ui.mjs && node verification/homepage-search.mjs && node verification/randomized-homepage.mjs && node verification/seo-crawl.mjs",
+    "verify:giscus": "node verification/giscus-comments.mjs",
     "generate:icons": "node scripts/generate-icons.mjs",
     "check": "wrangler types && astro check",
     "ci": "npm test && npm run check && npm run build"
@@ -23,6 +24,7 @@
     "@astrojs/check": "^0.9.10",
     "@types/markdown-it": "^14.2.0",
     "@types/node": "25.5.0",
+    "playwright": "1.62.1",
     "typescript": "6.0.2",
     "wrangler": "^4.128.0"
   }
