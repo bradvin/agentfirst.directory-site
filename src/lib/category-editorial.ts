@@ -23,7 +23,7 @@ export const categoryEditorialEntries = [
     description:
       "Tools that give agents a durable identity or a practical channel for email, messaging, phone calls, and other communications.",
     definition:
-      "This category covers identity and communication capabilities designed for agents to be addressed, authenticated, contacted, or represented in an ongoing workflow.",
+      "Identity and communication tools belong here when they are designed for agents to be addressed, authenticated, contacted, or represented in an ongoing workflow.",
     includeWhen: [
       "An agent can provision or operate its own inbox, number, account, or communication identity.",
       "Inbound and outbound communication is exposed through an agent-usable API, protocol, CLI, SDK, or tool interface.",
@@ -46,7 +46,7 @@ export const categoryEditorialEntries = [
     description:
       "Isolated computers, execution environments, and managed runtimes where agents can run code or operate software safely.",
     definition:
-      "This category covers compute that materially improves an agent's ability to execute, inspect, resume, or contain work across code, command-line, desktop, and remote-machine tasks.",
+      "Compute tools belong here when they materially improve an agent’s ability to execute, inspect, resume, or contain code, command-line, desktop, or remote-machine work.",
     includeWhen: [
       "Agents can provision, control, or resume an isolated execution environment programmatically.",
       "The product provides meaningful containment, persistence, observability, or computer-use support.",
@@ -69,7 +69,7 @@ export const categoryEditorialEntries = [
     description:
       "Browser runtimes and control layers that let agents navigate websites, maintain sessions, and complete multi-step web tasks.",
     definition:
-      "This category covers tools whose primary value is operating a browser or website interface on an agent's behalf, from low-level browser control to higher-level task execution.",
+      "Browser automation tools belong here when their primary value is operating a browser or website interface for an agent, from low-level browser control to higher-level task execution.",
     includeWhen: [
       "The agent can navigate, click, type, inspect, or extract through a real or emulated browser.",
       "Session state, browser infrastructure, or agent-oriented control is a core capability.",
@@ -92,7 +92,7 @@ export const categoryEditorialEntries = [
     description:
       "Interfaces where agents present, generate, edit, or share work with people and other systems.",
     definition:
-      "This category covers frontend systems built around agent-generated interfaces, agent-user interaction, or shared human-agent work rather than conventional application UI alone.",
+      "Frontend systems belong here when they are built around agent-generated interfaces, agent-user interaction, or shared human-agent work rather than conventional application UI alone.",
     includeWhen: [
       "Agents can create or materially edit the interface or its content.",
       "The interface exposes structured state, events, or collaboration designed for agent participation.",
@@ -115,7 +115,7 @@ export const categoryEditorialEntries = [
     description:
       "Services and libraries that turn web pages into reliable text or structured data for agent research and workflows.",
     definition:
-      "This category covers agent-oriented crawling, page retrieval, parsing, and structured extraction where producing usable web data is the primary outcome.",
+      "Crawling and extraction tools belong here when their primary outcome is usable web data produced through crawling, page retrieval, parsing, or structured extraction.",
     includeWhen: [
       "The product returns clean text, structured records, or documented extraction output for agents.",
       "It materially handles crawling constraints such as rendering, pagination, change detection, or schema extraction.",
@@ -138,7 +138,7 @@ export const categoryEditorialEntries = [
     description:
       "Tools that let agents plan, run, inspect, or maintain tests for software and agent-driven workflows.",
     definition:
-      "This category covers testing and quality-assurance systems in which agents are active test authors, operators, evaluators, or debugging participants.",
+      "Testing and quality-assurance systems belong here when agents actively author, operate, evaluate, or debug tests.",
     includeWhen: [
       "An agent can author, execute, adapt, or diagnose tests through a documented interface.",
       "The product preserves evidence such as steps, traces, screenshots, or reproducible results.",
@@ -161,7 +161,7 @@ export const categoryEditorialEntries = [
     description:
       "Storage and delivery services that help agents persist, transform, retrieve, or share files and media.",
     definition:
-      "This category covers storage or media infrastructure with a documented agent-first workflow, such as direct tool access, durable artifact URLs, transformations, or agent-oriented discovery.",
+      "Storage and media infrastructure belongs here when it has a documented agent-first workflow, such as direct tool access, durable artifact URLs, transformations, or agent-oriented discovery.",
     includeWhen: [
       "Agents can store, retrieve, transform, or share artifacts through a documented machine interface.",
       "Durability, permissions, provenance, or media processing materially improves the agent workflow.",
@@ -184,7 +184,7 @@ export const categoryEditorialEntries = [
     description:
       "Memory and state systems that help agents retain, retrieve, reason over, and update context across sessions.",
     definition:
-      "This category covers durable memory or state layers built to support continuity in agent behavior, including conversation, entity, user, episodic, and workflow state.",
+      "Memory and state tools belong here when they provide durable layers for continuity in agent behaviour, including conversation, entity, user, episodic, and workflow state.",
     includeWhen: [
       "The system models memory or evolving state for agents rather than only storing documents.",
       "Retrieval, updates, or reasoning over past context is a documented core capability.",
@@ -207,7 +207,7 @@ export const categoryEditorialEntries = [
     description:
       "Wallets, payment protocols, controls, and financial rails that let agents transact under explicit authority.",
     definition:
-      "This category covers infrastructure that enables agents to discover prices, hold or use payment credentials, transact, or operate within programmable financial controls.",
+      "Payment infrastructure belongs here when it lets agents discover prices, hold or use payment credentials, transact, or operate within programmable financial controls.",
     includeWhen: [
       "An agent can initiate, receive, or negotiate a payment through a documented machine interface.",
       "Identity, delegated authority, spend controls, or settlement is a material capability.",
@@ -230,7 +230,7 @@ export const categoryEditorialEntries = [
     description:
       "Frameworks, SDKs, specifications, and interoperability standards used to define, build, or connect agents.",
     definition:
-      "This category covers reusable development abstractions and open standards in which agents, agent runtimes, or agent interactions are the central subject.",
+      "Frameworks and standards belong here when agents, agent runtimes, or agent interactions are their central subject.",
     includeWhen: [
       "The framework provides first-class agent abstractions, execution, tools, state, or coordination.",
       "The standard defines interoperable agent behavior, messages, interfaces, or packaging.",
@@ -253,7 +253,7 @@ export const categoryEditorialEntries = [
     description:
       "Connector platforms that let agents authenticate with and take governed actions across third-party SaaS products.",
     definition:
-      "This category covers broad connector catalogs and integration platforms whose primary value is giving agents usable actions across external business applications.",
+      "Connector catalogues and integration platforms belong here when their primary value is giving agents usable actions across external business applications.",
     includeWhen: [
       "The platform exposes maintained connectors or action catalogs designed for agent tool use.",
       "Authentication, user authorization, and action execution are handled as substantive platform capabilities.",
@@ -276,7 +276,7 @@ export const categoryEditorialEntries = [
     description:
       "Control planes and runtimes that coordinate agents, tasks, schedules, state, governance, and human review.",
     definition:
-      "This category covers systems whose main purpose is coordinating agent work across multiple runs, roles, workers, or workflows rather than implementing one agent in isolation.",
+      "Orchestrators belong here when their main purpose is coordinating agent work across multiple runs, roles, workers, or workflows rather than implementing one agent in isolation.",
     includeWhen: [
       "The system assigns, schedules, routes, or supervises work across agents or agent runs.",
       "Shared state, observability, budgets, approvals, or governance is a material capability.",
@@ -299,7 +299,7 @@ export const categoryEditorialEntries = [
     description:
       "Layers that help agents discover, authenticate to, route, govern, and execute APIs or reusable tools.",
     definition:
-      "This category covers infrastructure between an agent and external APIs where discovery, credentials, policy, routing, or execution materially improves safe tool use.",
+      "API orchestration tools belong here when they sit between an agent and external APIs, and discovery, credentials, policy, routing, or execution materially improves safe tool use.",
     includeWhen: [
       "The product gives agents a documented way to discover and invoke APIs, tools, or skills.",
       "Credential protection, permissions, policy, or execution mediation is a core capability.",
@@ -322,7 +322,7 @@ export const categoryEditorialEntries = [
     description:
       "Platforms that let agents perceive, generate, or interact through voice, audio, images, video, and other modalities.",
     definition:
-      "This category covers agent-first interaction layers where real-time speech or another non-text modality is central to the agent's operation or user experience.",
+      "Voice and multimodal tools belong here when real-time speech or another non-text modality is central to the agent’s operation or user experience.",
     includeWhen: [
       "The product provides a documented runtime or interface for voice or multimodal agents.",
       "Real-time interaction, turn handling, telephony, media events, or modality coordination is substantive.",
@@ -345,7 +345,7 @@ export const categoryEditorialEntries = [
     description:
       "Search, enrichment, and discovery systems that give agents structured access to specialized people, company, job, or domain data.",
     definition:
-      "This category covers purpose-built retrieval and discovery products whose indexed data, ranking, enrichment, or result structure materially improves an agent workflow.",
+      "Search and discovery tools belong here when their indexed data, ranking, enrichment, or result structure materially improves an agent workflow.",
     includeWhen: [
       "The search corpus or enrichment is specialized and documented.",
       "Results are available in structured, agent-usable form with useful provenance or identifiers.",
@@ -368,7 +368,7 @@ export const categoryEditorialEntries = [
     description:
       "Research, optimisation, and measurement tools that let agents perform accountable marketing and search-visibility work.",
     definition:
-      "This category covers marketing and SEO capabilities designed for agent workflows, including demand research, search analysis, content planning, optimisation, and measurable follow-up actions.",
+      "Marketing and SEO tools belong here when they are designed for agent workflows, including demand research, search analysis, content planning, optimisation, and measurable follow-up actions.",
     includeWhen: [
       "An agent can research, analyse, recommend, or execute a substantive marketing or SEO task through a documented interface.",
       "The product exposes useful source data, metrics, constraints, or outputs rather than only generating promotional copy.",
