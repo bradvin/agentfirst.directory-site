@@ -202,17 +202,6 @@ If `gh` is unavailable, sign in on GitHub and create or reuse your fork at `http
 
 `https://github.com/bradvin/agentfirst.directory/compare/main...YOUR-USERNAME:add-coolapi?expand=1`
 
-### Collaborator shortcut
-
-Only collaborators with write access to `bradvin/agentfirst.directory` should skip the fork and push directly to upstream `origin`:
-
-```bash
-git push -u origin add-coolapi
-gh pr create --repo bradvin/agentfirst.directory --base main \
-  --head add-coolapi --title "Add CoolAPI" \
-  --body "Explain why CoolAPI belongs and cite its first-party evidence."
-```
-
 ## Final checks
 
 - Confirm the tool is not already listed

@@ -219,7 +219,7 @@ const structuredData = [
         </div>
       </div>
 
-      <div class="submit-code-grid">
+      <div>
         <div>
           <p class="detail-overline">Browser fallback</p>
           <p class="submit-copy">
@@ -228,15 +228,6 @@ const structuredData = [
             Set <code>GH_USER="YOUR-USERNAME"</code>, follow the clone, remote, branch, commit, and push commands above, then open:
           </p>
           <pre class="code-block" tabindex="0" aria-label="Browser pull request URL"><code>{browserPrUrl}</code></pre>
-        </div>
-
-        <div>
-          <p class="detail-overline">Collaborator shortcut</p>
-          <p class="submit-copy">Only collaborators with write access to <code>bradvin/agentfirst.directory</code> should skip the fork and push directly:</p>
-          <pre class="code-block" tabindex="0" aria-label="Collaborator workflow code"><code>{`git push -u origin add-coolapi
-gh pr create --repo bradvin/agentfirst.directory --base main \\
-  --head add-coolapi --title "Add CoolAPI" \\
-  --body "Explain why CoolAPI belongs and cite its first-party evidence."`}</code></pre>
         </div>
       </div>
     </section>

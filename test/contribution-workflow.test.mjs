@@ -38,7 +38,7 @@ test("submit source and public skill share the same fork-based contributor workf
   assert.doesNotMatch(submitWorkflow, /git push (?:-u )?origin add-coolapi/);
 });
 
-test("both public surfaces include browser fallback and a labelled collaborator shortcut", () => {
+test("both public surfaces include the browser fallback without a collaborator shortcut", () => {
   const browserFallback = "https://github.com/bradvin/agentfirst.directory/compare/main...YOUR-USERNAME:add-coolapi?expand=1";
 
   for (const [surface, content] of [
@@ -49,6 +49,7 @@ test("both public surfaces include browser fallback and a labelled collaborator 
     assert.match(content, /Git authentication for HTTPS/iu, `${surface} must require authenticated Git pushes`);
     assert.match(content, /credential manager or personal access token/iu, `${surface} must explain HTTPS authentication options`);
     assert.ok(content.includes(browserFallback), `${surface} must include the concrete browser PR URL`);
-    assert.match(content, /Collaborator shortcut/iu, `${surface} must label the collaborator-only path`);
+    assert.doesNotMatch(content, /Collaborator shortcut/iu, `${surface} must not publish a collaborator-only path`);
+    assert.doesNotMatch(content, /git push (?:-u )?origin add-coolapi/iu, `${surface} must not suggest pushing to upstream`);
   }
 });
