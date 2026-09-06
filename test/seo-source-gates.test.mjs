@@ -21,26 +21,27 @@ test("BaseLayout preserves canonical, safe robots, social-image, and JSON-LD gat
 test("homepage keeps the approved direct copy and shared SEO description", () => {
   const site = read("src/lib/site.ts");
   const homepage = read("src/pages/index.astro");
+  const categoryFilters = read("src/components/CategoryFilters.astro");
   const description =
     "Find and compare evidence-reviewed tools built for AI agents: agent-native software, enabling infrastructure, and open agent protocols.";
 
   assert.match(site, new RegExp(JSON.stringify(description).slice(1, -1).replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
   assert.match(homepage, /description: siteConfig\.description/);
   assert.match(homepage, /description=\{siteConfig\.description\}/);
-  assert.match(homepage, /<p class="hero-copy-text">\s*\{siteConfig\.description\}\{" "\}/);
+  assert.match(homepage, /<p class="homepage-description">\{siteConfig\.description\}<\/p>/);
   assert.match(
     homepage,
     /The directory for <span class="hero-accent">agent-first<\/span> AI tools/,
   );
   assert.match(
-    homepage,
+    categoryFilters,
     /Every listing has to pass the evidence-based inclusion test\.\{" "\}/,
   );
   assert.match(
-    homepage,
-    /<a class="detail-link" href="\/policy">Read the inclusion policy →<\/a>/,
+    categoryFilters,
+    /<a href="\/policy">Read the inclusion policy →<\/a>/,
   );
-  assert.doesNotMatch(`${description}\n${homepage}`, /—/);
+  assert.doesNotMatch(`${description}\n${homepage}\n${categoryFilters}`, /—/);
 });
 
 test("tool and category misses retain hard status codes and noindex directives", () => {

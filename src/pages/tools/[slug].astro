@@ -259,48 +259,6 @@ const structuredData = tool
                 }
               </section>
 
-              {
-                (bestForHtml || notBestForHtml || limitationsHtml || unknownsHtml) && (
-                  <section class="detail-panel evidence-panel" id="fit-and-limitations" aria-labelledby="fit-heading">
-                    <p class="detail-overline">Before you choose</p>
-                    <h2 id="fit-heading">Fit and limitations</h2>
-                    <div class="decision-grid">
-                      {bestForHtml && <div><h3>Best for</h3><div class="prose-compact" set:html={bestForHtml} /></div>}
-                      {notBestForHtml && <div><h3>Not best for</h3><div class="prose-compact" set:html={notBestForHtml} /></div>}
-                      {limitationsHtml && <div><h3>Known limitations</h3><div class="prose-compact" set:html={limitationsHtml} /></div>}
-                      {unknownsHtml && <div><h3>Not yet verified</h3><div class="prose-compact" set:html={unknownsHtml} /></div>}
-                    </div>
-                  </section>
-                )
-              }
-
-              <section class="detail-panel evidence-panel" id="sources" aria-labelledby="sources-heading">
-                <p class="detail-overline">Sources</p>
-                <h2 id="sources-heading">Sources and verification</h2>
-                {
-                  tool.entry.evidenceSources.length > 0 ? (
-                    <p class="evidence-note">
-                      First-party unless marked otherwise. Each link supports only its adjacent claim.
-                    </p>
-                  ) : (
-                    <p class="evidence-note">
-                      No claim-level review or evidence mapping is recorded. Use these first-party links as starting points for verification.
-                    </p>
-                  )
-                }
-                <ol class="evidence-list">
-                  {visibleSources.map((source) => (
-                    <li id={`source-${visibleSources.indexOf(source) + 1}`}>
-                      <a class="detail-link" href={source.url} rel="noreferrer" target="_blank">{source.title}</a>
-                      <p>{source.claim}</p>
-                      <span>
-                        {source.sourceType?.replaceAll("-", " ") ?? "first-party source"}
-                        {source.accessedAt ? ` · accessed ${displayDate(source.accessedAt)}` : ""}
-                      </span>
-                    </li>
-                  ))}
-                </ol>
-              </section>
             </div>
 
             <aside class="detail-sidebar">
@@ -375,6 +333,49 @@ const structuredData = tool
                 </div>
               </article>
             </aside>
+
+            {
+              (bestForHtml || notBestForHtml || limitationsHtml || unknownsHtml) && (
+                <section class="detail-panel evidence-panel detail-full-span" id="fit-and-limitations" aria-labelledby="fit-heading">
+                  <p class="detail-overline">Before you choose</p>
+                  <h2 id="fit-heading">Fit and limitations</h2>
+                  <div class="decision-grid">
+                    {bestForHtml && <div><h3>Best for</h3><div class="prose-compact" set:html={bestForHtml} /></div>}
+                    {notBestForHtml && <div><h3>Not best for</h3><div class="prose-compact" set:html={notBestForHtml} /></div>}
+                    {limitationsHtml && <div><h3>Known limitations</h3><div class="prose-compact" set:html={limitationsHtml} /></div>}
+                    {unknownsHtml && <div><h3>Not yet verified</h3><div class="prose-compact" set:html={unknownsHtml} /></div>}
+                  </div>
+                </section>
+              )
+            }
+
+            <section class="detail-panel evidence-panel detail-full-span" id="sources" aria-labelledby="sources-heading">
+              <p class="detail-overline">Sources</p>
+              <h2 id="sources-heading">Sources and verification</h2>
+              {
+                tool.entry.evidenceSources.length > 0 ? (
+                  <p class="evidence-note">
+                    First-party unless marked otherwise. Each link supports only its adjacent claim.
+                  </p>
+                ) : (
+                  <p class="evidence-note">
+                    No claim-level review or evidence mapping is recorded. Use these first-party links as starting points for verification.
+                  </p>
+                )
+              }
+              <ol class="evidence-list">
+                {visibleSources.map((source) => (
+                  <li id={`source-${visibleSources.indexOf(source) + 1}`}>
+                    <a class="detail-link" href={source.url} rel="noreferrer" target="_blank">{source.title}</a>
+                    <p>{source.claim}</p>
+                    <span>
+                      {source.sourceType?.replaceAll("-", " ") ?? "first-party source"}
+                      {source.accessedAt ? ` · accessed ${displayDate(source.accessedAt)}` : ""}
+                    </span>
+                  </li>
+                ))}
+              </ol>
+            </section>
           </div>
 
           <section class="section-block">

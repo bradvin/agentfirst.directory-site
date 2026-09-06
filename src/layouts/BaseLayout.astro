@@ -19,6 +19,7 @@ interface Props {
   feedUrl?: string | false;
   noindex?: boolean;
   structuredData?: unknown[];
+  pageClass?: string;
 }
 
 const {
@@ -36,6 +37,7 @@ const {
   feedUrl = "/feed.xml",
   noindex = false,
   structuredData = [],
+  pageClass,
 } = Astro.props;
 
 const siteUrl = Astro.site ?? siteConfig.url;
@@ -102,7 +104,7 @@ const robots = noindex ? "noindex, follow" : "index, follow, max-image-preview:l
       rel="stylesheet"
     />
   </head>
-  <body>
+  <body class={pageClass}>
     <div class="page-shell">
       <SiteHeader />
       <main class="site-main">

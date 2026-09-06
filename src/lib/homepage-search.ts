@@ -19,3 +19,20 @@ export function matchesToolSearch(searchText: string, query: string) {
   const normalizedQuery = normalizeSearchText(query);
   return normalizedQuery === "" || searchText.includes(normalizedQuery);
 }
+
+interface HomepageFilterInput {
+  searchText: string;
+  categorySlug: string;
+  query: string;
+  selectedCategory: string;
+}
+
+export function matchesHomepageFilters({
+  searchText,
+  categorySlug,
+  query,
+  selectedCategory,
+}: HomepageFilterInput) {
+  const matchesCategory = selectedCategory === "all" || categorySlug === selectedCategory;
+  return matchesCategory && matchesToolSearch(searchText, query);
+}

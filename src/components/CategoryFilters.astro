@@ -1,0 +1,56 @@
+---
+import type { Category, ToolCardData } from "../lib/content";
+
+interface Props {
+  categories: Category[];
+  tools: ToolCardData[];
+}
+
+const { categories, tools } = Astro.props;
+const counts = new Map<string, number>();
+for (const tool of tools) {
+  counts.set(tool.category.slug, (counts.get(tool.category.slug) ?? 0) + 1);
+}
+---
+
+<nav
+  class="homepage-category-sidebar"
+  id="homepage-category-filters"
+  data-category-sidebar
+  aria-labelledby="homepage-category-heading"
+>
+  <h2 class="homepage-category-heading" id="homepage-category-heading">Filter by category</h2>
+  <div class="homepage-category-list">
+    <button
+      class="homepage-category-filter is-active"
+      type="button"
+      data-category-filter="all"
+      aria-pressed="true"
+    >
+      <span>All tools</span>
+      <span aria-label={`${tools.length} tools`}>{tools.length}</span>
+    </button>
+    {
+      categories.map((category) => {
+        const count = counts.get(category.slug) ?? 0;
+        return (
+          <button
+            class="homepage-category-filter"
+            type="button"
+            data-category-filter={category.slug}
+            data-category-label={category.label}
+            data-category-href={`/category/${category.slug}`}
+            aria-pressed="false"
+          >
+            <span>{category.label}</span>
+            <span aria-label={`${count} ${count === 1 ? "tool" : "tools"}`}>{count}</span>
+          </button>
+        );
+      })
+    }
+  </div>
+  <p class="homepage-category-note">
+    Every listing has to pass the evidence-based inclusion test.{" "}
+    <a href="/policy">Read the inclusion policy →</a>
+  </p>
+</nav>

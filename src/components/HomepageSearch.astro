@@ -7,45 +7,73 @@ const { total } = Astro.props;
 ---
 
 <div class="homepage-search" data-homepage-search>
-  <label class="homepage-search-label" for="homepage-search">Search tools</label>
   <div class="homepage-search-controls">
-    <input
-      class="homepage-search-input"
-      id="homepage-search"
-      name="q"
-      type="search"
-      autocomplete="off"
-      placeholder="Search by name, description, category, or tag"
-    />
+    <label class="visually-hidden" for="homepage-search">Search tools</label>
+    <div class="homepage-search-field">
+      <input
+        class="homepage-search-input"
+        id="homepage-search"
+        name="q"
+        type="search"
+        autocomplete="off"
+        placeholder="Search by name, description, category, or tag"
+      />
+      <span class="homepage-search-icon" aria-hidden="true">⌕</span>
+    </div>
     <button class="homepage-search-clear" type="button" data-search-clear hidden>Clear</button>
+    <button
+      class="button button-secondary homepage-category-toggle"
+      type="button"
+      data-category-toggle
+      aria-controls="homepage-category-filters"
+      aria-expanded="false"
+      hidden
+    >
+      Categories
+    </button>
+    <p class="homepage-search-count" data-search-count aria-live="polite" aria-atomic="true">
+      {total} {total === 1 ? "tool" : "tools"}
+    </p>
   </div>
-  <p class="homepage-search-count" data-search-count aria-live="polite" aria-atomic="true">
-    {total} {total === 1 ? "tool" : "tools"}
-  </p>
   <noscript>
     <p class="homepage-search-note">Search requires JavaScript. All tools are listed below.</p>
   </noscript>
 </div>
 
+<div class="homepage-active-category" data-active-category aria-live="polite" hidden>
+  <a class="homepage-active-category-link" data-active-category-link href="/"></a>
+</div>
+
 <div class="homepage-search-empty" data-search-empty hidden>
   <h2>No matching tools</h2>
   <p>Try a different name, description, category, or tag.</p>
-  <button class="button button-primary" type="button" data-search-clear>Clear search</button>
+  <button class="button button-primary" type="button" data-filter-reset>Clear filters</button>
 </div>
 
 <script>
-  import { matchesToolSearch } from "../lib/homepage-search";
+  import { matchesHomepageFilters } from "../lib/homepage-search";
 
   const searchRoot = document.querySelector<HTMLElement>("[data-homepage-search]");
   const resultsRoot = document.querySelector<HTMLElement>("[data-homepage-results]");
   const emptyState = document.querySelector<HTMLElement>("[data-search-empty]");
+  const categorySidebar = document.querySelector<HTMLElement>("[data-category-sidebar]");
+  const toggle = document.querySelector<HTMLButtonElement>("[data-category-toggle]");
+  const activeCategory = document.querySelector<HTMLElement>("[data-active-category]");
+  const activeCategoryLink = activeCategory?.querySelector<HTMLAnchorElement>("[data-active-category-link]");
 
-  if (searchRoot && resultsRoot && emptyState) {
+  if (searchRoot && resultsRoot && emptyState && categorySidebar && toggle && activeCategory && activeCategoryLink) {
     const input = searchRoot.querySelector<HTMLInputElement>("[type='search']");
     const status = searchRoot.querySelector<HTMLElement>("[data-search-count]");
     const cards = Array.from(resultsRoot.querySelectorAll<HTMLElement>("[data-search-text]"));
     const clearButtons = Array.from(document.querySelectorAll<HTMLButtonElement>("[data-search-clear]"));
+    const resetButton = emptyState.querySelector<HTMLButtonElement>("[data-filter-reset]");
+    const categoryButtons = Array.from(
+      categorySidebar.querySelectorAll<HTMLButtonElement>("[data-category-filter]"),
+    );
+    const mobileQuery = window.matchMedia("(max-width: 850px)");
     const total = cards.length;
+    let selectedCategory = "all";
+    let drawerOpen = false;
 
     const updateUrl = (query: string) => {
       const url = new URL(window.location.href);
@@ -57,22 +85,59 @@ const { total } = Astro.props;
       window.history.replaceState(window.history.state, "", `${url.pathname}${url.search}${url.hash}`);
     };
 
-    const applySearch = (query: string, syncUrl = true) => {
+    const updateDrawer = () => {
+      const isMobile = mobileQuery.matches;
+      toggle.hidden = !isMobile;
+      categorySidebar.hidden = isMobile && !drawerOpen;
+      toggle.setAttribute("aria-expanded", String(isMobile && drawerOpen));
+      toggle.textContent = drawerOpen ? "Hide categories" : "Categories";
+    };
+
+    const setCategory = (category: string) => {
+      selectedCategory = category;
+      let selectedButton: HTMLButtonElement | undefined;
+      for (const button of categoryButtons) {
+        const active = button.dataset.categoryFilter === selectedCategory;
+        button.classList.toggle("is-active", active);
+        button.setAttribute("aria-pressed", String(active));
+        if (active) selectedButton = button;
+      }
+
+      const categoryLabel = selectedButton?.dataset.categoryLabel;
+      const categoryHref = selectedButton?.dataset.categoryHref;
+      if (selectedCategory === "all" || !categoryLabel || !categoryHref) {
+        activeCategory.hidden = true;
+        activeCategoryLink.textContent = "";
+        activeCategoryLink.href = "/";
+      } else {
+        activeCategoryLink.textContent = `View all ${categoryLabel} tools →`;
+        activeCategoryLink.href = categoryHref;
+        activeCategory.hidden = false;
+      }
+    };
+
+    const applyFilters = (query: string, syncUrl = true) => {
       const trimmedQuery = query.trim();
       let visible = 0;
 
       for (const card of cards) {
-        const matches = matchesToolSearch(card.dataset.searchText ?? "", trimmedQuery);
+        const matches = matchesHomepageFilters({
+          searchText: card.dataset.searchText ?? "",
+          categorySlug: card.dataset.categorySlug ?? "",
+          query: trimmedQuery,
+          selectedCategory,
+        });
         card.hidden = !matches;
         if (matches) visible += 1;
       }
 
       const hasQuery = trimmedQuery !== "";
+      const hasFilters = hasQuery || selectedCategory !== "all";
       for (const button of clearButtons) button.hidden = !hasQuery;
       emptyState.hidden = visible !== 0;
 
       if (status) {
-        status.textContent = hasQuery
+        status.textContent = hasFilters
           ? `${visible} of ${total} ${total === 1 ? "tool" : "tools"} shown`
           : `${total} ${total === 1 ? "tool" : "tools"}`;
       }
@@ -83,16 +148,55 @@ const { total } = Astro.props;
     if (input) {
       const initialQuery = new URL(window.location.href).searchParams.get("q") ?? "";
       input.value = initialQuery;
-      applySearch(initialQuery, false);
-      input.addEventListener("input", () => applySearch(input.value));
+      applyFilters(initialQuery, false);
+      input.addEventListener("input", () => applyFilters(input.value));
 
       for (const button of clearButtons) {
         button.addEventListener("click", () => {
           input.value = "";
-          applySearch("");
+          applyFilters("");
           input.focus();
         });
       }
+
+      for (const button of categoryButtons) {
+        button.addEventListener("click", () => {
+          setCategory(button.dataset.categoryFilter ?? "all");
+          applyFilters(input.value);
+          if (mobileQuery.matches) {
+            drawerOpen = false;
+            updateDrawer();
+            toggle.focus();
+          }
+        });
+      }
+
+      resetButton?.addEventListener("click", () => {
+        input.value = "";
+        setCategory("all");
+        applyFilters("");
+        input.focus();
+      });
     }
+
+    toggle.addEventListener("click", () => {
+      drawerOpen = !drawerOpen;
+      updateDrawer();
+      if (drawerOpen) categoryButtons[0]?.focus();
+    });
+
+    categorySidebar.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && mobileQuery.matches && drawerOpen) {
+        drawerOpen = false;
+        updateDrawer();
+        toggle.focus();
+      }
+    });
+
+    mobileQuery.addEventListener("change", () => {
+      drawerOpen = false;
+      updateDrawer();
+    });
+    updateDrawer();
   }
 </script>

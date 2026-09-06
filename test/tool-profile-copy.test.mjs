@@ -48,6 +48,22 @@ test("tool-profile labels and trust copy state evidence boundaries directly", ()
   assert.match(toolPage, /source\.accessedAt \? ` · accessed \$\{displayDate\(source\.accessedAt\)\}`/);
 });
 
+test("fit guidance and sources span the full tool-profile detail grid after the sidebar", () => {
+  const toolPage = read("src/pages/tools/[slug].astro");
+  const styles = read("src/styles/global.css");
+  const contentStack = toolPage.match(/<div class="detail-content-stack">([\s\S]*?)<\/div>\s*<aside class="detail-sidebar">/)?.[1];
+
+  assert.ok(contentStack, "tool-profile detail content stack was not found");
+  assert.match(contentStack, /id="overview"/);
+  assert.match(contentStack, /id="why-this-qualifies"/);
+  assert.doesNotMatch(contentStack, /id="fit-and-limitations"|id="sources"/);
+  assert.match(
+    toolPage,
+    /<\/aside>\s*\{[\s\S]*?class="detail-panel evidence-panel detail-full-span" id="fit-and-limitations"[\s\S]*?\}\s*<section class="detail-panel evidence-panel detail-full-span" id="sources"/,
+  );
+  assert.match(styles, /\.detail-full-span\s*\{\s*grid-column:\s*1\s*\/\s*-1;\s*\}/);
+});
+
 test("unavailable comments use a concise public message", () => {
   const comments = read("src/components/GiscusComments.astro");
 
