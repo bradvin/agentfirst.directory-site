@@ -19,11 +19,7 @@ const isConfigured = Boolean(giscus.repo && giscus.repoId && giscus.category && 
     isConfigured ? (
       <div class="giscus" data-term={term}></div>
     ) : (
-      <p class="comments-note">
-        Comments are configured to use <a class="detail-link" href="https://giscus.app" rel="noreferrer" target="_blank">giscus</a>
-        {" "}with <a class="detail-link" href={`https://github.com/${giscus.repo}`} rel="noreferrer" target="_blank">{giscus.repo}</a>,
-        but the live embed is waiting on GitHub Discussions to be enabled and the giscus repository/category IDs to be set.
-      </p>
+      <p class="comments-note">Comments are not available yet.</p>
     )
   }
 
