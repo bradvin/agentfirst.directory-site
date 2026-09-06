@@ -1547,8 +1547,9 @@ img {
   position: absolute;
   top: 50%;
   right: 14px;
-  color: var(--muted);
-  font: 11px "IBM Plex Mono", monospace;
+  z-index: 1;
+  color: var(--text);
+  font: 22px/1 "IBM Plex Mono", monospace;
   transform: translateY(-50%);
   pointer-events: none;
 }
