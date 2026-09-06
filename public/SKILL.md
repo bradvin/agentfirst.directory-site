@@ -37,7 +37,7 @@ Only change the site repo when the user explicitly asks for website code changes
 5. Create or update the tool markdown file.
 6. Add a short factual body and prefer including a `## So agents can...` section with concrete outcomes.
 7. Create a category JSON file only if needed, and include at least one tool that uses it in the same PR.
-8. Commit the changes on a branch and open a pull request against `main`.
+8. Commit the changes on a branch, push it to the contributor's fork, and open a pull request against `bradvin/agentfirst.directory:main`.
 9. In the PR description, cite first-party evidence and explain why the tool belongs in the directory.
 
 ## Tool file format
@@ -166,22 +166,41 @@ Create `categories/<slug>.json`:
 - Add at least one claim-level `sources` entry with the date on which the source was actually checked
 - If you add a category, include at least one tool that uses it in the same PR
 
-## Suggested commands
+## Contribution commands
+
+### Public contributor workflow (default)
+
+This default works without write access to `bradvin/agentfirst.directory`. Install `git` and the GitHub CLI, have a GitHub account, and run `gh auth login` first if `gh auth status` says you are not signed in. The `gh repo fork` command creates your fork or reuses it when it already exists. Keep upstream as `origin`; push only to the separate `fork` remote.
 
 ```bash
+# Prerequisites: git, GitHub CLI (gh), and a GitHub account
+gh auth status
+GH_USER="$(gh api user --jq .login)"
+gh repo fork bradvin/agentfirst.directory --clone=false
+
 git clone https://github.com/bradvin/agentfirst.directory.git
 cd agentfirst.directory
+git remote add fork "https://github.com/${GH_USER}/agentfirst.directory.git"
 git checkout -b add-coolapi
 
+# add or update content
 $EDITOR tools/coolapi.md
 $EDITOR categories/agent-security.json
 
-git add .
+git add tools/coolapi.md categories/agent-security.json
 git commit -m "Add CoolAPI"
-git push origin add-coolapi
+git push -u fork add-coolapi
+
+gh pr create --repo bradvin/agentfirst.directory --base main \
+  --head "${GH_USER}:add-coolapi" --title "Add CoolAPI" \
+  --body "Explain why CoolAPI belongs and cite its first-party evidence."
 ```
 
-Then open a pull request against `main` in `bradvin/agentfirst.directory`.
+### Browser fallback
+
+If `gh` is unavailable, sign in on GitHub and create or reuse your fork at `https://github.com/bradvin/agentfirst.directory/fork`. Before pushing, configure Git authentication for HTTPS with a credential manager or personal access token (or use your fork's SSH URL). Set `GH_USER="YOUR-USERNAME"`, follow the clone, separate `fork` remote, branch, commit, and push commands above (skipping the `gh` commands), then open this URL to create the PR against upstream `main`:
+
+`https://github.com/bradvin/agentfirst.directory/compare/main...YOUR-USERNAME:add-coolapi?expand=1`
 
 ## Final checks
 

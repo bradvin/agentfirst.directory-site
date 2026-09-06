@@ -13,17 +13,29 @@ const skillUrl = "https://agentfirst.directory/SKILL.md";
 const skillCopyText = "Read https://agentfirst.directory/SKILL.md to add a new tool";
 const accessDate = new Date().toISOString().slice(0, 10);
 
-const prWorkflowExample = `git clone https://github.com/bradvin/agentfirst.directory.git
+const publicContributorWorkflow = `# Prerequisites: git, GitHub CLI (gh), and a GitHub account
+gh auth status
+GH_USER="$(gh api user --jq .login)"
+gh repo fork bradvin/agentfirst.directory --clone=false
+
+git clone https://github.com/bradvin/agentfirst.directory.git
 cd agentfirst.directory
+git remote add fork "https://github.com/\${GH_USER}/agentfirst.directory.git"
+git checkout -b add-coolapi
 
 # add or update content
 $EDITOR tools/coolapi.md
 $EDITOR categories/agent-security.json
 
-git checkout -b add-coolapi
-git add .
+git add tools/coolapi.md categories/agent-security.json
 git commit -m "Add CoolAPI"
-git push origin add-coolapi`;
+git push -u fork add-coolapi
+
+gh pr create --repo bradvin/agentfirst.directory --base main \\
+  --head "\${GH_USER}:add-coolapi" --title "Add CoolAPI" \\
+  --body "Explain why CoolAPI belongs and cite its first-party evidence."`;
+
+const browserPrUrl = "https://github.com/bradvin/agentfirst.directory/compare/main...YOUR-USERNAME:add-coolapi?expand=1";
 
 const categoryExample = `{
   "slug": "agent-security",
@@ -161,7 +173,7 @@ const structuredData = [
             <li>Add a tool file in <code>tools/</code> with one classification and a claim-level evidence record.</li>
             <li>Add a short factual body, ideally with a <code>## So agents can...</code> section.</li>
             <li>Add a category file only if the current list clearly does not fit.</li>
-            <li>Open a PR against <code>main</code>.</li>
+            <li>Push to your fork and open a PR against <code>bradvin/agentfirst.directory:main</code>.</li>
           </ol>
         </div>
 
@@ -191,8 +203,9 @@ const structuredData = [
 
       <div class="submit-code-grid">
         <div>
-          <p class="detail-overline">Local workflow</p>
-          <pre class="code-block" tabindex="0" aria-label="Local workflow code"><code>{prWorkflowExample}</code></pre>
+          <p class="detail-overline">Public contributor workflow (default)</p>
+          <p class="submit-copy">Install <code>git</code> and the GitHub CLI, sign in with <code>gh auth login</code>, then create or reuse your fork and push through its separate <code>fork</code> remote:</p>
+          <pre class="code-block" tabindex="0" aria-label="Public contributor workflow code"><code>{publicContributorWorkflow}</code></pre>
         </div>
 
         <div>
@@ -203,6 +216,18 @@ const structuredData = [
             <div class="submit-field"><code>bradvin/agentfirst.directory</code><span>The content repo.</span></div>
             <div class="submit-field"><code>main</code><span>Open the PR against the default branch.</span></div>
           </div>
+        </div>
+      </div>
+
+      <div>
+        <div>
+          <p class="detail-overline">Browser fallback</p>
+          <p class="submit-copy">
+            If <code>gh</code> is unavailable, sign in on GitHub and use the <a class="detail-link" href="https://github.com/bradvin/agentfirst.directory/fork" rel="noreferrer" target="_blank">Fork page</a>.
+            Before pushing, configure Git authentication for HTTPS with a credential manager or personal access token (or use your fork's SSH URL).
+            Set <code>GH_USER="YOUR-USERNAME"</code>, follow the clone, remote, branch, commit, and push commands above, then open:
+          </p>
+          <pre class="code-block" tabindex="0" aria-label="Browser pull request URL"><code>{browserPrUrl}</code></pre>
         </div>
       </div>
     </section>
