@@ -817,6 +817,10 @@ img {
   gap: 18px;
 }
 
+.detail-full-span {
+  grid-column: 1 / -1;
+}
+
 .detail-content-stack,
 .category-editorial-grid {
   display: grid;

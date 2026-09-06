@@ -24,7 +24,7 @@ const isGone = redirectRule?.statusCode === 410;
 const relatedTools = tool ? await getRelatedTools(tool) : [];
 const path = tool ? `/tools/${tool.entry.slug}` : Astro.url.pathname;
 const title = tool
-  ? `${tool.entry.name} — ${tool.category.label} | AI Agent Tools`
+  ? `${tool.entry.name}: ${tool.category.label} | AI Agent Tools`
   : `${isGone ? "Gone" : "Not found"} | ${siteConfig.name}`;
 const metaDescriptionSuffix = "Review its AI-agent fit, pricing, evidence, and limitations.";
 const buildDescription = (summary: string) => {
@@ -89,7 +89,11 @@ const visibleSources = tool
           : []),
       ]
   : [];
-
+const verificationLabels = {
+  "documentation-reviewed": "Documentation reviewed",
+  "vendor-confirmed": "Vendor confirmed",
+  "hands-on-tested": "Hands-on tested",
+};
 function displayDate(value?: string) {
   return value
     ? new Intl.DateTimeFormat("en", { dateStyle: "medium", timeZone: "UTC" }).format(new Date(value))
@@ -141,7 +145,7 @@ const structuredData = tool
   description={description}
   canonicalPath={path}
   ogImageUrl={resolvedOgImageUrl}
-  socialImageAlt={tool ? `${tool.entry.name} — ${tool.entry.description}` : undefined}
+  socialImageAlt={tool ? `${tool.entry.name}: ${tool.entry.description}` : undefined}
   ogImageWidth={resolvedOgImageUrl ? 1200 : undefined}
   ogImageHeight={resolvedOgImageUrl ? 630 : undefined}
   noindex={!tool || !tool.entry.isIndexable || !tool.category.isIndexable}
@@ -229,18 +233,17 @@ const structuredData = tool
           <div class="detail-grid">
             <div class="detail-content-stack">
               <section class="detail-panel prose-panel" id="overview" aria-labelledby="overview-heading">
-                <p class="detail-overline">Listing overview</p>
-                <h2 id="overview-heading">What {tool.entry.name} provides</h2>
+                <p class="detail-overline">Overview</p>
+                <h2 id="overview-heading">About {tool.entry.name}</h2>
                 <p class="evidence-note">
-                  This summary reflects the submitted listing and public product material. Only statements mapped to
-                  evidence in the source record below should be read as documentation-reviewed facts.
+                  This summary uses submitted and public product material. Only source-mapped claims are documentation reviewed.
                 </p>
                 <div set:html={bodyHtml} />
               </section>
 
               <section class="detail-panel evidence-panel" id="why-this-qualifies" aria-labelledby="qualification-heading">
-                <p class="detail-overline">Editorial verdict</p>
-                <h2 id="qualification-heading">Why {tool.entry.name} qualifies as agent-first</h2>
+                <p class="detail-overline">Listing decision</p>
+                <h2 id="qualification-heading">Why {tool.entry.name} is listed</h2>
                 {
                   qualificationHtml ? (
                     <div class="prose-compact" set:html={qualificationHtml} />
@@ -250,61 +253,17 @@ const structuredData = tool
                       <a class="detail-link" href="/policy#classification-model">
                         {tool.entry.classification ? formatClassification(tool.entry.classification) : "pending review"}
                       </a>
-                      {" "}under the directory's evidence-based inclusion policy. Its claim-level editorial rationale is being migrated into the public record; use the first-party sources below to verify material capabilities in the meantime.
+                      {" "}under the directory's evidence-based inclusion policy. No claim-level listing rationale is recorded. Check the sources below before relying on material capabilities.
                     </p>
                   )
                 }
               </section>
 
-              {
-                (bestForHtml || notBestForHtml || limitationsHtml || unknownsHtml) && (
-                  <section class="detail-panel evidence-panel" id="fit-and-limitations" aria-labelledby="fit-heading">
-                    <p class="detail-overline">Decision guide</p>
-                    <h2 id="fit-heading">Fit and limitations</h2>
-                    <div class="decision-grid">
-                      {bestForHtml && <div><h3>Best for</h3><div class="prose-compact" set:html={bestForHtml} /></div>}
-                      {notBestForHtml && <div><h3>Not best for</h3><div class="prose-compact" set:html={notBestForHtml} /></div>}
-                      {limitationsHtml && <div><h3>Known limitations</h3><div class="prose-compact" set:html={limitationsHtml} /></div>}
-                      {unknownsHtml && <div><h3>Not yet verified</h3><div class="prose-compact" set:html={unknownsHtml} /></div>}
-                    </div>
-                  </section>
-                )
-              }
-
-              <section class="detail-panel evidence-panel" id="sources" aria-labelledby="sources-heading">
-                <p class="detail-overline">Evidence record</p>
-                <h2 id="sources-heading">Sources and verification links</h2>
-                {
-                  tool.entry.evidenceSources.length > 0 ? (
-                    <p class="evidence-note">
-                      Sources are first-party unless labeled otherwise. A linked source supports the specific claim
-                      shown beside it; it is not a blanket endorsement of every vendor claim.
-                    </p>
-                  ) : (
-                    <p class="evidence-note">
-                      A claim-level editorial review has not yet been recorded. These first-party links are supplied
-                      for direct verification while that migration remains pending.
-                    </p>
-                  )
-                }
-                <ol class="evidence-list">
-                  {visibleSources.map((source) => (
-                    <li id={`source-${visibleSources.indexOf(source) + 1}`}>
-                      <a class="detail-link" href={source.url} rel="noreferrer" target="_blank">{source.title}</a>
-                      <p>{source.claim}</p>
-                      <span>
-                        {source.sourceType?.replaceAll("-", " ") ?? "first-party source"}
-                        {source.accessedAt ? ` · accessed ${displayDate(source.accessedAt)}` : ""}
-                      </span>
-                    </li>
-                  ))}
-                </ol>
-              </section>
             </div>
 
             <aside class="detail-sidebar">
               <article class="detail-panel detail-facts-panel" id="verified-facts">
-                <h2 class="visually-hidden">Verified profile facts</h2>
+                <h2 class="visually-hidden">Profile facts</h2>
                 <div class="detail-facts-list">
                   <div class="detail-fact">
                     <span class="detail-fact-label">Category</span>
@@ -343,7 +302,7 @@ const structuredData = tool
 
                   <div class="detail-fact">
                     <span class="detail-fact-label">Verification</span>
-                    <span>{tool.entry.verificationLevel?.replaceAll("-", " ") ?? "Evidence migration pending"}</span>
+                    <span>{tool.entry.verificationLevel ? verificationLabels[tool.entry.verificationLevel] : "Not reviewed"}</span>
                   </div>
 
                   {tool.entry.reviewedBy && <div class="detail-fact"><span class="detail-fact-label">Reviewed by</span><span>{tool.entry.reviewedBy}</span></div>}
@@ -374,6 +333,49 @@ const structuredData = tool
                 </div>
               </article>
             </aside>
+
+            {
+              (bestForHtml || notBestForHtml || limitationsHtml || unknownsHtml) && (
+                <section class="detail-panel evidence-panel detail-full-span" id="fit-and-limitations" aria-labelledby="fit-heading">
+                  <p class="detail-overline">Before you choose</p>
+                  <h2 id="fit-heading">Fit and limitations</h2>
+                  <div class="decision-grid">
+                    {bestForHtml && <div><h3>Best for</h3><div class="prose-compact" set:html={bestForHtml} /></div>}
+                    {notBestForHtml && <div><h3>Not best for</h3><div class="prose-compact" set:html={notBestForHtml} /></div>}
+                    {limitationsHtml && <div><h3>Known limitations</h3><div class="prose-compact" set:html={limitationsHtml} /></div>}
+                    {unknownsHtml && <div><h3>Not yet verified</h3><div class="prose-compact" set:html={unknownsHtml} /></div>}
+                  </div>
+                </section>
+              )
+            }
+
+            <section class="detail-panel evidence-panel detail-full-span" id="sources" aria-labelledby="sources-heading">
+              <p class="detail-overline">Sources</p>
+              <h2 id="sources-heading">Sources and verification</h2>
+              {
+                tool.entry.evidenceSources.length > 0 ? (
+                  <p class="evidence-note">
+                    First-party unless marked otherwise. Each link supports only its adjacent claim.
+                  </p>
+                ) : (
+                  <p class="evidence-note">
+                    No claim-level review or evidence mapping is recorded. Use these first-party links as starting points for verification.
+                  </p>
+                )
+              }
+              <ol class="evidence-list">
+                {visibleSources.map((source) => (
+                  <li id={`source-${visibleSources.indexOf(source) + 1}`}>
+                    <a class="detail-link" href={source.url} rel="noreferrer" target="_blank">{source.title}</a>
+                    <p>{source.claim}</p>
+                    <span>
+                      {source.sourceType?.replaceAll("-", " ") ?? "first-party source"}
+                      {source.accessedAt ? ` · accessed ${displayDate(source.accessedAt)}` : ""}
+                    </span>
+                  </li>
+                ))}
+              </ol>
+            </section>
           </div>
 
           <section class="section-block">
