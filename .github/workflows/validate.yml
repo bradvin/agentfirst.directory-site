@@ -29,6 +29,9 @@ jobs:
           npx wrangler d1 migrations apply DB --local --persist-to "$RUNNER_TEMP/wrangler-state"
           npx wrangler d1 execute DB --local --persist-to "$RUNNER_TEMP/wrangler-state" --file=test/fixtures/seed-classifications.sql
 
+      - name: Install browser for submission flow verification
+        run: npx playwright install --with-deps chromium
+
       - name: Verify rendered site
         run: |
           npx wrangler dev --config dist/server/wrangler.json --local --persist-to "$RUNNER_TEMP/wrangler-state" --host 127.0.0.1 --ip 127.0.0.1 --port 4321 > "$RUNNER_TEMP/wrangler-dev.log" 2>&1 &

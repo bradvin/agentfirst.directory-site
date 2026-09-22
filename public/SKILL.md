@@ -77,7 +77,7 @@ evidenceSources:
     url: "https://coolapi.dev/docs/agents"
     claim: "CoolAPI documents API and MCP interfaces intended for agent workflows."
     accessedAt: "YYYY-MM-DD"
-    sourceType: "official-docs"
+    sourceType: "official-documentation"
 ---
 
 Short summary of what the tool does.
@@ -99,8 +99,11 @@ Short summary of what the tool does.
 - `websiteUrl` must be a valid `http` or `https` URL
 - `pricing` must be one of `open-source`, `source-available`, `freemium`, `free`, `paid`, or `unknown`; use `unknown` rather than inferring a product fee from transaction value or a temporary credit
 - `classification` must be one of `agent-native`, `agent-enabling`, or `agent-internet-protocol`
-- `evidenceSources` must contain at least one first-party source with a title, URL, supported claim, and access date
+- `evidenceSources` must contain at least one first-party source
+- Every evidence source must have a non-empty `title`, HTTPS `url`, specific supported `claim`, ISO `accessedAt` date in `YYYY-MM-DD` format, and allowed `sourceType`
+- `sourceType` must be one of `official-documentation`, `official-repository`, `official-license`, `official-pricing`, `official-product-page`, `official-product-announcement`, `official-specification`, `official-legal`, or `official-release-notes`
 - Replace `YYYY-MM-DD` with the date on which you actually read the cited source
+- Passing schema validation does not prove that a source is first-party or supports the stated claim; editorial review verifies source ownership, claim support, and directory eligibility
 - `classificationRationaleMd` must explain the material agent role supported by those sources
 - The markdown body must not be empty
 
@@ -150,7 +153,7 @@ Create `categories/<slug>.json`:
       "url": "https://genai.owasp.org/initiatives/agentic-security-initiative/",
       "claim": "OWASP documents security risks and controls that arise from autonomous agent workflows.",
       "accessedAt": "YYYY-MM-DD",
-      "sourceType": "official-guidance"
+      "sourceType": "official-documentation"
     }
   ],
   "isIndexable": true
@@ -163,7 +166,7 @@ Create `categories/<slug>.json`:
 - `label` should be short and readable
 - `sortOrder` is optional and should be an integer when present
 - Add a distinct `seoTitle`, description, definition, scope, inclusion/exclusion rules, selection guide, and concrete use cases
-- Add at least one claim-level `sources` entry with the date on which the source was actually checked
+- Add at least one claim-level `sources` entry with all required evidence fields and the date on which the source was actually checked
 - If you add a category, include at least one tool that uses it in the same PR
 
 ## Contribution commands

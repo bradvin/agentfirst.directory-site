@@ -1,4 +1,5 @@
 ---
+import SubmissionEvidenceForm from "../components/SubmissionEvidenceForm.astro";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { breadcrumbSchema } from "../lib/seo";
 import { siteConfig } from "../lib/site";
@@ -11,7 +12,6 @@ const contentRepoUrl = "https://github.com/bradvin/agentfirst.directory";
 const siteRepoUrl = "https://github.com/bradvin/agentfirst.directory-site";
 const skillUrl = "https://agentfirst.directory/SKILL.md";
 const skillCopyText = "Read https://agentfirst.directory/SKILL.md to add a new tool";
-const accessDate = new Date().toISOString().slice(0, 10);
 
 const publicContributorWorkflow = `# Prerequisites: git, GitHub CLI (gh), and a GitHub account
 gh auth status
@@ -54,8 +54,8 @@ const categoryExample = `{
       "title": "OWASP Agentic Security Initiative",
       "url": "https://genai.owasp.org/initiatives/agentic-security-initiative/",
       "claim": "OWASP documents security risks and controls that arise from autonomous agent workflows.",
-      "accessedAt": "${accessDate}",
-      "sourceType": "official-guidance"
+      "accessedAt": "YYYY-MM-DD",
+      "sourceType": "official-documentation"
     }
   ],
   "isIndexable": true
@@ -89,8 +89,8 @@ const toolFileExample = [
   '  - title: "CoolAPI agent documentation"',
   '    url: "https://coolapi.dev/docs/agents"',
   '    claim: "CoolAPI documents API and MCP interfaces for agent workflows."',
-  `    accessedAt: "${accessDate}"`,
-  '    sourceType: "official-docs"',
+  '    accessedAt: "YYYY-MM-DD"',
+  '    sourceType: "official-documentation"',
   "---",
   "",
   "Short summary of what the tool does.",
@@ -149,6 +149,8 @@ const structuredData = [
         </button>
       </div>
     </section>
+
+    <SubmissionEvidenceForm />
 
     <section class="detail-panel submit-panel">
       <div class="submit-grid">
@@ -256,6 +258,7 @@ const structuredData = [
             <div class="submit-field"><code>websiteUrl</code><span>Required URL.</span></div>
             <div class="submit-field"><code>pricing</code><span>One of <code>open-source</code>, <code>source-available</code>, <code>freemium</code>, <code>free</code>, <code>paid</code>, or <code>unknown</code>.</span></div>
             <div class="submit-field"><code>classification</code><span>One of <code>agent-native</code>, <code>agent-enabling</code>, or <code>agent-internet-protocol</code>.</span></div>
+            <div class="submit-field"><code>evidenceSources</code><span>At least one claim-level first-party source. Every source requires <code>title</code>, HTTPS <code>url</code>, <code>claim</code>, ISO <code>accessedAt</code>, and an allowed <code>sourceType</code>.</span></div>
           </div>
         </div>
 
