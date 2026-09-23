@@ -8,7 +8,7 @@ test("submit page directs visitors to their agent and the content PR", () => {
   assert.match(submitPage, /Give your agent the instructions/);
   assert.match(submitPage, /href=\{skillUrl\}/);
   assert.match(submitPage, /href=\{contentRepoUrl\}/);
-  assert.match(submitPage, /Editors review whether the sources/);
+  assert.match(submitPage, /Editors verify source ownership, claim support, and directory eligibility/);
   assert.doesNotMatch(submitPage, /<form\b|publicContributorWorkflow|Browser fallback|Add a tool markdown file/);
 });
 

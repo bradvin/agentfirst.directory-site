@@ -63,18 +63,44 @@ const structuredData = [
       <p class="submit-copy">Include the tool name and its official website when you send the prompt.</p>
     </section>
 
-    <section class="detail-panel submit-panel">
+    <section class="detail-panel submit-panel" aria-labelledby="submit-fit-title">
+      <p class="detail-overline">Eligibility</p>
+      <h2 id="submit-fit-title" class="submit-title">Check the fit</h2>
+      <p class="submit-copy">A listing needs a concrete agent role supported by first-party evidence. It must fit one of three classifications:</p>
+      <div class="submit-grid">
+        <div class="detail-panel submit-fields-panel">
+          <div class="submit-field"><code>agent-native</code><span>Agents are a core actor, runtime, or participant.</span></div>
+          <div class="submit-field"><code>agent-enabling</code><span>The product materially enables an agent-first workflow.</span></div>
+          <div class="submit-field"><code>agent-internet-protocol</code><span>An open protocol lets agents communicate, transact, identify, or coordinate online.</span></div>
+        </div>
+        <div class="detail-panel submit-fields-panel">
+          <div class="submit-field"><strong>Show the outcome</strong><span>Explain what an agent or agent builder can do because this exists.</span></div>
+          <div class="submit-field"><strong>Cite the source</strong><span>Use maintained product docs, a repository, a specification, or an official page.</span></div>
+          <div class="submit-field"><strong>Check the substance</strong><span>Generic API compatibility, a thin wrapper, or unsupported marketing is insufficient.</span></div>
+        </div>
+      </div>
+      <p class="submit-copy">The <a class="detail-link" href="/policy">full inclusion policy</a> explains the decision in more detail.</p>
+    </section>
+
+    <section class="detail-panel submit-panel" aria-labelledby="submit-workflow-title">
       <p class="detail-overline">Agent workflow</p>
-      <h2 class="submit-title">What happens next</h2>
-      <ol class="submit-steps">
-        <li>The agent checks existing listings and the <a class="detail-link" href="/policy">inclusion policy</a>.</li>
-        <li>It researches first-party sources, records the claims they support, and prepares the tool entry.</li>
-        <li>It opens a pull request in the <a class="detail-link" href={contentRepoUrl} rel="noreferrer" target="_blank">content repository</a>.</li>
-      </ol>
-      <p class="submit-copy">
-        The content repository checks the file format and required evidence. Editors review whether the sources
-        are first-party, support the claims, and establish directory eligibility before accepting a listing.
-      </p>
+      <h2 id="submit-workflow-title" class="submit-title">What your agent prepares</h2>
+      <div class="submit-grid">
+        <ol class="submit-steps">
+          <li>Checks existing listings and chooses a category. It proposes a new category only when none fits.</li>
+          <li>Explains the concrete agent outcome and chooses one evidence-backed classification.</li>
+          <li>Maps material claims to dated first-party sources. It includes product facts only when verified and states limitations or unknowns.</li>
+          <li>Opens a pull request in the <a class="detail-link" href={contentRepoUrl} rel="noreferrer" target="_blank">content repository</a>.</li>
+        </ol>
+        <div class="detail-panel submit-fact-panel">
+          <p class="detail-overline">After the PR</p>
+          <div class="submit-facts">
+            <div class="submit-fact"><strong>Content checks</strong><span>CI validates the file format, category, and required evidence.</span></div>
+            <div class="submit-fact"><strong>Editorial review</strong><span>Editors verify source ownership, claim support, and directory eligibility.</span></div>
+            <div class="submit-fact"><strong>Publishing details</strong><span>The agent records GitHub author attribution. Repository automation may fill missing logo and social preview metadata.</span></div>
+          </div>
+        </div>
+      </div>
     </section>
   </div>
 
