@@ -1,106 +1,14 @@
 ---
-import SubmissionEvidenceForm from "../components/SubmissionEvidenceForm.astro";
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { breadcrumbSchema } from "../lib/seo";
 import { siteConfig } from "../lib/site";
 
 const path = "/submit";
 const title = `Submit a tool | ${siteConfig.name}`;
-const description = "Add a tool or category to the content repo by opening a pull request.";
-
+const description = "Ask your agent to research a tool and open an evidence-backed pull request.";
 const contentRepoUrl = "https://github.com/bradvin/agentfirst.directory";
-const siteRepoUrl = "https://github.com/bradvin/agentfirst.directory-site";
 const skillUrl = "https://agentfirst.directory/SKILL.md";
 const skillCopyText = "Read https://agentfirst.directory/SKILL.md to add a new tool";
-
-const publicContributorWorkflow = `# Prerequisites: git, GitHub CLI (gh), and a GitHub account
-gh auth status
-GH_USER="$(gh api user --jq .login)"
-gh repo fork bradvin/agentfirst.directory --clone=false
-
-git clone https://github.com/bradvin/agentfirst.directory.git
-cd agentfirst.directory
-git remote add fork "https://github.com/\${GH_USER}/agentfirst.directory.git"
-git checkout -b add-coolapi
-
-# add or update content
-$EDITOR tools/coolapi.md
-$EDITOR categories/agent-security.json
-
-git add tools/coolapi.md categories/agent-security.json
-git commit -m "Add CoolAPI"
-git push -u fork add-coolapi
-
-gh pr create --repo bradvin/agentfirst.directory --base main \\
-  --head "\${GH_USER}:add-coolapi" --title "Add CoolAPI" \\
-  --body "Explain why CoolAPI belongs and cite its first-party evidence."`;
-
-const browserPrUrl = "https://github.com/bradvin/agentfirst.directory/compare/main...YOUR-USERNAME:add-coolapi?expand=1";
-
-const categoryExample = `{
-  "slug": "agent-security",
-  "label": "Agent Security",
-  "sortOrder": 110,
-  "seoTitle": "Security tools for AI agents",
-  "descriptionMd": "Security controls and review systems designed for agent-driven work.",
-  "definitionMd": "Products whose core purpose is controlling or inspecting agent actions and access.",
-  "scopeMd": "First-class agent security workflows, not generic security APIs.",
-  "inclusionMd": "Include when documented controls materially govern agent permissions or actions.",
-  "exclusionMd": "Exclude conventional security products connected only through generic API access.",
-  "selectionGuideMd": "Compare policy scope, enforcement points, audit evidence, identity, and recovery.",
-  "useCases": ["Constrain agent permissions", "Audit agent actions"],
-  "sources": [
-    {
-      "title": "OWASP Agentic Security Initiative",
-      "url": "https://genai.owasp.org/initiatives/agentic-security-initiative/",
-      "claim": "OWASP documents security risks and controls that arise from autonomous agent workflows.",
-      "accessedAt": "YYYY-MM-DD",
-      "sourceType": "official-documentation"
-    }
-  ],
-  "isIndexable": true
-}`;
-
-const toolFileExample = [
-  "---",
-  'slug: "coolapi"',
-  'name: "CoolAPI"',
-  'description: "An agent-first API for doing cool things"',
-  'category: "agent-security"',
-  "tags:",
-  '  - "mcp"',
-  '  - "security"',
-  '  - "api"',
-  'websiteUrl: "https://coolapi.dev"',
-  'githubUrl: "https://github.com/cooldev/coolapi"',
-  'logoUrl: "https://www.google.com/s2/favicons?sz=64&domain_url=https://coolapi.dev"',
-  'ogImageUrl: "https://coolapi.dev/og-image.png"',
-  'pricing: "freemium"',
-  'classification: "agent-enabling"',
-  'entityType: "web-api"',
-  'developerName: "CoolDev"',
-  'docsUrl: "https://coolapi.dev/docs"',
-  'interfaces: ["API", "MCP"]',
-  'deploymentModes: ["hosted"]',
-  'classificationRationaleMd: "Documented agent-oriented execution through API and MCP interfaces."',
-  'bestForMd: "Agents that need the documented controlled API workflow."',
-  'limitationsMd: "The public documentation does not describe a self-hosted deployment option."',
-  'evidenceSources:',
-  '  - title: "CoolAPI agent documentation"',
-  '    url: "https://coolapi.dev/docs/agents"',
-  '    claim: "CoolAPI documents API and MCP interfaces for agent workflows."',
-  '    accessedAt: "YYYY-MM-DD"',
-  '    sourceType: "official-documentation"',
-  "---",
-  "",
-  "Short summary of what the tool does.",
-  "",
-  "## So agents can...",
-  "",
-  "- do outcome one",
-  "- do outcome two",
-  "- do outcome three",
-].join("\n");
 
 const structuredData = [
   breadcrumbSchema([
@@ -119,15 +27,19 @@ const structuredData = [
   <div class="shell-inner submit-shell">
     <section class="page-intro page-intro-centered">
       <p class="detail-overline">Submit</p>
-      <h1 class="page-title">Submit a tool</h1>
+      <h1 class="page-title">Add a tool with your agent</h1>
       <p class="page-copy">{description}</p>
     </section>
 
     <section class="detail-panel submit-panel submit-skill-panel">
       <header class="submit-section-header">
-        <p class="detail-overline">Agent Shortcut</p>
-        <h2 class="submit-title">Get your agent to do it</h2>
-        <p class="submit-skill-lead">Point it to <a class="detail-link" href={skillUrl}>agentfirst.directory/SKILL.md</a> - it tells your agent which repo to edit and how to format the files.</p>
+        <p class="detail-overline">Start here</p>
+        <h2 class="submit-title">Give your agent the instructions</h2>
+        <p class="submit-skill-lead">
+          Copy this prompt into your coding agent and tell it which tool to add. The
+          <a class="detail-link" href={skillUrl}>contribution skill</a> explains the policy, content format,
+          evidence requirements, and pull request workflow.
+        </p>
       </header>
 
       <div class="submit-skill-copy-row">
@@ -148,215 +60,21 @@ const structuredData = [
           Copy
         </button>
       </div>
-    </section>
-
-    <SubmissionEvidenceForm />
-
-    <section class="detail-panel submit-panel">
-      <div class="submit-grid">
-        <div>
-          <p class="detail-overline">Repo workflow</p>
-          <h2 class="submit-title">Open a PR</h2>
-          <p class="submit-copy">
-            Make listing changes in{" "}
-            <a class="detail-link" href={contentRepoUrl} rel="noreferrer" target="_blank">
-              bradvin/agentfirst.directory
-            </a>
-            . Only edit{" "}
-            <a class="detail-link" href={siteRepoUrl} rel="noreferrer" target="_blank">
-              bradvin/agentfirst.directory-site
-            </a>
-            {" "}for site changes.
-          </p>
-
-          <ol class="submit-steps">
-            <li>Confirm the tool passes the <a class="detail-link" href="/policy">evidence-based inclusion policy</a>.</li>
-            <li>Pick the closest existing category in <code>categories/</code>.</li>
-            <li>Add a tool file in <code>tools/</code> with one classification and a claim-level evidence record.</li>
-            <li>Add a short factual body, ideally with a <code>## So agents can...</code> section.</li>
-            <li>Add a category file only if the current list clearly does not fit.</li>
-            <li>Push to your fork and open a PR against <code>bradvin/agentfirst.directory:main</code>.</li>
-          </ol>
-        </div>
-
-        <div class="submit-aside">
-          <div class="detail-panel submit-fact-panel">
-            <p class="detail-overline">PR checklist</p>
-            <div class="submit-facts">
-              <div class="submit-fact">
-                <span class="submit-fact-label">Required</span>
-                <strong>Claim-level evidence and classification</strong>
-                <span>Link each material claim to a first-party source and explain the supported agent role.</span>
-              </div>
-              <div class="submit-fact">
-                <span class="submit-fact-label">Usually required</span>
-                <strong>Verified product facts</strong>
-                <span>Add documentation, pricing, license, interface, and deployment fields when the sources support them.</span>
-              </div>
-              <div class="submit-fact">
-                <span class="submit-fact-label">Only if needed</span>
-                <strong>New category file</strong>
-                <span>Add one only when nothing existing fits.</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="submit-code-grid">
-        <div>
-          <p class="detail-overline">Public contributor workflow (default)</p>
-          <p class="submit-copy">Install <code>git</code> and the GitHub CLI, sign in with <code>gh auth login</code>, then create or reuse your fork and push through its separate <code>fork</code> remote:</p>
-          <pre class="code-block" tabindex="0" aria-label="Public contributor workflow code"><code>{publicContributorWorkflow}</code></pre>
-        </div>
-
-        <div>
-          <p class="detail-overline">Repo paths</p>
-          <div class="detail-panel submit-fields-panel">
-            <div class="submit-field"><code>tools/&lt;slug&gt;.md</code><span>One file per tool.</span></div>
-            <div class="submit-field"><code>categories/&lt;slug&gt;.json</code><span>One file per category.</span></div>
-            <div class="submit-field"><code>bradvin/agentfirst.directory</code><span>The content repo.</span></div>
-            <div class="submit-field"><code>main</code><span>Open the PR against the default branch.</span></div>
-          </div>
-        </div>
-      </div>
-
-      <div>
-        <div>
-          <p class="detail-overline">Browser fallback</p>
-          <p class="submit-copy">
-            If <code>gh</code> is unavailable, sign in on GitHub and use the <a class="detail-link" href="https://github.com/bradvin/agentfirst.directory/fork" rel="noreferrer" target="_blank">Fork page</a>.
-            Before pushing, configure Git authentication for HTTPS with a credential manager or personal access token (or use your fork's SSH URL).
-            Set <code>GH_USER="YOUR-USERNAME"</code>, follow the clone, remote, branch, commit, and push commands above, then open:
-          </p>
-          <pre class="code-block" tabindex="0" aria-label="Browser pull request URL"><code>{browserPrUrl}</code></pre>
-        </div>
-      </div>
+      <p class="submit-copy">Include the tool name and its official website when you send the prompt.</p>
     </section>
 
     <section class="detail-panel submit-panel">
-      <p class="detail-overline">Tool entry</p>
-      <h2 class="submit-title">Add a tool markdown file</h2>
-      <p class="submit-copy">
-        Each tool is one markdown file with frontmatter and a short body.
-      </p>
-
-      <div class="submit-code-grid">
-        <div>
-          <p class="detail-overline">Tool entry</p>
-          <pre class="code-block" tabindex="0" aria-label="Tool entry code"><code>{toolFileExample}</code></pre>
-        </div>
-
-        <div>
-          <p class="detail-overline">Required frontmatter</p>
-          <div class="detail-panel submit-fields-panel">
-            <div class="submit-field"><code>slug</code><span>Lowercase kebab-case.</span></div>
-            <div class="submit-field"><code>name</code><span>Public tool name.</span></div>
-            <div class="submit-field"><code>description</code><span>Short summary.</span></div>
-            <div class="submit-field"><code>category</code><span>Existing category slug.</span></div>
-            <div class="submit-field"><code>tags</code><span>At least one tag.</span></div>
-            <div class="submit-field"><code>websiteUrl</code><span>Required URL.</span></div>
-            <div class="submit-field"><code>pricing</code><span>One of <code>open-source</code>, <code>source-available</code>, <code>freemium</code>, <code>free</code>, <code>paid</code>, or <code>unknown</code>.</span></div>
-            <div class="submit-field"><code>classification</code><span>One of <code>agent-native</code>, <code>agent-enabling</code>, or <code>agent-internet-protocol</code>.</span></div>
-            <div class="submit-field"><code>evidenceSources</code><span>At least one claim-level first-party source. Every source requires <code>title</code>, HTTPS <code>url</code>, <code>claim</code>, ISO <code>accessedAt</code>, and an allowed <code>sourceType</code>.</span></div>
-          </div>
-        </div>
-
-        <div>
-          <p class="detail-overline">Optional frontmatter</p>
-          <div class="detail-panel submit-fields-panel">
-            <div class="submit-field"><code>githubUrl</code><span>Include it when the tool is open source.</span></div>
-            <div class="submit-field"><code>logoUrl</code><span>Add the canonical value if you already know it.</span></div>
-            <div class="submit-field"><code>ogImageUrl</code><span>Add the social preview image if you already know it.</span></div>
-            <div class="submit-field"><code>sortOrder</code><span>Optional integer when ordering matters.</span></div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="detail-panel submit-panel">
-      <p class="detail-overline">Writing guidance</p>
-      <h2 class="submit-title">Keep the body factual and agent-specific</h2>
-      <p class="submit-copy">
-        Short, concrete descriptions work best. Prefer canonical URLs, avoid duplicate listings, and cite
-        first-party evidence for the material agent role. A generic API, thin wrapper, or unsupported marketing
-        claim is not enough.
-      </p>
-
-      <div class="submit-code-grid">
-        <div>
-          <p class="detail-overline">Suggested section</p>
-          <pre class="code-block" tabindex="0" aria-label="Suggested section code"><code>{`## So agents can...
-
-- do outcome one
-- do outcome two
-- do outcome three`}</code></pre>
-        </div>
-
-        <div>
-          <p class="detail-overline">What happens after merge</p>
-          <div class="detail-panel submit-fields-panel">
-            <div class="submit-field"><code>PR author</code><span>Author attribution is derived automatically.</span></div>
-            <div class="submit-field"><code>logoUrl</code><span>Missing values can default from the website favicon.</span></div>
-            <div class="submit-field"><code>ogImageUrl</code><span>Missing values can be discovered from site metadata.</span></div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="detail-panel submit-panel">
-      <p class="detail-overline">Inclusion guidance</p>
-      <h2 class="submit-title">Choose the class the evidence supports</h2>
-      <p class="submit-copy">
-        Read the <a class="detail-link" href="/policy">full inclusion policy</a> before opening a PR. Every accepted
-        listing must fit exactly one class.
-      </p>
-
-      <div class="submit-code-grid">
-        <div class="detail-panel submit-fields-panel">
-          <div class="submit-field"><code>agent-native</code><span>Agents are a core actor, runtime, abstraction, or participant.</span></div>
-          <div class="submit-field"><code>agent-enabling</code><span>The tool materially empowers an agent-first workflow.</span></div>
-          <div class="submit-field"><code>agent-internet-protocol</code><span>An interoperable protocol lets agents communicate, transact, identify, coordinate, or interact online.</span></div>
-        </div>
-
-        <div class="detail-panel submit-fields-panel">
-          <div class="submit-field"><strong>Show the agent role</strong><span>State what agents can do and why it matters.</span></div>
-          <div class="submit-field"><strong>Use first-party evidence</strong><span>Prefer official docs, specifications, websites, or maintained repositories.</span></div>
-          <div class="submit-field"><strong>Avoid compatibility claims</strong><span>Being callable by an agent does not by itself qualify a tool.</span></div>
-        </div>
-      </div>
-    </section>
-
-    <section class="detail-panel submit-panel">
-      <p class="detail-overline">Category proposals</p>
-      <h2 class="submit-title">Add a category only if needed</h2>
-      <p class="submit-copy">
-        Add one only when no existing category fits.
-      </p>
-
-      <div class="submit-code-grid">
-        <div>
-          <p class="detail-overline">Category JSON</p>
-          <pre class="code-block" tabindex="0" aria-label="Category JSON code"><code>{categoryExample}</code></pre>
-        </div>
-
-        <div>
-          <p class="detail-overline">When a new category is justified</p>
-          <ol class="submit-steps">
-            <li>No existing category fits.</li>
-            <li>The label is short and clear.</li>
-            <li>It could fit more than one tool.</li>
-            <li>The same PR uses it on at least one tool.</li>
-          </ol>
-        </div>
-      </div>
-
+      <p class="detail-overline">Agent workflow</p>
+      <h2 class="submit-title">What happens next</h2>
       <ol class="submit-steps">
-        <li>Create <code>categories/&lt;slug&gt;.json</code>.</li>
-        <li>Use it in at least one tool in the same PR.</li>
-        <li>Keep the slug lowercase and the label concise.</li>
-        <li>Open the PR against <code>main</code>.</li>
+        <li>The agent checks existing listings and the <a class="detail-link" href="/policy">inclusion policy</a>.</li>
+        <li>It researches first-party sources, records the claims they support, and prepares the tool entry.</li>
+        <li>It opens a pull request in the <a class="detail-link" href={contentRepoUrl} rel="noreferrer" target="_blank">content repository</a>.</li>
       </ol>
+      <p class="submit-copy">
+        The content repository checks the file format and required evidence. Editors review whether the sources
+        are first-party, support the claims, and establish directory eligibility before accepting a listing.
+      </p>
     </section>
   </div>
 

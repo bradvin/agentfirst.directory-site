@@ -2,27 +2,15 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
 
-const submitSource = readFileSync(new URL("../src/pages/submit.astro", import.meta.url), "utf8");
 const skillDocument = readFileSync(new URL("../public/SKILL.md", import.meta.url), "utf8");
-
-function extractSubmitWorkflow(source) {
-  return source
-    .match(/const publicContributorWorkflow = `([\s\S]*?)`;/)?.[1]
-    ?.replaceAll("\\${", "${")
-    .replaceAll("\\\\\n", "\\\n");
-}
 
 function extractSkillWorkflow(document) {
   return document.match(/### Public contributor workflow \(default\)[\s\S]*?```bash\n([\s\S]*?)\n```/)?.[1];
 }
 
-test("submit source and public skill share the same fork-based contributor workflow", () => {
-  const submitWorkflow = extractSubmitWorkflow(submitSource);
-  const skillWorkflow = extractSkillWorkflow(skillDocument);
-
-  assert.ok(submitWorkflow, "submit page must define the public contributor workflow");
-  assert.ok(skillWorkflow, "public skill must define the public contributor workflow");
-  assert.equal(submitWorkflow, skillWorkflow);
+test("public skill directs agents through a fork-based content PR", () => {
+  const workflow = extractSkillWorkflow(skillDocument);
+  assert.ok(workflow, "public skill must define the contributor workflow");
 
   for (const expected of [
     "gh auth status",
@@ -32,24 +20,19 @@ test("submit source and public skill share the same fork-based contributor workf
     "gh pr create --repo bradvin/agentfirst.directory --base main",
     '--head "${GH_USER}:add-coolapi"',
   ]) {
-    assert.match(submitWorkflow, new RegExp(expected.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
+    assert.ok(workflow.includes(expected), `missing workflow step: ${expected}`);
   }
 
-  assert.doesNotMatch(submitWorkflow, /git push (?:-u )?origin add-coolapi/);
+  assert.doesNotMatch(workflow, /git push (?:-u )?origin add-coolapi/);
 });
 
-test("both public surfaces include the browser fallback without a collaborator shortcut", () => {
+test("public skill has a browser fallback without a collaborator shortcut", () => {
   const browserFallback = "https://github.com/bradvin/agentfirst.directory/compare/main...YOUR-USERNAME:add-coolapi?expand=1";
 
-  for (const [surface, content] of [
-    ["submit source", submitSource],
-    ["public skill", skillDocument],
-  ]) {
-    assert.match(content, /Browser fallback/iu, `${surface} must label the browser fallback`);
-    assert.match(content, /Git authentication for HTTPS/iu, `${surface} must require authenticated Git pushes`);
-    assert.match(content, /credential manager or personal access token/iu, `${surface} must explain HTTPS authentication options`);
-    assert.ok(content.includes(browserFallback), `${surface} must include the concrete browser PR URL`);
-    assert.doesNotMatch(content, /Collaborator shortcut/iu, `${surface} must not publish a collaborator-only path`);
-    assert.doesNotMatch(content, /git push (?:-u )?origin add-coolapi/iu, `${surface} must not suggest pushing to upstream`);
-  }
+  assert.match(skillDocument, /Browser fallback/iu);
+  assert.match(skillDocument, /Git authentication for HTTPS/iu);
+  assert.match(skillDocument, /credential manager or personal access token/iu);
+  assert.ok(skillDocument.includes(browserFallback));
+  assert.doesNotMatch(skillDocument, /Collaborator shortcut/iu);
+  assert.doesNotMatch(skillDocument, /git push (?:-u )?origin add-coolapi/iu);
 });

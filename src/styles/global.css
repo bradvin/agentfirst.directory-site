@@ -1046,7 +1046,6 @@ img {
 
 .submit-panel {
   display: grid;
-  grid-template-columns: minmax(0, 1fr);
   gap: 20px;
 }
 
@@ -1064,7 +1063,6 @@ img {
 .submit-grid,
 .submit-code-grid {
   display: grid;
-  min-width: 0;
   grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr);
   gap: 18px;
 }
@@ -1213,167 +1211,6 @@ img {
   outline-offset: 2px;
 }
 
-.evidence-preflight {
-  border-color: rgba(0, 230, 191, 0.28);
-}
-
-.evidence-form,
-.evidence-sources {
-  display: grid;
-  gap: 16px;
-}
-
-.evidence-source {
-  min-width: 0;
-  margin: 0;
-  padding: 18px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: rgba(15, 15, 15, 0.66);
-}
-
-.evidence-source legend,
-.evidence-field label,
-.evidence-message h3 {
-  font-family: "IBM Plex Mono", monospace;
-}
-
-.evidence-source legend {
-  padding: 0 8px;
-  color: var(--text);
-  font-weight: 600;
-}
-
-.evidence-fields {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
-}
-
-.evidence-field {
-  display: grid;
-  min-width: 0;
-  gap: 7px;
-}
-
-.evidence-field-wide {
-  grid-column: 1 / -1;
-}
-
-.evidence-field label {
-  color: var(--text);
-  font-size: 12px;
-  line-height: 1.5;
-}
-
-.evidence-field :where(input:not([type="checkbox"]), select, textarea) {
-  width: 100%;
-  min-height: 44px;
-  padding: 10px 12px;
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  background: #0f0f0f;
-  color: var(--text);
-  font: 14px/1.5 Inter, sans-serif;
-}
-
-.evidence-field textarea {
-  min-height: 96px;
-  resize: vertical;
-}
-
-.evidence-field :where(input, select, textarea):focus-visible,
-.evidence-message a:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-}
-
-.evidence-field :where(input, select, textarea)[aria-invalid="true"] {
-  border-color: #ff7b72;
-}
-
-.evidence-field-help,
-.evidence-field-error {
-  margin: 0;
-  font-size: 12px;
-  line-height: 1.5;
-}
-
-.evidence-field-help {
-  color: var(--muted-soft);
-}
-
-.evidence-field-error,
-.evidence-message-error {
-  color: #ffb4ad;
-}
-
-.evidence-confirmation {
-  grid-template-columns: auto minmax(0, 1fr);
-  align-items: start;
-}
-
-.evidence-confirmation input {
-  width: 18px;
-  height: 18px;
-  margin: 2px 0 0;
-}
-
-.evidence-confirmation :where(.evidence-field-help, .evidence-field-error) {
-  grid-column: 2;
-}
-
-.evidence-remove {
-  margin-top: 16px;
-}
-
-.evidence-actions {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: 10px;
-}
-
-.evidence-message {
-  padding: 16px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: rgba(15, 15, 15, 0.8);
-}
-
-.evidence-message h3,
-.evidence-message p {
-  margin: 0;
-}
-
-.evidence-message h3 {
-  font-size: 1rem;
-}
-
-.evidence-message p,
-.evidence-message ul {
-  margin-top: 10px;
-  line-height: 1.6;
-}
-
-.evidence-message a {
-  color: inherit;
-  text-decoration: underline;
-  text-underline-offset: 2px;
-}
-
-.evidence-message-success {
-  border-color: rgba(0, 230, 191, 0.34);
-}
-
-.evidence-message-success h3 {
-  color: var(--accent);
-}
-
-.evidence-message-success .button {
-  margin-top: 12px;
-}
-
 .comments-panel {
   display: grid;
   gap: 12px;
@@ -1500,10 +1337,6 @@ img {
 
   .homepage-search-controls {
     grid-template-columns: 1fr;
-  }
-
-  .evidence-fields {
-    grid-template-columns: minmax(0, 1fr);
   }
 
   .card-main {
