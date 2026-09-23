@@ -68,7 +68,7 @@ evidenceSources:
     url: "https://docs.crewai.com"
     claim: "The documentation describes a framework for building and coordinating AI agents."
     accessedAt: "YYYY-MM-DD"
-    sourceType: "official-docs"
+    sourceType: "official-documentation"
 sortOrder: 90
 ---
 
