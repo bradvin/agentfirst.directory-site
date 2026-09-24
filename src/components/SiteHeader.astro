@@ -1,4 +1,10 @@
 ---
+const navigationLinks = [
+  { href: "/about", label: "About" },
+  { href: "/research/state-of-agent-first-infrastructure", label: "Research" },
+  { href: "/policy", label: "Policy" },
+  { href: "/submit", label: "Submit" },
+];
 ---
 
 <header class="site-header">
@@ -8,10 +14,21 @@
     </a>
 
     <nav class="header-nav" aria-label="Primary">
-      <a href="/about">About</a>
-      <a href="/research/state-of-agent-first-infrastructure">Research</a>
-      <a href="/policy">Policy</a>
-      <a href="/submit">Submit</a>
+      {navigationLinks.map(({ href, label }) => <a href={href}>{label}</a>)}
     </nav>
+
+    <details class="mobile-nav">
+      <summary class="mobile-nav-toggle">
+        <span class="visually-hidden">Menu</span>
+        <span class="mobile-nav-icon" aria-hidden="true">
+          <span></span>
+          <span></span>
+          <span></span>
+        </span>
+      </summary>
+      <nav class="mobile-nav-links" aria-label="Mobile primary">
+        {navigationLinks.map(({ href, label }) => <a href={href}>{label}</a>)}
+      </nav>
+    </details>
   </div>
 </header>

@@ -62,6 +62,8 @@ const { total } = Astro.props;
   const activeCategoryLink = activeCategory?.querySelector<HTMLAnchorElement>("[data-active-category-link]");
 
   if (searchRoot && resultsRoot && emptyState && categorySidebar && toggle && activeCategory && activeCategoryLink) {
+    const categoryOriginalParent = categorySidebar.parentElement;
+    const categoryOriginalNextSibling = categorySidebar.nextElementSibling;
     const input = searchRoot.querySelector<HTMLInputElement>("[type='search']");
     const status = searchRoot.querySelector<HTMLElement>("[data-search-count]");
     const cards = Array.from(resultsRoot.querySelectorAll<HTMLElement>("[data-search-text]"));
@@ -87,6 +89,17 @@ const { total } = Astro.props;
 
     const updateDrawer = () => {
       const isMobile = mobileQuery.matches;
+
+      if (isMobile && categorySidebar.previousElementSibling !== toggle) {
+        toggle.insertAdjacentElement("afterend", categorySidebar);
+      } else if (
+        !isMobile &&
+        categoryOriginalParent &&
+        categorySidebar.parentElement !== categoryOriginalParent
+      ) {
+        categoryOriginalParent.insertBefore(categorySidebar, categoryOriginalNextSibling);
+      }
+
       toggle.hidden = !isMobile;
       categorySidebar.hidden = isMobile && !drawerOpen;
       toggle.setAttribute("aria-expanded", String(isMobile && drawerOpen));
@@ -133,6 +146,7 @@ const { total } = Astro.props;
 
       const hasQuery = trimmedQuery !== "";
       const hasFilters = hasQuery || selectedCategory !== "all";
+      searchRoot.classList.toggle("has-query", hasQuery);
       for (const button of clearButtons) button.hidden = !hasQuery;
       emptyState.hidden = visible !== 0;
 
