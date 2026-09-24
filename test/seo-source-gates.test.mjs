@@ -134,7 +134,7 @@ test("tool-card headings are contextual and card images use the controlled media
   assert.match(toolList, /<HeadingTag class="card-title">/);
   assert.match(toolList, /src=\{`\/media\/tools\/\$\{tool\.entry\.slug\}\/card`\}/);
   assert.match(categoryPage, /<ToolList tools=\{tools\} headingLevel=\{3\}/);
-  assert.match(toolPage, /<ToolList tools=\{relatedTools\} variant="compact" headingLevel=\{3\}/);
+  assert.match(toolPage, /<ToolList tools=\{relatedTools\} headingLevel=\{3\}/);
 });
 
 test("category content sections retain consistent vertical spacing", () => {
