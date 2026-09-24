@@ -13,6 +13,21 @@ test("tool-profile public metadata uses colons instead of em dashes", () => {
   assert.doesNotMatch(toolPage, /tool\.entry\.(?:name|description)\} —/);
 });
 
+test("tool SEO overrides resolve independently and summary precedes existing description", () => {
+  const toolPage = read("src/pages/tools/[slug].astro");
+  const layout = read("src/layouts/BaseLayout.astro");
+
+  assert.match(toolPage, /tool\.entry\.seoTitle \?\? `\$\{tool\.entry\.name\}: \$\{tool\.category\.label\} \| AI Agent Tools`/);
+  assert.match(toolPage, /tool\.entry\.seoDescription \?\? buildDescription\(tool\.entry\.description\)/);
+  assert.match(toolPage, /pageGraphSchema\(\{[\s\S]*?description,[\s\S]*?type: "ItemPage"/);
+  assert.match(toolPage, /<BaseLayout\s+title=\{title\}\s+description=\{description\}/);
+  assert.match(layout, /<meta property="og:title" content=\{title\}/);
+  assert.match(layout, /<meta property="og:description" content=\{description\}/);
+  assert.match(layout, /<meta name="twitter:title" content=\{title\}/);
+  assert.match(layout, /<meta name="twitter:description" content=\{description\}/);
+  assert.match(toolPage, /\{tool\.entry\.agentSummary && <p class="detail-summary">\{tool\.entry\.agentSummary\}<\/p>\}\s*<p class="detail-summary">\{tool\.entry\.description\}<\/p>/);
+});
+
 test("tool-profile labels and trust copy state evidence boundaries directly", () => {
   const toolPage = read("src/pages/tools/[slug].astro");
 

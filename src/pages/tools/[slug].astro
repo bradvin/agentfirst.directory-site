@@ -24,7 +24,7 @@ const isGone = redirectRule?.statusCode === 410;
 const relatedTools = tool ? await getRelatedTools(tool) : [];
 const path = tool ? `/tools/${tool.entry.slug}` : Astro.url.pathname;
 const title = tool
-  ? `${tool.entry.name}: ${tool.category.label} | AI Agent Tools`
+  ? tool.entry.seoTitle ?? `${tool.entry.name}: ${tool.category.label} | AI Agent Tools`
   : `${isGone ? "Gone" : "Not found"} | ${siteConfig.name}`;
 const metaDescriptionSuffix = "Review its AI-agent fit, pricing, evidence, and limitations.";
 const buildDescription = (summary: string) => {
@@ -37,7 +37,7 @@ const buildDescription = (summary: string) => {
   return `${shortened.endsWith("…") ? shortened : `${shortened}.`} ${metaDescriptionSuffix}`;
 };
 const description = tool
-  ? buildDescription(tool.entry.description)
+  ? tool.entry.seoDescription ?? buildDescription(tool.entry.description)
   : isGone
     ? "This tool profile has been permanently retired and has no replacement."
     : "The requested tool does not exist in the approved directory.";
@@ -113,7 +113,7 @@ const structuredData = tool
   ? [
       pageGraphSchema({
         path,
-        name: `${tool.entry.name} agent-first profile`,
+        name: title,
         description,
         type: "ItemPage",
         breadcrumbs: [
@@ -178,6 +178,7 @@ const structuredData = tool
                   }
                   <span class="detail-badge">{formatPricing(tool.entry.pricing)}</span>
                 </div>
+                {tool.entry.agentSummary && <p class="detail-summary">{tool.entry.agentSummary}</p>}
                 <p class="detail-summary">{tool.entry.description}</p>
                 <div class="feature-actions">
                   <a class="button button-primary" href={visitUrl} rel="noreferrer" target="_blank">

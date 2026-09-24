@@ -54,6 +54,9 @@ export interface Tool {
   slug: string;
   name: string;
   description: string;
+  seoTitle?: string;
+  seoDescription?: string;
+  agentSummary?: string;
   bodyMd: string;
   categorySlug: string;
   tags: string[];
@@ -128,6 +131,9 @@ interface ToolRow {
   slug: string;
   name: string;
   description: string;
+  seo_title: string | null;
+  seo_description: string | null;
+  agent_summary: string | null;
   body_md: string;
   category_slug: string;
   tags_json: string;
@@ -295,6 +301,11 @@ function normalizeDate(value: string | null | undefined) {
   return Number.isNaN(date.valueOf()) ? undefined : date.toISOString();
 }
 
+function optionalToolSeoText(value: string | null): string | undefined {
+  const trimmed = typeof value === "string" ? value.trim() : "";
+  return trimmed || undefined;
+}
+
 function mapToolCard(row: ToolRow): ToolCardData {
   const websiteUrl = sanitizeExternalUrl(row.website_url);
 
@@ -307,6 +318,9 @@ function mapToolCard(row: ToolRow): ToolCardData {
       slug: row.slug,
       name: row.name,
       description: row.description,
+      seoTitle: optionalToolSeoText(row.seo_title),
+      seoDescription: optionalToolSeoText(row.seo_description),
+      agentSummary: optionalToolSeoText(row.agent_summary),
       bodyMd: row.body_md,
       categorySlug: row.category_slug,
       tags: parseStringArray(row.tags_json),
@@ -369,6 +383,9 @@ async function queryToolCards(
           t.slug,
           t.name,
           t.description,
+          t.seo_title,
+          t.seo_description,
+          t.agent_summary,
           t.body_md,
           t.category_slug,
           t.tags_json,
