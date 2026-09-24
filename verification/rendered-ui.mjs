@@ -130,12 +130,24 @@ assert.ok(schemaOfType(category, "CollectionPage"), "category CollectionPage sch
 assert.equal(schemaOfType(category, "ItemList")?.numberOfItems, 3);
 
 const nativeDetail = await get("/tools/hermes-agent");
+assert.match(nativeDetail, /<title>Hermes Agent for persistent AI agent workflows<\/title>/);
+assert.match(nativeDetail, /<meta name="description" content="Explore Hermes Agent for persistent agent workflows, with evidence, pricing, and limits\."/);
+assert.match(nativeDetail, /<meta property="og:title" content="Hermes Agent for persistent AI agent workflows"/);
+assert.match(nativeDetail, /<meta property="og:description" content="Explore Hermes Agent for persistent agent workflows, with evidence, pricing, and limits\."/);
+assert.match(nativeDetail, /<meta name="twitter:title" content="Hermes Agent for persistent AI agent workflows"/);
+assert.match(nativeDetail, /<meta name="twitter:description" content="Explore Hermes Agent for persistent agent workflows, with evidence, pricing, and limits\."/);
+assert.equal(schemaOfType(nativeDetail, "ItemPage")?.description,
+  "Explore Hermes Agent for persistent agent workflows, with evidence, pricing, and limits.");
+assert.equal(schemaOfType(nativeDetail, "ItemPage")?.name,
+  "Hermes Agent for persistent AI agent workflows");
+assert.match(detailHeroFor(nativeDetail, "Hermes Agent"), /<p class="detail-summary">Hermes Agent gives agents continuity across long-running tasks\.<\/p>\s*<p class="detail-summary">An autonomous agent runtime<\/p>/);
 assert.match(detailHeroFor(nativeDetail, "Hermes Agent"), /classification-badge[^>]*>[\s\S]*Agent-native/);
 assertClassificationFact(nativeDetail, "Agent-native");
 assert.match(cardFor(nativeDetail, "fiber"), /Agent-enabling/);
 assert.match(cardFor(nativeDetail, "fiber"), /<h3 class="card-title">Fiber<\/h3>/);
 assert.doesNotMatch(cardFor(nativeDetail, "legacy-tool"), /classification-badge/);
 const nativeEntity = toolEntity(nativeDetail);
+assert.equal(nativeEntity.description, "An autonomous agent runtime");
 assert.equal(nativeEntity["@type"], "SoftwareSourceCode");
 assert.equal(nativeEntity.codeRepository, "https://github.com/NousResearch/hermes-agent");
 assert.ok(nativeEntity.genre.includes("Agent-native"));
@@ -153,6 +165,10 @@ assert.match(nativeDetail, /accessed Sep 3, 2026/);
 assert.equal(nativeEntity.subjectOf[0].url, "https://github.com/NousResearch/hermes-agent");
 
 const enablingDetail = await get("/tools/fiber");
+assert.match(enablingDetail, /<title>Fiber for live AI sales agent data<\/title>/);
+assert.match(enablingDetail, /<meta name="description" content="Live data APIs for AI sales agents\. Review its AI-agent fit, pricing, evidence, and limitations\."/);
+assert.equal(schemaOfType(enablingDetail, "ItemPage")?.name, "Fiber for live AI sales agent data");
+assert.equal((detailHeroFor(enablingDetail, "Fiber").match(/class="detail-summary"/g) ?? []).length, 1);
 assert.match(detailHeroFor(enablingDetail, "Fiber"), /classification-badge[^>]*>[\s\S]*Agent-enabling/);
 assertClassificationFact(enablingDetail, "Agent-enabling");
 const enablingEntity = toolEntity(enablingDetail);
@@ -160,6 +176,10 @@ assert.equal(enablingEntity["@type"], "Service");
 assertNoInventedAppClaims(enablingEntity);
 
 const protocolDetail = await get("/tools/x402");
+assert.match(protocolDetail, /<title>x402: Protocols \| AI Agent Tools<\/title>/);
+assert.match(protocolDetail, /<meta name="description" content="Explore x402, an open payment protocol for AI agents, with evidence and implementation details\."/);
+assert.equal(schemaOfType(protocolDetail, "ItemPage")?.description,
+  "Explore x402, an open payment protocol for AI agents, with evidence and implementation details.");
 assert.match(detailHeroFor(protocolDetail, "x402"), /classification-badge[^>]*>[\s\S]*Agent internet protocol/);
 assertClassificationFact(protocolDetail, "Agent internet protocol");
 const protocolEntity = toolEntity(protocolDetail);
@@ -168,6 +188,9 @@ assert.ok(protocolEntity.genre.includes("Agent internet protocol"));
 assertNoInventedAppClaims(protocolEntity);
 
 const legacyDetail = await get("/tools/legacy-tool");
+assert.match(legacyDetail, /<title>Legacy Tool: Agent Infrastructure \| AI Agent Tools<\/title>/);
+assert.match(legacyDetail, /<meta name="description" content="A staged legacy row without classification\. Review its AI-agent fit, pricing, evidence, and limitations\."/);
+assert.equal((detailHeroFor(legacyDetail, "Legacy Tool").match(/class="detail-summary"/g) ?? []).length, 1);
 const legacyTitle = legacyDetail.match(/<h1 class="detail-title"[^>]*>Legacy Tool<\/h1>/);
 assert.ok(legacyTitle, "legacy detail title missing");
 assert.doesNotMatch(legacyDetail.slice(legacyTitle.index, legacyTitle.index + 500), /classification-badge/);

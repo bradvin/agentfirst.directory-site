@@ -69,6 +69,9 @@ WHERE slug = 'protocols';
 
 UPDATE tools
 SET
+  seo_title = '  Hermes Agent for persistent AI agent workflows  ',
+  seo_description = '  Explore Hermes Agent for persistent agent workflows, with evidence, pricing, and limits.  ',
+  agent_summary = '  Hermes Agent gives agents continuity across long-running tasks.  ',
   entity_type = 'software-source-code',
   developer_name = 'Nous Research',
   docs_url = 'https://github.com/NousResearch/hermes-agent',
@@ -85,6 +88,7 @@ WHERE slug = 'hermes-agent';
 
 UPDATE tools
 SET
+  seo_title = '  Fiber for live AI sales agent data  ',
   entity_type = 'service',
   developer_name = 'Fiber',
   docs_url = 'https://fiber.ai',
@@ -100,6 +104,9 @@ WHERE slug = 'fiber';
 
 UPDATE tools
 SET
+  seo_title = '   ',
+  seo_description = '',
+  agent_summary = '   ',
   developer_name = 'Fixture Publisher',
   docs_url = 'https://example.com/legacy',
   interfaces_json = '["web"]',
@@ -114,6 +121,7 @@ WHERE slug = 'legacy-tool';
 
 UPDATE tools
 SET
+  seo_description = '  Explore x402, an open payment protocol for AI agents, with evidence and implementation details.  ',
   entity_type = 'protocol',
   developer_name = 'Coinbase',
   docs_url = 'https://www.x402.org',

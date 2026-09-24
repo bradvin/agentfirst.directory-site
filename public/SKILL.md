@@ -51,6 +51,9 @@ Create `tools/<slug>.md` with YAML frontmatter plus a short markdown body. This 
 slug: "coolapi"
 name: "CoolAPI"
 description: "An agent-first API for doing cool things"
+seoTitle: "CoolAPI: Controlled API Access for AI Agent Workflows"
+seoDescription: "Explore how CoolAPI gives AI agents controlled access to documented API operations. Review its supported interfaces, deployment model, pricing, and evidence."
+agentSummary: "CoolAPI provides API and MCP interfaces for agents that need to request approved operations. Its documented permission controls define which actions an agent can attempt, while the hosted deployment handles the execution path. Review the linked documentation and pricing page to confirm the current controls, supported operations, and limits before relying on it."
 category: "api-access-orchestration-layers"
 tags:
   - "mcp"
@@ -96,6 +99,8 @@ Short summary of what the tool does.
 - `slug` must be lowercase kebab-case and must match the filename
 - `name` must be the public tool name
 - `description` must be a short summary
+- `seoTitle`, `seoDescription`, and `agentSummary` are optional plain-text suggestions. Each must be a non-empty string when included. The editorial reviewer owns the accepted wording; existing listings can leave all three out.
+- Surrounding whitespace is trimmed before validation and publishing; whitespace-only values are invalid.
 - `category` must match an existing category slug unless you also add a new category in the same PR
 - `tags` must contain at least one tag
 - `websiteUrl` must be a valid `http` or `https` URL
@@ -121,6 +126,7 @@ Short summary of what the tool does.
 
 Optional fields:
 
+- Suggest a specific, factual `seoTitle` about the tool's agent use (usually about 50–60 characters), a `seoDescription` that helps a reader choose whether to open the profile (usually about 140–160 characters), and one short plain-text `agentSummary` paragraph about the practical agent-facing outcome (roughly 40–70 words). These are editorial drafting targets, not hard validation limits or automatic truncation rules. Avoid unsupported claims, keyword repetition, promotional language, and markdown or HTML. The title and description fall back independently when omitted; the summary appears before the existing visible description.
 - `githubUrl` should be included when the tool is open source
 - `logoUrl` can be included when the canonical logo URL is already known
 - `ogImageUrl` can be included when the canonical social preview image is already known

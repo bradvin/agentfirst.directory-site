@@ -5,6 +5,7 @@ import { DatabaseSync } from "node:sqlite";
 
 const classificationMigrationPath = new URL("../migrations/0003_add_tool_classification.sql", import.meta.url);
 const editorialSeoMigrationPath = new URL("../migrations/0004_add_editorial_seo_metadata.sql", import.meta.url);
+const toolSeoMigrationPath = new URL("../migrations/0005_add_tool_seo_metadata.sql", import.meta.url);
 const migrationPaths = [
   new URL("../migrations/0001_initial.sql", import.meta.url),
   new URL("../migrations/0002_add_tool_submitter.sql", import.meta.url),
@@ -50,6 +51,22 @@ function createPreEditorialSeoDatabase({ populated = false } = {}) {
   applyClassificationMigration(database);
   return database;
 }
+
+test("tool SEO migration adds nullable fields to populated rows", () => {
+  const database = createPreEditorialSeoDatabase({ populated: true });
+  applyEditorialSeoMigration(database);
+  database.exec(readFileSync(toolSeoMigrationPath, "utf8"));
+
+  const columns = database.prepare("PRAGMA table_info(tools)").all();
+  for (const name of ["seo_title", "seo_description", "agent_summary"]) {
+    const column = columns.find((candidate) => candidate.name === name);
+    assert.deepEqual(
+      { type: column.type, notnull: column.notnull, defaultValue: column.dflt_value },
+      { type: "TEXT", notnull: 0, defaultValue: null },
+    );
+    assert.equal(database.prepare(`SELECT ${name} FROM tools WHERE slug = 'x402'`).get()[name], null);
+  }
+});
 
 test("migration upgrades a populated tools table without fabricating a classification", () => {
   const database = createPreClassificationDatabase({ populated: true });
