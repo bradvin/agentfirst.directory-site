@@ -20,7 +20,7 @@ Acceptance criteria:
 
 | ID | Acceptance | Dependencies | Ownership | Status | Developer | QA | Repairs | Evidence | Commit |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| T1 | A1–A7 | none | Both repositories | pending | GPT-6 Sol High: cross-repo schema, migration, publishing, rendering, docs, and tests require coordinated changes | GPT-6 Sol Medium | 0 | — | — |
+| T1 | A1–A7 | none | Both repositories | done | GPT-6 Sol High (`/root/seo_metadata_dev`): cross-repo schema, migration, publishing, rendering, docs, and tests require coordinated changes | GPT-6 Sol Medium (`/root/seo_metadata_qa`) | 2 | Final QA approved; supervisor: content 75 tests + validation, site 78 tests + clean Astro check/build, identical migrations, diff checks clean | Site `f6e9956`; content `5b578d8` |
 
 Shared files are expected across migrations, content parsing/publishing, runtime queries, tool rendering, documentation, and focused tests. One developer owns the complete implementation to avoid cross-repo integration conflicts. Independent QA begins only after the developer freezes the submitted diff.
 
@@ -37,18 +37,21 @@ Validation commands:
 - Content base: `99d9a2073cbfe78f4f9cf931ac21b3208de8d124` on `main`
 - Supervisor: current session model, explicitly accepted by Brad; setting cannot be independently verified.
 - Authorized allowance: 5 percentage points of the weekly Codex window.
-- Baseline: 34% used, `codex`, 10,080 minutes, reset `1790680523`.
+- Baseline: 34% used, `codex`, 10,080 minutes, reset `1790680522`.
 - Reserve: 1 point; early stop at 38% used.
 - Pre-existing work: untracked `output/` in the site repository; preserve and exclude from task commits.
 
 ```json
-{"version":1,"baseline":{"limit_id":"codex","window_minutes":10080,"resets_at":1790680523,"used_percent":34,"observed_at":1790239956},"last":{"limit_id":"codex","window_minutes":10080,"resets_at":1790680523,"used_percent":34,"observed_at":1790239956},"budget_pp":5,"reserve_pp":1,"status":"active"}
+{"version":1,"baseline":{"limit_id":"codex","window_minutes":10080,"resets_at":1790680522,"used_percent":34,"observed_at":1790239956},"last":{"limit_id":"codex","window_minutes":10080,"resets_at":1790680522,"used_percent":34,"observed_at":1790241070},"budget_pp":5,"reserve_pp":1,"status":"active"}
 ```
 
 | Checkpoint | Used | Delta | Headroom before stop | Decision |
 | --- | ---: | ---: | ---: | --- |
 | Baseline before planning | 34% | 0 pp | 4 pp | Start T1 |
+| After development, before QA | 34% | 0 pp | 4 pp | Start independent QA |
+| After initial QA, before repair | 34% | 0 pp | 4 pp | Focused repair and QA re-review |
+| Final acceptance and commits | 34% | 0 pp | 4 pp | Complete |
 
 ## Handoff
 
-Next ready task: T1. No workers are active. No deployment, push, merge, or public release is authorized.
+T1 is complete and committed in both repositories. No deployment, push, merge, or public release was performed.
