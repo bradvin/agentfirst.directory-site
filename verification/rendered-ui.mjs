@@ -155,6 +155,14 @@ assertNoInventedAppClaims(nativeEntity);
 assert.ok(schemaOfType(nativeDetail, "ItemPage"), "tool ItemPage schema missing");
 assert.ok(schemaOfType(nativeDetail, "BreadcrumbList"), "tool breadcrumb schema missing");
 assert.match(nativeDetail, /id="overview"/);
+assert.doesNotMatch(
+  nativeDetail,
+  /This summary uses submitted and public product material\. Only source-mapped claims are documentation reviewed\./,
+);
+assert.match(
+  nativeDetail,
+  /<h2 id="overview-heading">About Hermes Agent<\/h2>\s*<div><h2>So agents can\.\.\.<\/h2>/,
+);
 assert.match(nativeDetail, /id="why-this-qualifies"/);
 assert.match(nativeDetail, /Agents are the runtime(?:'|’|&rsquo;)s core actor/);
 assert.match(nativeDetail, /id="verified-facts"/);
