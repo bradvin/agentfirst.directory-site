@@ -41,7 +41,6 @@ test("tool-profile labels and trust copy state evidence boundaries directly", ()
     ">Sources</p>",
     ">Sources and verification</h2>",
     ">Profile facts</h2>",
-    "This summary uses submitted and public product material. Only source-mapped claims are documentation reviewed.",
     "First-party unless marked otherwise. Each link supports only its adjacent claim.",
     "No claim-level review or evidence mapping is recorded. Use these first-party links as starting points for verification.",
   ]) {
@@ -61,6 +60,23 @@ test("tool-profile labels and trust copy state evidence boundaries directly", ()
   assert.match(toolPage, /<a[^>]+href=\{source\.url\}[^>]*>\{source\.title\}<\/a>\s*<p>\{source\.claim\}<\/p>/);
   assert.match(toolPage, /source\.sourceType\?\.replaceAll/);
   assert.match(toolPage, /source\.accessedAt \? ` · accessed \$\{displayDate\(source\.accessedAt\)\}`/);
+});
+
+test("tool-profile About section starts with product content instead of process boilerplate", () => {
+  const toolPage = read("src/pages/tools/[slug].astro");
+
+  assert.doesNotMatch(
+    toolPage,
+    /This summary uses submitted and public product material\. Only source-mapped claims are documentation reviewed\./,
+  );
+  assert.match(
+    toolPage,
+    /<h2 id="overview-heading">About \{tool\.entry\.name\}<\/h2>\s*<div set:html=\{bodyHtml\} \/>/,
+  );
+
+  // Evidence boundaries still belong in the dedicated Sources section.
+  assert.match(toolPage, /<h2 id="sources-heading">Sources and verification<\/h2>/);
+  assert.match(toolPage, /First-party unless marked otherwise\. Each link supports only its adjacent claim\./);
 });
 
 test("fit guidance and sources span the full tool-profile detail grid after the sidebar", () => {
@@ -107,7 +123,6 @@ test("repeated tool-profile boilerplate is reduced by at least 40 percent", () =
   const afterSnippets = [
     "Overview",
     "About Example Tool",
-    "This summary uses submitted and public product material. Only source-mapped claims are documentation reviewed.",
     "Listing decision",
     "Why Example Tool is listed",
     "Before you choose",
@@ -128,7 +143,7 @@ test("repeated tool-profile boilerplate is reduced by at least 40 percent", () =
     assert.ok(toolPage.includes(templateSnippet), `measured boilerplate is not rendered: ${templateSnippet}`);
   }
   assert.equal(before, 79);
-  assert.equal(after, 47);
+  assert.equal(after, 33);
   assert.ok(reduction >= 0.4, `boilerplate reduction was ${(reduction * 100).toFixed(1)}%`);
   console.log(`Boilerplate measurement: ${before} words before, ${after} after, ${(reduction * 100).toFixed(1)}% reduction.`);
 });
