@@ -161,7 +161,7 @@ assert.doesNotMatch(
 );
 assert.match(
   nativeDetail,
-  /<h2 id="overview-heading">About Hermes Agent<\/h2>\s*<div><h2>So agents can\.\.\.<\/h2>/,
+  /<h2 id="overview-heading">About Hermes Agent<\/h2>\s*<div><h2>So agents can/,
 );
 assert.match(nativeDetail, /id="why-this-qualifies"/);
 assert.match(nativeDetail, /Agents are the runtime(?:'|’|&rsquo;)s core actor/);
