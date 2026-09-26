@@ -166,7 +166,7 @@ assert.match(
 assert.match(nativeDetail, /id="why-this-qualifies"/);
 assert.match(nativeDetail, /Agents are the runtime(?:'|’|&rsquo;)s core actor/);
 assert.match(nativeDetail, /id="verified-facts"/);
-assert.match(nativeDetail, /documentation reviewed/);
+assert.match(nativeDetail, /Documentation reviewed/);
 assert.match(nativeDetail, /id="sources"/);
 assert.match(nativeDetail, /Hermes Agent documentation/);
 assert.match(nativeDetail, /accessed Sep 3, 2026/);
