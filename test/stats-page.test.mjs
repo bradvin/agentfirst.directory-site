@@ -60,7 +60,7 @@ async function renderSnapshot(snapshot) {
   });
   new Function("require", "module", "exports", outputText)(require, module, module.exports);
   const result = {
-    createAstro: () => ({ response }),
+    createAstro: () => ({ response, request: new Request('http://localhost/stats') }),
     _metadata: { rendererSpecificHydrationScripts: new Set(), hasRenderedHead: false, renderedHead: "", extraHead: [], propagators: new Set() },
     renderers: [],
     styles: new Set(),

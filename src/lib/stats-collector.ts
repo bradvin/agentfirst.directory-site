@@ -33,17 +33,21 @@ export function validateSettings(payload: unknown) {
 async function graphql(token: string, query: string, variables: unknown, fetcher: typeof fetch): Promise<unknown> {
   const response = await fetcher("https://api.cloudflare.com/client/v4/graphql", {
     method: "POST", headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ query, variables }), signal: AbortSignal.timeout(30000),
+    body: JSON.stringify({ query, variables }), redirect: "error", signal: AbortSignal.timeout(30000),
   });
   if (!response.ok) throw new Error("Analytics HTTP failure");
   return response.json();
 }
+// Shared read-only source path: deployment preflight must throw, never write fallback data.
+export async function collectPublicStats(env: Pick<StatsCollectorEnv, "STATS_CF_ACCOUNT_ID" | "STATS_CF_API_TOKEN">, now = new Date(), fetcher: typeof fetch = fetch) {
+  if (!env.STATS_CF_API_TOKEN || !env.STATS_CF_ACCOUNT_ID || !/^[a-f0-9]{32}$/.test(env.STATS_CF_ACCOUNT_ID)) throw new Error("Analytics credentials unavailable");
+  validateSettings(await graphql(env.STATS_CF_API_TOKEN, SETTINGS_QUERY, { accountTag: env.STATS_CF_ACCOUNT_ID }, fetcher));
+  const raw = await graphql(env.STATS_CF_API_TOKEN, STATS_QUERY, statsVariables(env.STATS_CF_ACCOUNT_ID, now), fetcher);
+  return projectCloudflare(raw, completePeriod(now), now);
+}
 export async function refreshPublicStats(env: StatsCollectorEnv, now = new Date(), fetcher: typeof fetch = fetch): Promise<boolean> {
   try {
-    if (!env.STATS_CF_API_TOKEN || !env.STATS_CF_ACCOUNT_ID || !/^[a-f0-9]{32}$/.test(env.STATS_CF_ACCOUNT_ID)) throw new Error("Analytics credentials unavailable");
-    validateSettings(await graphql(env.STATS_CF_API_TOKEN, SETTINGS_QUERY, { accountTag: env.STATS_CF_ACCOUNT_ID }, fetcher));
-    const raw = await graphql(env.STATS_CF_API_TOKEN, STATS_QUERY, statsVariables(env.STATS_CF_ACCOUNT_ID, now), fetcher);
-    await savePublicStats(env.DB, projectCloudflare(raw, completePeriod(now), now));
+    await savePublicStats(env.DB, await collectPublicStats(env, now, fetcher));
     return true;
   } catch {
     // Do not log upstream errors, tokens, variables or raw payloads. Preserve all last-good values.

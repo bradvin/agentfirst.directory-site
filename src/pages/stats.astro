@@ -4,6 +4,9 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import { readPublicStats } from "../lib/public-stats";
 import { siteConfig } from "../lib/site";
 
+if (!["GET", "HEAD"].includes(Astro.request.method)) {
+  return new Response(null, { status: 405, headers: { Allow: "GET, HEAD" } });
+}
 const snapshot = await readPublicStats(env.DB);
 Astro.response.headers.set("Cache-Control", "public, max-age=300");
 
