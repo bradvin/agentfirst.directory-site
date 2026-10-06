@@ -30,7 +30,7 @@ test('config injection preserves expected main identity; rejects domain/worker/D
 });
 test('read-only identity lookup pins exact existing account+DB and rejects wrong DB names/IDs', async () => {
   const good = { success: true, result: { uuid: env.CLOUDFLARE_D1_DATABASE_ID, name: 'agentfirst-directory' } };
-  await validateRemoteDatabase(env, async (url, options) => { assert.equal(url, `https://api.cloudflare.com/client/v4/accounts/${env.CLOUDFLARE_ACCOUNT_ID}/d1/database/${env.CLOUDFLARE_D1_DATABASE_ID}`); assert.equal(options.redirect, 'error'); assert.equal(options.headers.Authorization, `Bearer ${env.CLOUDFLARE_API_TOKEN}`); return Response.json(good); });
+  await validateRemoteDatabase(env, async (url, options) => { assert.equal(url, `https://api.cloudflare.com/client/v4/accounts/${env.CLOUDFLARE_ACCOUNT_ID}/d1/database/${env.CLOUDFLARE_D1_DATABASE_ID}?fields=uuid%2Cname`); assert.equal(options.redirect, 'error'); assert.equal(options.headers.Authorization, `Bearer ${env.CLOUDFLARE_API_TOKEN}`); return Response.json(good); });
   for (const body of [{ success: false }, { ...good, result: { ...good.result, name: 'other' } }, { ...good, result: { ...good.result, uuid: 'other' } }]) await assert.rejects(validateRemoteDatabase(env, async () => Response.json(body)));
 });
 test('live Worker DB binding/domain must match existing account and deployment identity before mutations', async () => {
