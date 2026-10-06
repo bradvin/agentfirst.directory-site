@@ -4,12 +4,14 @@ import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
 import { collectPublicStats } from '../src/lib/stats-collector.ts';
 import { verifyDeployedStats } from './verify-deployed-stats.mjs';
+import { createPreflightReporter } from './stats-preflight-diagnostics.mjs';
 import { validateCredentials, validateConfig, injectDatabase, validateRemoteDatabase, validateRemoteWorker, validateBootstrapSnapshot, createPrivateDirectory, prepareFiles } from './stats-deploy-helpers.mjs';
 
 // CLI has no data/path/target arguments. Only the main-push workflow may invoke it.
 export async function deployStats({ env = process.env, fetcher = fetch, run = runCommand, verify = verifyDeployedStats } = {}) {
   let directory;
   let phase = 'preflight';
+  const reporter = createPreflightReporter(fetcher);
   try {
     if (env.GITHUB_EVENT_NAME !== 'push' || env.GITHUB_REF !== 'refs/heads/main' || env.GITHUB_REPOSITORY !== 'bradvin/agentfirst.directory-site') throw Error();
     validateCredentials(env);
@@ -23,10 +25,19 @@ export async function deployStats({ env = process.env, fetcher = fetch, run = ru
     run('npm', ['run', 'build'], childEnv);
     validateConfig(JSON.parse(readFileSync('dist/server/wrangler.json', 'utf8')), env, { built: true });
     phase = 'source-preflight';
-    await validateRemoteDatabase(env, fetcher);
-    await validateRemoteWorker(env, fetcher);
+    await validateRemoteDatabase(env, reporter.forGate('remote-database'));
+    await validateRemoteWorker(env, (url, init) => {
+      const gate = url.endsWith('/scripts/agentfirst-directory/settings') ? 'remote-worker-bindings' : 'remote-worker-domain';
+      return reporter.forGate(gate)(url, init);
+    });
     // Same settings, exact browser/RUM query, and pure projection as scheduled refresh.
-    const snapshot = validateBootstrapSnapshot(await collectPublicStats(env, new Date(), fetcher));
+    let sourceRequest = 0;
+    const collected = await collectPublicStats(env, new Date(), (url, init) => {
+      const gate = ++sourceRequest === 1 ? 'source-settings' : 'source-query';
+      return reporter.forGate(gate)(url, init);
+    });
+    phase = 'bootstrap-snapshot';
+    const snapshot = validateBootstrapSnapshot(collected);
     const files = prepareFiles(directory, snapshot, env);
     const deployEnv = { ...childEnv, CLOUDFLARE_ACCOUNT_ID: env.CLOUDFLARE_ACCOUNT_ID, CLOUDFLARE_API_TOKEN: env.CLOUDFLARE_API_TOKEN, CI: 'true', WRANGLER_SEND_METRICS: 'false', WRANGLER_WRITE_LOGS: 'false' };
     // All prerequisites above are read-only. The first production mutation is here.
@@ -47,7 +58,8 @@ export async function deployStats({ env = process.env, fetcher = fetch, run = ru
     console.log('Deployment and public snapshot verification passed.');
   } catch {
     // Do not print upstream responses, SQL, command output, env, or exception messages.
-    throw new Error(`Stats deployment failed at ${phase}; inspect reviewed workflow gates (no sensitive diagnostics emitted).`);
+    const diagnostic = phase === 'source-preflight' ? reporter.summary() : undefined;
+    throw new Error(`Stats deployment failed at ${diagnostic ?? `${phase}; inspect reviewed workflow gates (no sensitive diagnostics emitted).`}`);
   } finally {
     if (directory) rmSync(directory, { recursive: true, force: true });
   }

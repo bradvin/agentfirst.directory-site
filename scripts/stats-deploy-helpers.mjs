@@ -38,7 +38,9 @@ export function injectDatabase(config, env) {
 export async function validateRemoteDatabase(env, fetcher = fetch) {
   validateCredentials(env);
   // Read-only lookup uses precisely the existing deployment account + DB secrets.
-  const response = await fetcher(`https://api.cloudflare.com/client/v4/accounts/${env.CLOUDFLARE_ACCOUNT_ID}/d1/database/${env.CLOUDFLARE_D1_DATABASE_ID}`, {
+  // Match Wrangler's identity lookup: no unrelated size/table/region metrics.
+  const fields = new URLSearchParams({ fields: 'uuid,name' });
+  const response = await fetcher(`https://api.cloudflare.com/client/v4/accounts/${env.CLOUDFLARE_ACCOUNT_ID}/d1/database/${env.CLOUDFLARE_D1_DATABASE_ID}?${fields}`, {
     headers: { Authorization: `Bearer ${env.CLOUDFLARE_API_TOKEN}` }, redirect: 'error', signal: AbortSignal.timeout(30_000),
   });
   if (!response.ok) reject();
