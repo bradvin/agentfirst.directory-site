@@ -11,7 +11,7 @@ Credentials / deployment (requires explicit Brad approval)
 - Do not merge to main without production approval: existing deploy.yml pushes main directly to production and applies remote D1 migrations.
 - Production needs a dedicated secret STATS_CF_API_TOKEN with Account / Account Analytics / Read, scoped only to the owning Cloudflare account, and STATS_CF_ACCOUNT_ID (server-only; not a public variable). Do not reuse the existing deployment token for collection. Token provisioning/secret installation and activating the cron require approval. No token was rotated/created or live config changed by this slice.
 - Source investigation used the established 1Password wrapper and existing authorized credential only for read-only requests. It does not establish that the existing token is least-privileged; dedicated production token remains an approval prerequisite.
-- After approval, use the normal reviewed deploy workflow (migration + Worker) and verify a successful scheduled refresh and both live routes. No public refresh endpoint exists. Local Wrangler --test-scheduled adds an emulator-only /__scheduled URL; it is not deployed in application code.
+- After approval, use the normal reviewed deploy workflow (migration + Worker) and verify a successful scheduled refresh and both live routes. No public refresh endpoint exists. Local Wrangler --test-scheduled adds an emulator-only /cdn-cgi/handler/scheduled URL; it is not deployed in application code.
 
 Repeatable independent local verification (Node 24+; commands from repo root)
   npm ci

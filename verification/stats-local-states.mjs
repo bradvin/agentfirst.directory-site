@@ -11,7 +11,7 @@ try {
   if (original) {
     const before=await json();
     // Wrangler emulator-only trigger. No collector credentials are passed to this server.
-    assert.ok((await fetch(`${base}/__scheduled`)).ok);
+    assert.ok((await fetch(`${base}/cdn-cgi/handler/scheduled`)).ok);
     const after=await json();
     assert.equal(after.status, before.coverage.reportedDays ? 'stale' : 'unavailable');
     assert.deepEqual(after.totals,before.totals); assert.deepEqual(after.daily,before.daily); assert.equal(after.refreshedAt,before.refreshedAt);
