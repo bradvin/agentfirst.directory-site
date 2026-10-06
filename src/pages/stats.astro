@@ -1,0 +1,158 @@
+---
+import { env } from "cloudflare:workers";
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { readPublicStats } from "../lib/public-stats";
+import { siteConfig } from "../lib/site";
+
+if (!["GET", "HEAD"].includes(Astro.request.method)) {
+  return new Response(null, { status: 405, headers: { Allow: "GET, HEAD" } });
+}
+const snapshot = await readPublicStats(env.DB);
+Astro.response.headers.set("Cache-Control", "public, max-age=300");
+
+const description = "Public website traffic estimates, daily coverage, and measurement limitations for agentfirst.directory.";
+const formatEstimate = (value: number | null) =>
+  value === null ? "Not reported" : new Intl.NumberFormat("en", { maximumFractionDigits: 2 }).format(value);
+const available = snapshot.status !== "unavailable";
+const statusLabel = {
+  fresh: "Fresh snapshot",
+  stale: "Stale snapshot",
+  unavailable: "Statistics unavailable",
+}[snapshot.status];
+const statusMessage = {
+  fresh: "The latest successful snapshot is current. Freshness does not mean every date has reported data.",
+  stale: "The last successful snapshot is shown, but it may be out of date. A refresh failed, the snapshot is over 36 hours old, or its reporting window is no longer current.",
+  unavailable: "No usable traffic snapshot is available. Unavailable measurements are not zero traffic.",
+}[snapshot.status];
+const totalsLabel = snapshot.totals.complete ? "Reporting-window estimates" : "Observed estimates (partial coverage)";
+---
+
+<BaseLayout
+  title={`Public traffic statistics | ${siteConfig.name}`}
+  description={description}
+  canonicalPath="/stats"
+>
+  <div class="shell-inner policy-shell stats-shell">
+    <section class="page-intro page-intro-centered">
+      <p class="detail-overline">Public measurements</p>
+      <h1 class="page-title">Website traffic statistics</h1>
+      <p class="page-copy">
+        Browser-reported traffic estimates for this directory, with missing dates and sampling made explicit.
+        These are measurements of the website, not of the tools listed here.
+      </p>
+      <p class="stats-json-link"><a class="detail-link" href="/stats.json">Read the machine-readable snapshot (JSON)</a></p>
+    </section>
+
+    <section class="detail-panel policy-panel" aria-labelledby="snapshot-heading">
+      <p class="detail-overline">Snapshot status</p>
+      <h2 id="snapshot-heading">{statusLabel}</h2>
+      <p>{statusMessage}</p>
+      <dl class="stats-metadata">
+        <div>
+          <dt>Reporting window</dt>
+          <dd><time datetime={snapshot.period.start}>{snapshot.period.start}</time> through <time datetime={snapshot.period.end}>{snapshot.period.end}</time> (inclusive), {snapshot.period.days} complete dates in {snapshot.period.timezone}</dd>
+        </div>
+        <div>
+          <dt>Last successful refresh</dt>
+          <dd>{snapshot.refreshedAt ? <time datetime={snapshot.refreshedAt}>{snapshot.refreshedAt} (UTC)</time> : "No successful refresh available"}</dd>
+        </div>
+        <div>
+          <dt>Coverage</dt>
+          <dd>{snapshot.coverage.reportedDays} reported dates; {snapshot.coverage.missingDays} missing dates. {snapshot.coverage.sampled ? "Sampled estimates." : "No sampling indicated in this snapshot."}</dd>
+        </div>
+      </dl>
+    </section>
+
+    <section class="detail-panel policy-panel" aria-labelledby="estimates-heading">
+      <p class="detail-overline">{available ? totalsLabel : "No estimates available"}</p>
+      <h2 id="estimates-heading">{available ? "Traffic reported in this window" : "Traffic measurements unavailable"}</h2>
+      <div class="stats-estimates">
+        <dl>
+          <dt>Visits</dt>
+          <dd>{available ? formatEstimate(snapshot.totals.visits) : "Unavailable"}</dd>
+        </dl>
+        <dl>
+          <dt>Page views</dt>
+          <dd>{available ? formatEstimate(snapshot.totals.pageViews) : "Unavailable"}</dd>
+        </dl>
+      </div>
+      <p>
+        {!available
+          ? "No observed estimates are available. Missing measurements are not treated as zero."
+          : snapshot.totals.complete
+            ? "Every date has reported data. These are provider estimates, not an exact census of traffic."
+            : "Observed estimates sum only reported dates. They are not full reporting-window totals; missing dates are not treated as zero."}
+      </p>
+    </section>
+
+    <section class="detail-panel policy-panel" aria-labelledby="daily-heading">
+      <p class="detail-overline">Daily detail</p>
+      <h2 id="daily-heading">All {snapshot.period.days} reporting dates</h2>
+      <p id="daily-help">Dates are UTC. A reported 0 is the provider’s estimate, not proof of no actual traffic when sampled; “Not reported” means missing data, not zero. On narrow screens, focus the table region and use the arrow keys to scroll.</p>
+      <div class="stats-table-scroll" role="region" tabindex="0" aria-label="Daily traffic estimates, horizontally scrollable" aria-describedby="daily-help">
+        <table>
+          <caption>Daily visits and page-view estimates, {snapshot.period.start} through {snapshot.period.end} (UTC)</caption>
+          <thead>
+            <tr>
+              <th scope="col">Date (UTC)</th>
+              <th scope="col" class="stats-numeric">Visits (estimate)</th>
+              <th scope="col" class="stats-numeric">Page views (estimate)</th>
+              <th scope="col" class="stats-numeric">Sample interval</th>
+            </tr>
+          </thead>
+          <tbody>
+            {snapshot.daily.map((day) => (
+              <tr>
+                <th scope="row"><time datetime={day.date}>{day.date}</time></th>
+                <td class="stats-numeric">{available ? formatEstimate(day.visits) : "Not reported"}</td>
+                <td class="stats-numeric">{available ? formatEstimate(day.pageViews) : "Not reported"}</td>
+                <td class="stats-numeric">{available && day.sampleInterval !== null ? formatEstimate(day.sampleInterval) : "Not reported"}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="detail-panel policy-panel" aria-labelledby="methodology-heading">
+      <p class="detail-overline">Definitions and limitations</p>
+      <h2 id="methodology-heading">What these numbers mean</h2>
+      <dl class="stats-metadata">
+        <div><dt>Source</dt><dd>{snapshot.source.name}, dataset <code>{snapshot.source.dataset}</code>.</dd></div>
+        <div><dt>Visits</dt><dd>Provider-defined visits from <code>{snapshot.source.metrics.visits}</code>. Visits are not unique people or a count of AI agents.</dd></div>
+        <div><dt>Page views</dt><dd>Browser-reported page-view estimates from <code>{snapshot.source.metrics.pageViews}</code>, not a count of all HTTP requests.</dd></div>
+        <div><dt>Sampling</dt><dd>The sample interval is the provider-reported sampling weight, not a percentage. Sampled values are estimates; we do not multiply them by the interval again.</dd></div>
+      </dl>
+      <p>Browser analytics may miss traffic where the analytics script does not run, including some bots, blocked scripts, and non-browser clients. These measurements cannot distinguish human visitors from AI agents.</p>
+      <ul class="stats-caveats">
+        {snapshot.source.caveats.map((caveat) => <li>{caveat}</li>)}
+      </ul>
+      <p>Use the <a class="detail-link" href="/stats.json">public JSON snapshot</a> for the same dates, estimates, coverage, and source caveats.</p>
+    </section>
+  </div>
+</BaseLayout>
+
+<style>
+  .stats-shell { min-width: 0; }
+  .stats-json-link { margin: 18px 0 0; }
+  .stats-metadata { display: grid; gap: 16px; margin: 0; }
+  .stats-metadata div { min-width: 0; }
+  .stats-metadata dt, .stats-estimates dt { color: var(--text); font-weight: 600; }
+  .stats-metadata dd { margin: 4px 0 0; color: var(--muted-soft); line-height: 1.65; overflow-wrap: anywhere; }
+  .stats-estimates { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+  .stats-estimates dl { margin: 0; }
+  .stats-estimates dd { margin: 8px 0 0; color: var(--accent); font: 600 clamp(1.35rem, 4vw, 2rem) "IBM Plex Mono", monospace; overflow-wrap: anywhere; }
+  .stats-table-scroll { min-width: 0; max-width: 100%; overflow-x: auto; border: 1px solid var(--border); border-radius: 4px; }
+  .stats-table-scroll:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
+  table { width: 100%; min-width: 610px; border-collapse: collapse; font-size: 14px; }
+  caption { padding: 14px; text-align: left; color: var(--muted-soft); line-height: 1.6; }
+  th, td { padding: 12px 14px; text-align: left; border-top: 1px solid var(--border); }
+  thead th { background: var(--surface-strong); }
+  tbody th { font-weight: 400; white-space: nowrap; }
+  .stats-numeric { text-align: right; font-variant-numeric: tabular-nums; }
+  .stats-caveats { margin: 0; padding-left: 22px; color: var(--muted-soft); line-height: 1.65; }
+  .stats-caveats li + li { margin-top: 8px; }
+  @media (max-width: 480px) {
+    .stats-estimates { grid-template-columns: 1fr; }
+  }
+</style>

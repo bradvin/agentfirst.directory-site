@@ -21,8 +21,14 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Install verification browser
+        run: npx playwright install --with-deps chromium
+
       - name: Run unit tests and build
         run: npm run ci
+
+      - name: Verify exact local bootstrap SQL and fake secret-file deployment
+        run: node verification/stats-actions-local.mjs
 
       - name: Prepare isolated local D1 fixture
         run: |
