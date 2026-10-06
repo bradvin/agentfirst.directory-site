@@ -23,6 +23,8 @@ This file is a discovery aid. Canonical HTML pages remain the authoritative, cit
 
 ## Data and updates
 
+- [Public website traffic statistics and measurement caveats](https://agentfirst.directory/stats)
+- [Public traffic snapshot JSON](https://agentfirst.directory/stats.json)
 - [Published tools JSON](https://agentfirst.directory/api/tools.json)
 - [Published tools CSV](https://agentfirst.directory/data/agent-first-tools.csv)
 - [Recently updated tools feed](https://agentfirst.directory/feed.xml)
