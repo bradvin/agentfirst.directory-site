@@ -25,13 +25,16 @@ test('credential checks reject each absent, malformed, reused or mismatched sour
 });
 test('config injection preserves expected main identity; rejects domain/worker/D1/account/schedule overrides', () => {
   const config = injectDatabase(source, env); validateConfig(config, env);
+  assert.equal(source.d1_databases[0].database_name, 'agentfirst');
   assert.equal(source.d1_databases[0].database_id, '00000000-0000-0000-0000-000000000000');
+  rejected(() => validateConfig({ ...config, d1_databases: [{ ...config.d1_databases[0], database_name: 'agentfirst-directory' }] }, env));
   for (const change of [{ name: 'other' }, { routes: [] }, { workers_dev: true }, { preview_urls: true }, { account_id: 'b'.repeat(32) }, { triggers: { crons: ['* * * * *'] } }, { env: {} }, { vars: { STATS_CF_API_TOKEN: 'PRIVATE' } }, { build: { command: 'evil' } }, { d1_databases: [{ ...config.d1_databases[0], database_id: '22222222-2222-2222-2222-222222222222' }] }, { d1_databases: [{ ...config.d1_databases[0], database_name: 'other' }] }, { d1_databases: [{ ...config.d1_databases[0], binding: 'OTHER' }] }]) rejected(() => validateConfig({ ...config, ...change }, env));
 });
 test('read-only identity lookup pins exact existing account+DB and rejects wrong DB names/IDs', async () => {
-  const good = { success: true, result: { uuid: env.CLOUDFLARE_D1_DATABASE_ID, name: 'agentfirst-directory' } };
+  const good = { success: true, result: { uuid: env.CLOUDFLARE_D1_DATABASE_ID, name: 'agentfirst' } };
   await validateRemoteDatabase(env, async (url, options) => { assert.equal(url, `https://api.cloudflare.com/client/v4/accounts/${env.CLOUDFLARE_ACCOUNT_ID}/d1/database/${env.CLOUDFLARE_D1_DATABASE_ID}?fields=uuid%2Cname`); assert.equal(options.redirect, 'error'); assert.equal(options.headers.Authorization, `Bearer ${env.CLOUDFLARE_API_TOKEN}`); return Response.json(good); });
-  for (const body of [{ success: false }, { ...good, result: { ...good.result, name: 'other' } }, { ...good, result: { ...good.result, uuid: 'other' } }]) await assert.rejects(validateRemoteDatabase(env, async () => Response.json(body)));
+  await assert.rejects(validateRemoteDatabase({ ...env, STATS_CF_ACCOUNT_ID: 'b'.repeat(32) }, () => assert.fail('mismatched accounts must reject before lookup')));
+  for (const body of [null, { success: false }, { ...good, result: { ...good.result, name: 'agentfirst-directory' } }, { ...good, result: { ...good.result, name: 'other' } }, { ...good, result: { ...good.result, uuid: '22222222-2222-2222-2222-222222222222' } }]) await assert.rejects(validateRemoteDatabase(env, async () => Response.json(body)));
 });
 test('live Worker DB binding/domain must match existing account and deployment identity before mutations', async () => {
   const binding = { name: 'DB', type: 'd1', id: env.CLOUDFLARE_D1_DATABASE_ID };
@@ -101,7 +104,7 @@ test('orchestration: source/config gates before mutations, exact SQL/readback/de
       const calls = []; let request = 0; let filesSnapshot;
       const fetcher = async (url, init) => {
         calls.push('fetch');
-        if (url.includes('/d1/database/')) return Response.json({ success: failure !== 'identity', result: { uuid: env.CLOUDFLARE_D1_DATABASE_ID, name: 'agentfirst-directory' } });
+        if (url.includes('/d1/database/')) return Response.json({ success: failure !== 'identity', result: { uuid: env.CLOUDFLARE_D1_DATABASE_ID, name: 'agentfirst' } });
         if (url.includes('/workers/scripts/')) return Response.json({ success: true, result: { bindings: [{ name: 'DB', type: 'd1', id: env.CLOUDFLARE_D1_DATABASE_ID }] } });
         if (url.includes('/workers/domains')) return Response.json({ success: true, result: [{ hostname: 'agentfirst.directory', service: 'agentfirst-directory', environment: 'production' }] });
         if (failure === 'source') throw Error('PRIVATE');
@@ -117,6 +120,9 @@ test('orchestration: source/config gates before mutations, exact SQL/readback/de
           mkdirSync('dist/server', { recursive: true });
           writeFileSync('dist/server/wrangler.json', JSON.stringify({ ...injectDatabase(source, env), main: 'entry.mjs', d1_databases: [{ ...injectDatabase(source, env).d1_databases[0], migrations_dir: '../../migrations' }] }));
         } else { assert.equal(childEnv.CLOUDFLARE_API_TOKEN, env.CLOUDFLARE_API_TOKEN); assert.equal(childEnv.WRANGLER_WRITE_LOGS, 'false'); }
+        if (phase === 'migration') assert.equal(args[3], 'DB');
+        if (['bootstrap', 'readback'].includes(phase)) assert.equal(args[2], env.CLOUDFLARE_D1_DATABASE_ID);
+        if (phase !== 'build') assert.ok(args.includes('--config'));
         if (phase === failure) throw Error('PRIVATE');
         if (phase === 'bootstrap') {
           const file = args[args.indexOf('--file')+1];

@@ -2,14 +2,14 @@
 // Optional read-only source env uses the same collector; never persist raw responses.
 import assert from 'node:assert/strict';
 import { spawnSync, spawn } from 'node:child_process';
-import { rmSync } from 'node:fs';
+import { rmSync, readFileSync } from 'node:fs';
 import { createServer } from 'node:net';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { getPlatformProxy } from 'wrangler';
 import { collectPublicStats } from '../src/lib/stats-collector.ts';
 import { completePeriod, projectCloudflare } from '../src/lib/public-stats.ts';
-import { createPrivateDirectory, prepareFiles } from '../scripts/stats-deploy-helpers.mjs';
+import { createPrivateDirectory, prepareFiles, validateConfig, injectDatabase } from '../scripts/stats-deploy-helpers.mjs';
 const env = { CLOUDFLARE_API_TOKEN: 'FAKE_DEPLOY_TEST_NOT_A_CREDENTIAL', CLOUDFLARE_ACCOUNT_ID: 'a'.repeat(32), CLOUDFLARE_D1_DATABASE_ID: '11111111-1111-1111-1111-111111111111', STATS_CF_API_TOKEN: 'FAKE_SOURCE_TEST_NOT_A_CREDENTIAL', STATS_CF_ACCOUNT_ID: 'a'.repeat(32) };
 const directory = createPrivateDirectory(tmpdir());
 const state = join(directory, 'state');
@@ -22,15 +22,25 @@ const run = args => {
   return result.stdout;
 };
 try {
+  const sourceConfig = JSON.parse(readFileSync('wrangler.jsonc', 'utf8'));
+  const builtConfig = JSON.parse(readFileSync('dist/server/wrangler.json', 'utf8'));
+  validateConfig(sourceConfig, env, { injected: false });
+  validateConfig(builtConfig, env, { built: true, injected: false });
+  const injected = injectDatabase(sourceConfig, env);
+  const injectedBuilt = structuredClone(builtConfig);
+  injectedBuilt.d1_databases[0].database_id = injected.d1_databases[0].database_id;
+  validateConfig(injectedBuilt, env, { built: true });
+  // These counts and UUIDs are synthetic schema fixtures, never production data.
   const now = new Date();
   const snapshot = projectCloudflare({ data: { viewer: { accounts: [{ rumPageloadEventsAdaptiveGroups: [{ dimensions: { date: completePeriod(now).end, requestHost: 'agentfirst.directory' }, pageViews: 42, sum: { visits: 3 }, avg: { sampleInterval: 2 } }] }] } } }, completePeriod(now), now);
   const files = prepareFiles(directory, snapshot, env, now);
   run(['d1', 'migrations', 'apply', 'DB', '--local', '--persist-to', state]);
   run(['d1', 'execute', 'DB', '--local', '--persist-to', state, '--file', files.sql]);
-  // Reapply demonstrates singleton idempotence using the exact emitted SQL.
-  run(['d1', 'execute', 'DB', '--local', '--persist-to', state, '--file', files.sql]);
+  // Reapply by the corrected database name: it must resolve to the same DB binding.
+  run(['d1', 'execute', 'agentfirst', '--local', '--persist-to', state, '--file', files.sql]);
   const rows = JSON.parse(run(['d1', 'execute', 'DB', '--local', '--persist-to', state, '--command', 'SELECT id, snapshot FROM public_stats', '--json']));
   assert.equal(rows[0].results.length, 1); assert.equal(rows[0].results[0].id, 1);
+  assert.equal(rows[0].results[0].snapshot, JSON.stringify(snapshot));
   assert.deepEqual(JSON.parse(rows[0].results[0].snapshot), snapshot);
   // Always fake values, including when an optional real read-only source env is provided.
   run(['deploy', '--dry-run', '--config', 'dist/server/wrangler.json', '--secrets-file', files.secrets, '--outdir', join(directory, 'dry-build')]);

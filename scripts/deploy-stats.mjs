@@ -25,7 +25,7 @@ export async function deployStats({ env = process.env, fetcher = fetch, run = ru
     run('npm', ['run', 'build'], childEnv);
     validateConfig(JSON.parse(readFileSync('dist/server/wrangler.json', 'utf8')), env, { built: true });
     phase = 'source-preflight';
-    await validateRemoteDatabase(env, reporter.forGate('remote-database'));
+    await validateRemoteDatabase(env, reporter.forGate('remote-database'), reporter.identityFailure);
     await validateRemoteWorker(env, (url, init) => {
       const gate = url.endsWith('/scripts/agentfirst-directory/settings') ? 'remote-worker-bindings' : 'remote-worker-domain';
       return reporter.forGate(gate)(url, init);

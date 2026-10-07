@@ -23,7 +23,7 @@ export function validateConfig(config, env, { built = false, injected = true } =
       config.main !== (built ? 'entry.mjs' : './src/worker.ts') || config.env !== undefined ||
       !Array.isArray(config.d1_databases) || config.d1_databases.length !== 1) reject();
   const db = config.d1_databases[0];
-  if (db.binding !== 'DB' || db.database_name !== 'agentfirst-directory' ||
+  if (db.binding !== 'DB' || db.database_name !== 'agentfirst' ||
       db.database_id !== (injected ? env.CLOUDFLARE_D1_DATABASE_ID : PLACEHOLDER_DB) || db.remote === true ||
       (built && db.migrations_dir !== '../../migrations')) reject();
   if (Object.keys(config.vars ?? {}).length || (config.secrets_store_secrets ?? []).length || config.build) reject();
@@ -35,7 +35,7 @@ export function injectDatabase(config, env) {
   validateConfig(result, env);
   return result;
 }
-export async function validateRemoteDatabase(env, fetcher = fetch) {
+export async function validateRemoteDatabase(env, fetcher = fetch, onIdentityFailure = () => {}) {
   validateCredentials(env);
   // Read-only lookup uses precisely the existing deployment account + DB secrets.
   // Match Wrangler's identity lookup: no unrelated size/table/region metrics.
@@ -45,7 +45,10 @@ export async function validateRemoteDatabase(env, fetcher = fetch) {
   });
   if (!response.ok) reject();
   const body = await response.json();
-  if (body.success !== true || body.result?.uuid !== env.CLOUDFLARE_D1_DATABASE_ID || body.result?.name !== 'agentfirst-directory') reject();
+  const fail = reason => { onIdentityFailure(reason); reject(); };
+  if (body?.success !== true) fail('identity-envelope');
+  if (body.result?.uuid !== env.CLOUDFLARE_D1_DATABASE_ID) fail('identity-uuid');
+  if (body.result?.name !== 'agentfirst') fail('identity-name');
 }
 export async function validateRemoteWorker(env, fetcher = fetch) {
   validateCredentials(env);
