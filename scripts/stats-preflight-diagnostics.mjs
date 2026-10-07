@@ -40,8 +40,11 @@ export function createPreflightReporter(fetcher) {
         return response;
       };
     },
+    identityFailure(reason) {
+      if (last?.gate === 'remote-database' && ['identity-envelope', 'identity-uuid', 'identity-name'].includes(reason)) last.reason = reason;
+    },
     summary() {
-      return last ? `${last.gate}; HTTP status=${last.status ?? 'none'}; error code=${last.code ?? 'none'} (sanitized diagnostics only).` : undefined;
+      return last ? `${last.gate}; HTTP status=${last.status ?? 'none'}; error code=${last.code ?? 'none'}${last.reason ? `; reason=${last.reason}` : ''} (sanitized diagnostics only).` : undefined;
     },
   };
 }
