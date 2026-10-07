@@ -6,10 +6,10 @@ import { decodeSnapshot, completePeriod } from '../src/lib/public-stats.ts';
 export const PLACEHOLDER_DB = '00000000-0000-0000-0000-000000000000';
 const reject = () => { throw new Error('Stats deployment preflight rejected'); };
 export function validateCredentials(env) {
-  for (const key of ['CLOUDFLARE_API_TOKEN', 'CLOUDFLARE_ACCOUNT_ID', 'CLOUDFLARE_D1_DATABASE_ID', 'STATS_CF_API_TOKEN', 'STATS_CF_ACCOUNT_ID']) {
+  for (const key of ['CLOUDFLARE_API_TOKEN', 'CLOUDFLARE_ACCOUNT_ID', 'CLOUDFLARE_D1_DATABASE_ID', 'STATS_CF_API_TOKEN', 'STATS_CF_ACCOUNT_ID', 'STATS_CF_ZONE_ID']) {
     if (typeof env[key] !== 'string' || !env[key] || env[key] !== env[key].trim() || /[\x00-\x20\x7f]/.test(env[key])) reject();
   }
-  if (!/^[a-f0-9]{32}$/.test(env.CLOUDFLARE_ACCOUNT_ID) || env.STATS_CF_ACCOUNT_ID !== env.CLOUDFLARE_ACCOUNT_ID ||
+  if (!/^[a-f0-9]{32}$/.test(env.CLOUDFLARE_ACCOUNT_ID) || !/^[a-f0-9]{32}$/.test(env.STATS_CF_ZONE_ID) || env.STATS_CF_ACCOUNT_ID !== env.CLOUDFLARE_ACCOUNT_ID ||
       !/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/.test(env.CLOUDFLARE_D1_DATABASE_ID) ||
       env.CLOUDFLARE_D1_DATABASE_ID === PLACEHOLDER_DB || env.STATS_CF_API_TOKEN === env.CLOUDFLARE_API_TOKEN) reject();
 }
@@ -74,7 +74,7 @@ export function validateBootstrapSnapshot(value, now = new Date()) {
   const projected = decodeSnapshot(bytes, now);
   // Reject unknown fields, forged totals/source definitions, stale/empty source pulls.
   if (!isDeepStrictEqual(value, projected) || projected.status !== 'fresh' ||
-      !isDeepStrictEqual(projected.period, completePeriod(now)) || projected.coverage.reportedDays < 1 ||
+      !isDeepStrictEqual(projected.period, completePeriod(now)) || projected.totals.complete !== true ||
       now.getTime() - Date.parse(projected.refreshedAt) > 30 * 60_000) reject();
   return projected;
 }
@@ -95,7 +95,7 @@ export function prepareFiles(directory, snapshot, env, now = new Date()) {
   validateCredentials(env);
   const sql = bootstrapSql(snapshot, now);
   const files = { snapshot: join(directory, 'snapshot.json'), sql: join(directory, 'bootstrap.sql'), secrets: join(directory, 'worker-secrets.json') };
-  const values = [JSON.stringify(snapshot), sql, JSON.stringify({ STATS_CF_API_TOKEN: env.STATS_CF_API_TOKEN, STATS_CF_ACCOUNT_ID: env.STATS_CF_ACCOUNT_ID })];
+  const values = [JSON.stringify(snapshot), sql, JSON.stringify({ STATS_CF_API_TOKEN: env.STATS_CF_API_TOKEN, STATS_CF_ACCOUNT_ID: env.STATS_CF_ACCOUNT_ID, STATS_CF_ZONE_ID: env.STATS_CF_ZONE_ID })];
   for (const [i, file] of Object.values(files).entries()) writeFileSync(file, values[i], { mode: 0o600, flag: 'wx' });
   return files;
 }

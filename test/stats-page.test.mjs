@@ -18,23 +18,17 @@ const compiled = transform(source, {
 function fixture(status = "fresh") {
   const daily = Array.from({ length: 30 }, (_, index) => ({
     date: new Date(Date.UTC(2026, 8, 6 + index)).toISOString().slice(0, 10),
-    visits: index < 3 && status !== "unavailable" ? 0 : null,
-    pageViews: index < 3 && status !== "unavailable" ? 100 : null,
+    uniqueVisitors: index < 3 && status !== "unavailable" ? 0 : null,
+    requests: index < 3 && status !== "unavailable" ? 100 : null,
     sampleInterval: index < 3 && status !== "unavailable" ? 100 : null,
   }));
   return {
-    schemaVersion: "1",
-    status,
+    schemaVersion: "2", status,
     refreshedAt: status === "unavailable" ? null : "2026-10-06T08:00:00.000Z",
     period: { start: daily[0].date, end: daily.at(-1).date, timezone: "UTC", days: 30 },
-    source: {
-      name: "Test browser analytics",
-      dataset: "testDataset",
-      metrics: { visits: "sum.visits", pageViews: "sum.pageViews" },
-      caveats: ["Synthetic sampling caveat", "Synthetic <escaped> caveat"],
-    },
+    source: { name: "Synthetic zone analytics", dataset: "httpRequests1dGroups", metrics: { uniqueVisitors: "uniq.uniques", requests: "sum.requests" }, caveats: ["Synthetic sampling caveat", "Synthetic <escaped> caveat"] },
     coverage: { reportedDays: status === "unavailable" ? 0 : 3, missingDays: status === "unavailable" ? 30 : 27, sampled: status !== "unavailable" },
-    totals: { visits: status === "unavailable" ? null : 0, pageViews: status === "unavailable" ? null : 300, complete: false },
+    totals: { uniqueVisitors: status === "unavailable" ? null : 0, requests: status === "unavailable" ? null : 300, complete: status !== "unavailable" },
     daily,
   };
 }
@@ -81,24 +75,26 @@ test("stats page renders partial estimates, all UTC dates, measured zeros, and e
   const copy = text(html);
   assert.equal(response.headers.get("Cache-Control"), "public, max-age=300");
   assert.match(copy, /Fresh snapshot/);
-  assert.match(copy, /Observed estimates \(partial coverage\)/);
-  assert.match(copy, /not full reporting-window totals/);
+  assert.match(copy, /Full-window API aggregate/);
+  assert.match(copy, /independent of daily coverage/);
   assert.match(copy, /3 reported dates; 27 missing dates/);
   assert.match(copy, /Last successful refresh 2026-10-06T08:00:00.000Z \(UTC\)/);
-  assert.match(copy, /Visits 0 Page views 300/);
-  assert.match(copy, /Visits are not unique people or a count of AI agents/);
-  assert.match(copy, /sample interval is the provider-reported sampling weight, not a percentage/);
+  assert.match(copy, /Unique visitors 0 HTTP requests 300/);
+  assert.match(copy, /not identifiable unique humans/);
+  assert.match(copy, /sample interval is provider-reported daily metadata, not a percentage/);
   assert.match(copy, /Synthetic sampling caveat/);
   assert.match(html, /Synthetic &lt;escaped&gt; caveat/);
-  assert.match(copy, /sum\.visits/);
-  assert.match(copy, /sum\.pageViews/);
+  assert.match(copy, /uniq\.uniques/);
+  assert.match(copy, /sum\.requests/);
   assert.match(html, /href="\/stats\.json"/);
   const body = html.match(/<tbody[^>]*>([\s\S]*?)<\/tbody>/)[1];
   assert.equal((body.match(/<tr[\s>]/g) ?? []).length, 30);
   for (const { date } of snapshot.daily) assert.ok(body.includes(`datetime="${date}"`));
   assert.match(body, /<td[^>]*>0<\/td>/);
   assert.match(body, /<td[^>]*>Not reported<\/td>/);
-  assert.match(html, /<caption[^>]*>Daily visits and page-view estimates/);
+  assert.match(html, /<caption[^>]*>Daily unique visitors and HTTP requests/);
+  assert.match(html, /<figure[^>]*aria-labelledby="chart-caption"/);
+  assert.equal((html.match(/stats-bar-slot/g) ?? []).length, 30);
   assert.equal((body.match(/scope="row"/g) ?? []).length, 30);
   assert.equal((html.match(/scope="col"/g) ?? []).length, 4);
   assert.match(html, /role="region"[^>]*tabindex="0"[^>]*aria-label="Daily traffic estimates, horizontally scrollable"/);
@@ -110,7 +106,7 @@ test("stale snapshots show the retained data and a visible freshness warning", a
   assert.match(copy, /Stale snapshot/);
   assert.match(copy, /may be out of date/);
   assert.match(copy, /over 36 hours old/);
-  assert.match(copy, /Visits 0 Page views 300/);
+  assert.match(copy, /Unique visitors 0 HTTP requests 300/);
   assert.match(copy, /Last successful refresh 2026-10-06T08:00:00.000Z/);
 });
 
@@ -120,22 +116,22 @@ test("unavailable snapshots never present missing traffic as zero", async () => 
   assert.match(copy, /Statistics unavailable/);
   assert.match(copy, /Unavailable measurements are not zero traffic/);
   assert.match(copy, /No successful refresh available/);
-  assert.match(copy, /Visits Unavailable Page views Unavailable/);
+  assert.match(copy, /Unique visitors Unavailable HTTP requests Unavailable/);
   assert.doesNotMatch(html, /<td[^>]*>0<\/td>/);
   assert.equal((html.match(/<td[^>]*>Not reported<\/td>/g) ?? []).length, 90);
 });
 
 test("complete coverage is still described as estimates rather than exact traffic", async () => {
   const snapshot = fixture();
-  snapshot.daily = snapshot.daily.map((day) => ({ ...day, visits: 0, pageViews: 100, sampleInterval: 100 }));
+  snapshot.daily = snapshot.daily.map((day) => ({ ...day, uniqueVisitors: 0, requests: 100, sampleInterval: 100 }));
   snapshot.coverage = { reportedDays: 30, missingDays: 0, sampled: true };
-  snapshot.totals = { visits: 0, pageViews: 3000, complete: true };
+  snapshot.totals = { uniqueVisitors: 0, requests: 3000, complete: true };
   const { html } = await renderSnapshot(snapshot);
   const copy = text(html);
-  assert.match(copy, /Reporting-window estimates/);
-  assert.match(copy, /Every date has reported data/);
-  assert.match(copy, /not an exact census of traffic/);
-  assert.doesNotMatch(copy, /Observed estimates \(partial coverage\)/);
+  assert.match(copy, /Full-window API aggregate/);
+  assert.match(copy, /30 reported dates; 0 missing dates/);
+  assert.match(copy, /not an exact census of people/);
+  assert.match(copy, /Daily unique visitors are not additive/);
 });
 
 test("public statistics are discoverable in the footer and llms.txt without changing listing exports", () => {

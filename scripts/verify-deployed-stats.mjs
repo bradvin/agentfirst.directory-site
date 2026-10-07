@@ -65,27 +65,25 @@ function expectedRender(s) {
     metadata: [
       ['Reporting window', `${s.period.start} through ${s.period.end} (inclusive), ${s.period.days} complete dates in ${s.period.timezone}`],
       ['Last successful refresh', `${s.refreshedAt} (UTC)`],
-      ['Coverage', `${s.coverage.reportedDays} reported dates; ${s.coverage.missingDays} missing dates. ${s.coverage.sampled ? 'Sampled estimates.' : 'No sampling indicated in this snapshot.'}`],
+      ['Coverage', `${s.coverage.reportedDays} reported dates; ${s.coverage.missingDays} missing dates. ${s.coverage.sampled ? 'Sampling indicated in daily detail.' : 'No sampling indicated in daily detail; this does not establish aggregate sampling.'}`],
     ],
     times: [s.period.start, s.period.end, s.refreshedAt],
-    totalsLabel: s.totals.complete ? 'Reporting-window estimates' : 'Observed estimates (partial coverage)',
-    totals: [['Visits', format(s.totals.visits)], ['Page views', format(s.totals.pageViews)]],
-    totalsMessage: s.totals.complete
-      ? 'Every date has reported data. These are provider estimates, not an exact census of traffic.'
-      : 'Observed estimates sum only reported dates. They are not full reporting-window totals; missing dates are not treated as zero.',
-    caption: `Daily visits and page-view estimates, ${s.period.start} through ${s.period.end} (UTC)`,
-    columns: ['Date (UTC)', 'Visits (estimate)', 'Page views (estimate)', 'Sample interval'],
-    rows: s.daily.map(d => ({ values: [d.date, format(d.visits), format(d.pageViews), format(d.sampleInterval)], dateTime: d.date, rowScope: 'row' })),
+    totalsLabel: 'Full-window API aggregate',
+    totals: [['Unique visitors', format(s.totals.uniqueVisitors)], ['HTTP requests', format(s.totals.requests)]],
+    totalsMessage: 'Totals are returned by one whole-window API query, independent of daily coverage. Unique visitors are not unique humans; cross-day IP deduplication is not established. These are provider metrics, not an exact census of people.',
+    caption: `Daily unique visitors and HTTP requests, ${s.period.start} through ${s.period.end} (UTC)`,
+    columns: ['Date (UTC)', 'Unique visitors (daily)', 'HTTP requests', 'Sample interval'],
+    rows: s.daily.map(d => ({ values: [d.date, format(d.uniqueVisitors), format(d.requests), format(d.sampleInterval)], dateTime: d.date, rowScope: 'row' })),
     source: [
       ['Source', `${s.source.name}, dataset ${s.source.dataset}.`],
-      ['Visits', `Provider-defined visits from ${s.source.metrics.visits}. Visits are not unique people or a count of AI agents.`],
-      ['Page views', `Browser-reported page-view estimates from ${s.source.metrics.pageViews}, not a count of all HTTP requests.`],
-      ['Sampling', 'The sample interval is the provider-reported sampling weight, not a percentage. Sampled values are estimates; we do not multiply them by the interval again.'],
+      ['Unique visitors', `Provider-defined unique visitors from ${s.source.metrics.uniqueVisitors}. This network/IP-based metric includes bots and crawlers, not identifiable unique humans.`],
+      ['HTTP requests', `Provider HTTP requests from ${s.source.metrics.requests}, including network and asset traffic, not page views.`],
+      ['Sampling', 'The sample interval is provider-reported daily metadata, not a percentage. Counts are used as returned; we do not multiply them by the interval again.'],
     ],
     caveats: s.source.caveats,
     jsonLinks: ['/stats.json', '/stats.json'],
-    dailyHelp: 'Dates are UTC. A reported 0 is the provider’s estimate, not proof of no actual traffic when sampled; “Not reported” means missing data, not zero. On narrow screens, focus the table region and use the arrow keys to scroll.',
-    sourceMessage: 'Browser analytics may miss traffic where the analytics script does not run, including some bots, blocked scripts, and non-browser clients. These measurements cannot distinguish human visitors from AI agents.',
+    dailyHelp: 'Dates are UTC. Daily unique visitors are not additive. A reported 0 is the provider\'s measurement, not proof of no actual traffic when sampled; “Not reported” means missing data, not zero. On narrow screens, focus the table region and use the arrow keys to scroll.',
+    sourceMessage: 'Zone scope covers all Cloudflare-proxied hostnames in the configured zone. No hostname, bot, or eyeball-only filter is applied. These measurements cannot distinguish human visitors from AI agents.',
   };
 }
 

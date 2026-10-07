@@ -36,7 +36,7 @@ jobs:
       - name: Install verification browser
         run: npx playwright install --with-deps chromium
 
-      # OPS installs the two STATS Actions secrets separately. No secret-only deploy.
+      # OPS installs the three STATS Actions secrets separately. No secret-only deploy.
       # All identity/settings/real-data gates pass before migration or bootstrap writes.
       - name: Preflight, bootstrap, deploy with runtime secrets, and verify
         env:
@@ -45,6 +45,7 @@ jobs:
           CLOUDFLARE_D1_DATABASE_ID: ${{ secrets.CLOUDFLARE_D1_DATABASE_ID }}
           STATS_CF_API_TOKEN: ${{ secrets.STATS_CF_API_TOKEN }}
           STATS_CF_ACCOUNT_ID: ${{ secrets.STATS_CF_ACCOUNT_ID }}
+          STATS_CF_ZONE_ID: ${{ secrets.STATS_CF_ZONE_ID }}
         run: node scripts/deploy-stats.mjs
 
       - name: Remove ephemeral deployment files even after failure

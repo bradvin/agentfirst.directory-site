@@ -30,7 +30,7 @@ export async function deployStats({ env = process.env, fetcher = fetch, run = ru
       const gate = url.endsWith('/scripts/agentfirst-directory/settings') ? 'remote-worker-bindings' : 'remote-worker-domain';
       return reporter.forGate(gate)(url, init);
     });
-    // Same settings, exact browser/RUM query, and pure projection as scheduled refresh.
+    // Same zone settings, whole-window edge aggregate and independent daily detail as scheduled refresh.
     let sourceRequest = 0;
     const collected = await collectPublicStats(env, new Date(), (url, init) => {
       const gate = ++sourceRequest === 1 ? 'source-settings' : 'source-query';
