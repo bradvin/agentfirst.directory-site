@@ -19,13 +19,15 @@ try {
   }
   await db.prepare('DELETE FROM public_stats WHERE id=1').run();
   assert.equal((await json()).status,'unavailable'); assert.equal((await json()).totals.uniqueVisitors,null);
-  assert.match(await (await fetch(`${base}/stats`)).text(), /Unavailable measurements are not zero traffic/);
+  assert.match(await (await fetch(`${base}/stats`)).text(), /Missing figures do not mean zero traffic/);
   await db.prepare('INSERT INTO public_stats (id,snapshot) VALUES (1,?)').bind('{"private":"must not appear"}').run();
   const invalid=await json(); assert.equal(invalid.status,'unavailable'); assert.doesNotMatch(JSON.stringify(invalid), /private|must not appear/);
   await db.prepare('UPDATE public_stats SET snapshot=? WHERE id=1').bind('{"schemaVersion":"1","totals":{"visits":11,"pageViews":22}}').run();
   const legacy=await json(); assert.equal(legacy.schemaVersion,'2'); assert.equal(legacy.status,'unavailable'); assert.equal(legacy.totals.requests,null);
   assert.doesNotMatch(JSON.stringify(legacy), /visits|pageViews/);
-  assert.match(await (await fetch(`${base}/stats`)).text(), /Older browser\/RUM snapshots are not compatible/);
+  const legacyHtml = await (await fetch(`${base}/stats`)).text();
+  assert.match(legacyHtml, /Statistics unavailable/);
+  assert.doesNotMatch(legacyHtml, /Older browser\/RUM snapshots|Cloudflare|httpRequests1dGroups|uniq\.uniques|sum\.requests/);
   console.log('Local built Worker integration passed: scheduled failure retains last good; unavailable/corrupt storage is null, never zero; no private-field leak.');
 } finally {
   await db.prepare('DELETE FROM public_stats WHERE id=1').run();

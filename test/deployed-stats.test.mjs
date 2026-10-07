@@ -116,7 +116,7 @@ const source = readFileSync(new URL('../src/pages/stats.astro', import.meta.url)
 const compiled = transform(source, { filename: 'src/pages/stats.astro', internalURL: 'astro/compiler-runtime', resultScopedSlot: true, resolvePath: specifier => specifier });
 async function render(snapshot) {
   const module = { exports: {} };
-  const layout = runtime.createComponent((_result, _props, slots) => runtime.render`${slots.default()}`);
+  const layout = runtime.createComponent((_result, props, slots) => runtime.render`<meta name="description" content="${props.description}">${slots.default()}`);
   const require = id => {
     if (id === 'astro/compiler-runtime') return runtime;
     if (id === 'src/pages/stats.astro?astro&type=style&index=0&lang.css') return {};
@@ -203,11 +203,14 @@ test('real Chromium independently verifies real Astro-rendered partial and compl
         view => { view.times[2] = null; },
         view => { view.source[0][1] = 'Wrong source'; },
         view => { view.source[1][1] = 'Wrong metric definition'; },
-        view => { view.caveats.pop(); },
-        view => { view.caveats.reverse(); },
-        view => { view.totals[0][1] = '999'; },
-        view => { view.totalsLabel = 'Incorrect full totals claim'; },
-        view => { view.totalsMessage = 'Wrong completeness claim'; },
+        view => { view.cards[0][1] = '999'; },
+        view => { view.cards.reverse(); },
+        view => { view.cards.push(view.cards[0]); },
+        view => { view.cards[2][1] = 'Wrong window'; },
+        view => { view.windowTimes[0] = 'Wrong date'; },
+        view => { view.lastSection = 'methodology-heading'; },
+        view => { view.forbiddenCopy = true; },
+        view => { view.samplingParagraphs = 2; },
         view => { view.columns.pop(); },
         view => { view.caption = 'Wrong dates'; },
         view => { view.dailyHelp = 'Missing limitations'; },

@@ -36,7 +36,7 @@ function fixture(status = "fresh") {
 async function renderSnapshot(snapshot) {
   // Run the real compiler output with only I/O and the surrounding layout replaced.
   // This keeps the test independent of D1, the Worker, and unrelated header data.
-  const layout = runtime.createComponent((_result, _props, slots) => runtime.render`${slots.default()}`);
+  const layout = runtime.createComponent((_result, props, slots) => runtime.render`<meta name="description" content="${props.description}">${slots.default()}`);
   const db = {};
   const response = { headers: new Headers() };
   const module = { exports: {} };
@@ -69,24 +69,49 @@ async function renderSnapshot(snapshot) {
 
 const text = (html) => html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
 
-test("stats page renders partial estimates, all UTC dates, measured zeros, and every source caveat", async () => {
+const cards = (html) => [...html.matchAll(/<article\b[^>]*class="stats-summary-card[^>]*>([\s\S]*?)<\/article>/g)].map(match => match[1]);
+const cardValues = (html) => cards(html).map(card => text(card.match(/<p\b[^>]*class="stats-value[^>]*>([\s\S]*?)<\/p>/)[1]));
+
+for (const status of ["fresh", "stale", "unavailable"]) {
+  test(`${status}: exactly three ordered summary cards and snapshot status last`, async () => {
+    const snapshot = fixture(status);
+    const { html, response } = await renderSnapshot(snapshot);
+    const summary = cards(html);
+    assert.equal(summary.length, 3);
+    assert.deepEqual(summary.map(card => text(card.match(/<h2\b[^>]*>([\s\S]*?)<\/h2>/)[1])), ["Unique visitors", "HTTP Requests", "Window"]);
+    assert.deepEqual(cardValues(html), status === "unavailable" ? ["Unavailable", "Unavailable", "Last 30 days"] : ["0", "300", "Last 30 days"]);
+    for (const card of summary) {
+      const description = text(card.match(/<p\b[^>]*class="stats-card-copy[^>]*>([\s\S]*?)<\/p>/)[1]);
+      assert.ok(description.length < 140);
+      assert.equal((description.match(/[.!?]/g) ?? []).length, 1);
+    }
+    const sections = [...html.matchAll(/<section\b[^>]*>([\s\S]*?)<\/section>/g)].map(match => match[0]);
+    assert.match(sections.at(-1), /aria-labelledby="snapshot-heading"/);
+    assert.ok(html.indexOf('class="stats-summary') < html.indexOf('id="daily-heading"'));
+    assert.ok(html.indexOf('id="daily-heading"') < html.indexOf('id="methodology-heading"'));
+    assert.ok(html.indexOf('id="methodology-heading"') < html.indexOf('id="snapshot-heading"'));
+    assert.equal(response.headers.get("Cache-Control"), "public, max-age=300");
+    // Check rendered text and the actual description passed to the layout, not imports.
+    assert.doesNotMatch(text(html) + html.match(/<meta[^>]+>/)[0], /cloudflare|httpRequests1dGroups|uniq\.uniques|sum\.requests|sampleInterval|Sample interval|\bAPI\b|\bzone\b|\bRUM\b|dataset|Synthetic.*caveat|—/i);
+    assert.match(html, /href="\/stats\.json"/);
+    assert.match(text(html), /bots and automated traffic/);
+    assert.match(text(html), /not an exact count of people/);
+    assert.match(text(html), /pages, images and other files/);
+    assert.match(text(html), /not page views/);
+    const sampling = html.match(/<dt[^>]*>Sampling<\/dt>\s*<dd[^>]*>([\s\S]*?)<\/dd>/)[1];
+    assert.equal((sampling.match(/<p\b/g) ?? []).length, 1);
+    assert.equal((text(sampling).match(/\./g) ?? []).length, 1);
+    assert.ok(text(sampling).length < 200);
+    assert.doesNotMatch(text(html), /unsampled|No sampling|deduplicated|distinct people|real.time/i);
+    assert.match(text(html), /30 complete days in UTC/);
+    assert.match(html, /datetime="2026-09-06"/);
+    assert.match(html, /datetime="2026-10-05"/);
+  });
+}
+
+test("daily table preserves missing values, measured zeros, chart fallback and keyboard region", async () => {
   const snapshot = fixture();
-  const { html, response } = await renderSnapshot(snapshot);
-  const copy = text(html);
-  assert.equal(response.headers.get("Cache-Control"), "public, max-age=300");
-  assert.match(copy, /Fresh snapshot/);
-  assert.match(copy, /Full-window API aggregate/);
-  assert.match(copy, /independent of daily coverage/);
-  assert.match(copy, /3 reported dates; 27 missing dates/);
-  assert.match(copy, /Last successful refresh 2026-10-06T08:00:00.000Z \(UTC\)/);
-  assert.match(copy, /Unique visitors 0 HTTP requests 300/);
-  assert.match(copy, /not identifiable unique humans/);
-  assert.match(copy, /sample interval is provider-reported daily metadata, not a percentage/);
-  assert.match(copy, /Synthetic sampling caveat/);
-  assert.match(html, /Synthetic &lt;escaped&gt; caveat/);
-  assert.match(copy, /uniq\.uniques/);
-  assert.match(copy, /sum\.requests/);
-  assert.match(html, /href="\/stats\.json"/);
+  const { html } = await renderSnapshot(snapshot);
   const body = html.match(/<tbody[^>]*>([\s\S]*?)<\/tbody>/)[1];
   assert.equal((body.match(/<tr[\s>]/g) ?? []).length, 30);
   for (const { date } of snapshot.daily) assert.ok(body.includes(`datetime="${date}"`));
@@ -96,42 +121,45 @@ test("stats page renders partial estimates, all UTC dates, measured zeros, and e
   assert.match(html, /<figure[^>]*aria-labelledby="chart-caption"/);
   assert.equal((html.match(/stats-bar-slot/g) ?? []).length, 30);
   assert.equal((body.match(/scope="row"/g) ?? []).length, 30);
-  assert.equal((html.match(/scope="col"/g) ?? []).length, 4);
-  assert.match(html, /role="region"[^>]*tabindex="0"[^>]*aria-label="Daily traffic estimates, horizontally scrollable"/);
+  assert.equal((html.match(/scope="col"/g) ?? []).length, 3);
+  assert.equal((body.match(/<td\b/g) ?? []).length, 60);
+  assert.match(html, /role="region"[^>]*tabindex="0"[^>]*aria-label="Daily traffic estimates, horizontally scrollable"[^>]*aria-describedby="daily-help"/);
+  assert.match(text(html), /arrow keys to scroll/);
+  assert.match(text(html), /Do not add daily visitors/);
 });
 
-test("stale snapshots show the retained data and a visible freshness warning", async () => {
-  const { html } = await renderSnapshot(fixture("stale"));
-  const copy = text(html);
-  assert.match(copy, /Stale snapshot/);
-  assert.match(copy, /may be out of date/);
-  assert.match(copy, /over 36 hours old/);
-  assert.match(copy, /Unique visitors 0 HTTP requests 300/);
-  assert.match(copy, /Last successful refresh 2026-10-06T08:00:00.000Z/);
+test("fresh and stale values retain dated update and coverage evidence", async () => {
+  for (const status of ["fresh", "stale"]) {
+    const { html } = await renderSnapshot(fixture(status));
+    assert.match(text(html), status === "fresh" ? /Fresh snapshot/ : /Stale snapshot.*may be out of date/);
+    assert.match(text(html), /3 days reported; 27 days not reported/);
+    assert.match(html, /datetime="2026-10-06T08:00:00.000Z"/);
+    assert.match(text(html), /6 Oct 2026, 08:00 UTC/);
+    assert.match(text(html), /6 Sept? 2026 to 5 Oct 2026/);
+  }
 });
 
-test("unavailable snapshots never present missing traffic as zero", async () => {
+test("unavailable or null totals never become zero, while measured zero stays zero", async () => {
   const { html } = await renderSnapshot(fixture("unavailable"));
-  const copy = text(html);
-  assert.match(copy, /Statistics unavailable/);
-  assert.match(copy, /Unavailable measurements are not zero traffic/);
-  assert.match(copy, /No successful refresh available/);
-  assert.match(copy, /Unique visitors Unavailable HTTP requests Unavailable/);
+  assert.match(text(html), /Statistics unavailable/);
+  assert.match(text(html), /Missing figures do not mean zero traffic/);
+  assert.match(text(html), /No successful update yet/);
   assert.doesNotMatch(html, /<td[^>]*>0<\/td>/);
-  assert.equal((html.match(/<td[^>]*>Not reported<\/td>/g) ?? []).length, 90);
+  assert.equal((html.match(/<td[^>]*>Not reported<\/td>/g) ?? []).length, 60);
+  const snapshot = fixture(); snapshot.totals.uniqueVisitors = null;
+  assert.deepEqual(cardValues((await renderSnapshot(snapshot)).html), ["Not reported", "300", "Last 30 days"]);
 });
 
-test("complete coverage is still described as estimates rather than exact traffic", async () => {
+test("rendering leaves the complete JSON snapshot, sampling and caveats untouched", async () => {
+  const { publicStatsResponse } = await import('../src/lib/public-stats.ts');
   const snapshot = fixture();
-  snapshot.daily = snapshot.daily.map((day) => ({ ...day, uniqueVisitors: 0, requests: 100, sampleInterval: 100 }));
-  snapshot.coverage = { reportedDays: 30, missingDays: 0, sampled: true };
-  snapshot.totals = { uniqueVisitors: 0, requests: 3000, complete: true };
-  const { html } = await renderSnapshot(snapshot);
-  const copy = text(html);
-  assert.match(copy, /Full-window API aggregate/);
-  assert.match(copy, /30 reported dates; 0 missing dates/);
-  assert.match(copy, /not an exact census of people/);
-  assert.match(copy, /Daily unique visitors are not additive/);
+  const before = JSON.stringify(snapshot);
+  await renderSnapshot(snapshot);
+  assert.equal(JSON.stringify(snapshot), before);
+  assert.deepEqual(await publicStatsResponse(snapshot).json(), JSON.parse(before));
+  snapshot.coverage.sampled = false;
+  snapshot.daily = snapshot.daily.map(day => ({ ...day, sampleInterval: day.sampleInterval === null ? null : 1 }));
+  assert.doesNotMatch(text((await renderSnapshot(snapshot)).html), /unsampled|No sampling/i);
 });
 
 test("public statistics are discoverable in the footer and llms.txt without changing listing exports", () => {
