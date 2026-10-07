@@ -27,8 +27,11 @@ jobs:
       - name: Run unit tests and build
         run: npm run ci
 
+      - name: Verify built Worker scheduled edge collection with synthetic upstream
+        run: node verification/stats-worker-scheduled.mjs
+
       - name: Verify exact local bootstrap SQL and fake secret-file deployment
-        run: node verification/stats-actions-local.mjs
+        run: STATS_VERIFY_RENDERED=1 node verification/stats-actions-local.mjs
 
       - name: Prepare isolated local D1 fixture
         run: |

@@ -8,9 +8,11 @@ import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { getPlatformProxy } from 'wrangler';
 import { collectPublicStats } from '../src/lib/stats-collector.ts';
-import { completePeriod, projectCloudflare } from '../src/lib/public-stats.ts';
+import { completePeriod } from '../src/lib/public-stats.ts';
 import { createPrivateDirectory, prepareFiles, validateConfig, injectDatabase } from '../scripts/stats-deploy-helpers.mjs';
+import { edgeRaw, edgeRow, sourceResponse } from '../test/fixtures/edge-stats.mjs';
 const env = { CLOUDFLARE_API_TOKEN: 'FAKE_DEPLOY_TEST_NOT_A_CREDENTIAL', CLOUDFLARE_ACCOUNT_ID: 'a'.repeat(32), CLOUDFLARE_D1_DATABASE_ID: '11111111-1111-1111-1111-111111111111', STATS_CF_API_TOKEN: 'FAKE_SOURCE_TEST_NOT_A_CREDENTIAL', STATS_CF_ACCOUNT_ID: 'a'.repeat(32) };
+env.STATS_CF_ZONE_ID = 'b'.repeat(32);
 const directory = createPrivateDirectory(tmpdir());
 const state = join(directory, 'state');
 let server;
@@ -32,7 +34,10 @@ try {
   validateConfig(injectedBuilt, env, { built: true });
   // These counts and UUIDs are synthetic schema fixtures, never production data.
   const now = new Date();
-  const snapshot = projectCloudflare({ data: { viewer: { accounts: [{ rumPageloadEventsAdaptiveGroups: [{ dimensions: { date: completePeriod(now).end, requestHost: 'agentfirst.directory' }, pageViews: 42, sum: { visits: 3 }, avg: { sampleInterval: 2 } }] }] } } }, completePeriod(now), now);
+  const raw = edgeRaw([edgeRow(completePeriod(now).end)]);
+  let queries = 0;
+  const snapshot = await collectPublicStats(env, now, async () => Response.json(sourceResponse(++queries, raw)));
+  assert.equal(queries, 3);
   const files = prepareFiles(directory, snapshot, env, now);
   run(['d1', 'migrations', 'apply', 'DB', '--local', '--persist-to', state]);
   run(['d1', 'execute', 'DB', '--local', '--persist-to', state, '--file', files.sql]);
@@ -46,19 +51,7 @@ try {
   run(['deploy', '--dry-run', '--config', 'dist/server/wrangler.json', '--secrets-file', files.secrets, '--outdir', join(directory, 'dry-build')]);
   console.log('PASS: exact bootstrap SQL through local D1 twice; singleton readback; actual --secrets-file dry-run with FAKE values only.');
   let expected = snapshot;
-  if (process.env.STATS_CF_API_TOKEN || process.env.STATS_CF_ACCOUNT_ID) {
-    const actual = await collectPublicStats(process.env);
-    const proxy = await getPlatformProxy({ configPath: 'wrangler.jsonc', remoteBindings: false, persist: { path: `${state}/v3` } });
-    try {
-      const { bootstrapSql, validateBootstrapSnapshot } = await import('../scripts/stats-deploy-helpers.mjs');
-      validateBootstrapSnapshot(actual);
-      await proxy.env.DB.exec(bootstrapSql(actual));
-      const result = await proxy.env.DB.prepare('SELECT snapshot FROM public_stats WHERE id = 1').first();
-      assert.deepEqual(JSON.parse(result.snapshot), actual);
-      expected = actual;
-      console.log('PASS: approved read-only real browser/RUM pull; shared projected SQL persisted/read back in LOCAL D1 only.');
-    } finally { await proxy.dispose(); }
-  }
+  // Genuine source verification is a separate stdin/env-only script. This harness is always fake.
   run(['d1', 'execute', 'DB', '--local', '--persist-to', state, '--file', 'test/fixtures/seed-classifications.sql']);
   const probe = createServer();
   await new Promise(resolve => probe.listen(0, '127.0.0.1', resolve));
@@ -77,6 +70,12 @@ try {
 
   const { verifyDeployedStats } = await import('../scripts/verify-deployed-stats.mjs');
   await verifyDeployedStats(expected, { base });
+  const rendered = spawnSync(process.execPath, ['verification/public-stats.mjs'], { env: { ...childEnv, BASE_URL: base, STATS_ARTIFACT_DIR: directory, STATS_EXPECTED_SNAPSHOT: files.snapshot }, encoding: 'utf8', timeout: 120_000, maxBuffer: 8*1024*1024 });
+  if (rendered.status !== 0) throw Error();
+  if (process.env.STATS_ARTIFACT_DIR) {
+    const { copyFileSync } = await import('node:fs');
+    for (const name of ['stats-desktop.png','stats-mobile.png','stats-browser-result.json']) copyFileSync(join(directory, name), join(process.env.STATS_ARTIFACT_DIR, name));
+  }
   console.log('PASS: built LOCAL Worker JSON and Chromium /stats match exact bootstrap snapshot, headers, privacy, freshness and 30 dates.');
   const states = spawnSync(process.execPath, ['verification/stats-local-states.mjs'], { env: { ...childEnv, BASE_URL: base, STATS_LOCAL_STATE: state }, encoding: 'utf8', timeout: 120_000, maxBuffer: 8*1024*1024 });
   if (states.status !== 0) throw Error();

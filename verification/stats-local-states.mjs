@@ -13,15 +13,19 @@ try {
     // Wrangler emulator-only trigger. No collector credentials are passed to this server.
     assert.ok((await fetch(`${base}/cdn-cgi/handler/scheduled`)).ok);
     const after=await json();
-    assert.equal(after.status, before.coverage.reportedDays ? 'stale' : 'unavailable');
+    assert.equal(after.status, before.totals.complete ? 'stale' : 'unavailable');
     assert.deepEqual(after.totals,before.totals); assert.deepEqual(after.daily,before.daily); assert.equal(after.refreshedAt,before.refreshedAt);
     assert.match(await (await fetch(`${base}/stats`)).text(), /Stale snapshot|Statistics unavailable/);
   }
   await db.prepare('DELETE FROM public_stats WHERE id=1').run();
-  assert.equal((await json()).status,'unavailable'); assert.equal((await json()).totals.visits,null);
+  assert.equal((await json()).status,'unavailable'); assert.equal((await json()).totals.uniqueVisitors,null);
   assert.match(await (await fetch(`${base}/stats`)).text(), /Unavailable measurements are not zero traffic/);
   await db.prepare('INSERT INTO public_stats (id,snapshot) VALUES (1,?)').bind('{"private":"must not appear"}').run();
   const invalid=await json(); assert.equal(invalid.status,'unavailable'); assert.doesNotMatch(JSON.stringify(invalid), /private|must not appear/);
+  await db.prepare('UPDATE public_stats SET snapshot=? WHERE id=1').bind('{"schemaVersion":"1","totals":{"visits":11,"pageViews":22}}').run();
+  const legacy=await json(); assert.equal(legacy.schemaVersion,'2'); assert.equal(legacy.status,'unavailable'); assert.equal(legacy.totals.requests,null);
+  assert.doesNotMatch(JSON.stringify(legacy), /visits|pageViews/);
+  assert.match(await (await fetch(`${base}/stats`)).text(), /Older browser\/RUM snapshots are not compatible/);
   console.log('Local built Worker integration passed: scheduled failure retains last good; unavailable/corrupt storage is null, never zero; no private-field leak.');
 } finally {
   await db.prepare('DELETE FROM public_stats WHERE id=1').run();

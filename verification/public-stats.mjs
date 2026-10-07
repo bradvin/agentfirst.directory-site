@@ -10,7 +10,7 @@ assert.match(response.headers.get('content-type'), /^application\/json/);
 assert.equal(response.headers.get('access-control-allow-origin'), '*');
 assert.equal(response.headers.get('cache-control'), 'public, max-age=300');
 const snapshot = await response.json();
-assert.equal(snapshot.schemaVersion, '1'); assert.equal(snapshot.daily.length, 30);
+assert.equal(snapshot.schemaVersion, '2'); assert.equal(snapshot.daily.length, 30);
 assert.doesNotMatch(JSON.stringify(snapshot), /accountTag|siteTag|token|referrer|requestHost|"ip"/);
 if (process.env.STATS_EXPECTED_SNAPSHOT) {
   const expected = JSON.parse(readFileSync(process.env.STATS_EXPECTED_SNAPSHOT, 'utf8'));
@@ -30,17 +30,19 @@ try {
   assert.equal(await page.locator('#snapshot-heading').textContent(), statusText);
   const totals = await page.locator('.stats-estimates dd').allTextContents();
   const format = n => n === null ? 'Unavailable' : new Intl.NumberFormat('en', { maximumFractionDigits:2 }).format(n);
-  assert.deepEqual(totals, [format(snapshot.totals.visits), format(snapshot.totals.pageViews)]);
+  assert.deepEqual(totals, [format(snapshot.totals.uniqueVisitors), format(snapshot.totals.requests)]);
   const rows = page.locator('tbody tr'); assert.equal(await rows.count(), 30);
   for (let i=0; i<30; i++) {
     const d=snapshot.daily[i]; const values=await rows.nth(i).locator('th,td').allTextContents();
-    assert.deepEqual(values, [d.date, ...[d.visits,d.pageViews,d.sampleInterval].map(n => n===null ? 'Not reported' : format(n))]);
+    assert.deepEqual(values, [d.date, ...[d.uniqueVisitors,d.requests,d.sampleInterval].map(n => n===null ? 'Not reported' : format(n))]);
   }
   assert.equal(await page.locator('tbody th[scope=row]').count(), 30);
   assert.equal(await page.locator('thead th[scope=col]').count(), 4);
   assert.ok((await page.locator('caption').textContent()).includes('UTC'));
   assert.ok(await page.locator('footer a[href="/stats"]').isVisible());
-  assert.ok((await page.textContent('main')).includes('Visits are not unique people'));
+  assert.ok((await page.textContent('main')).includes('not identifiable unique humans'));
+  assert.equal(await page.locator('.stats-bar-slot').count(), 30);
+  assert.equal(await page.locator('.stats-missing').count(), snapshot.coverage.missingDays);
   assert.ok((await page.textContent('main')).includes('not proof of no actual traffic when sampled'));
   await page.screenshot({ path:`${dir}/stats-desktop.png`, fullPage:true });
   await page.setViewportSize({width:390,height:844});

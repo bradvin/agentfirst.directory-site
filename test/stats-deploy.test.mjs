@@ -7,12 +7,13 @@ import { validateCredentials, validateConfig, injectDatabase, validateRemoteData
 import { deployStats } from '../scripts/deploy-stats.mjs';
 import { collectPublicStats } from '../src/lib/stats-collector.ts';
 import { projectCloudflare, completePeriod } from '../src/lib/public-stats.ts';
+import { edgeRow, edgeRaw, sourceResponse } from './fixtures/edge-stats.mjs';
 const env = { CLOUDFLARE_API_TOKEN: 'FAKE_DEPLOY_ONLY', CLOUDFLARE_ACCOUNT_ID: 'a'.repeat(32), CLOUDFLARE_D1_DATABASE_ID: '11111111-1111-1111-1111-111111111111', STATS_CF_API_TOKEN: 'FAKE_READ_ONLY', STATS_CF_ACCOUNT_ID: 'a'.repeat(32), GITHUB_EVENT_NAME: 'push', GITHUB_REF: 'refs/heads/main', GITHUB_REPOSITORY: 'bradvin/agentfirst.directory-site' };
 const source = JSON.parse(readFileSync(new URL('../wrangler.jsonc', import.meta.url), 'utf8'));
 const now = new Date();
-const row = { dimensions: { date: completePeriod(now).end, requestHost: 'agentfirst.directory', ip: 'PRIVATE' }, pageViews: 42, sum: { visits: 3 }, avg: { sampleInterval: 2 } };
-const raw = { data: { viewer: { accounts: [{ rumPageloadEventsAdaptiveGroups: [row] }] } } };
-const settings = { data: { viewer: { accounts: [{ settings: { rumPageloadEventsAdaptiveGroups: { enabled: true, availableFields: ['count', 'sum_visits', 'avg_sampleInterval', 'dimensions_date', 'dimensions_requestHost'], maxDuration: 30*86400, notOlderThan: 30*86400, maxPageSize: 31 } } }] } } };
+env.STATS_CF_ZONE_ID = 'b'.repeat(32);
+const raw = edgeRaw([edgeRow(completePeriod(now).end)]);
+
 const snapshot = () => projectCloudflare(raw, completePeriod(now), now);
 const rejected = fn => assert.throws(fn);
 
@@ -52,10 +53,10 @@ test('source collector is shared, throw-only and returns canonical public projec
   let calls = 0;
   assert.deepEqual(await collectPublicStats(env, now, async (_url, init) => {
     assert.equal(init.headers.Authorization, `Bearer ${env.STATS_CF_API_TOKEN}`);
-    if (++calls === 2) assert.equal(JSON.parse(init.body).variables.filter.requestHost, 'agentfirst.directory');
-    return Response.json(calls === 1 ? settings : raw);
+    if (++calls === 2) assert.equal(JSON.parse(init.body).variables.zoneTag, env.STATS_CF_ZONE_ID);
+    return Response.json(sourceResponse(calls, raw));
   }), snapshot());
-  assert.equal(calls, 2);
+  assert.equal(calls, 3);
   await assert.rejects(collectPublicStats(env, now, async () => { throw Error('PRIVATE'); }));
 });
 test('bootstrap bounds/allowlists source, rejects missing, stale, future, extra private fields and forged totals', () => {
@@ -67,16 +68,18 @@ test('bootstrap bounds/allowlists source, rejects missing, stale, future, extra 
   for (const edit of [s => s.token = 'PRIVATE', s => s.daily[0].ip = 'PRIVATE', s => s.source.name = "';DROP TABLE public_stats;--", s => s.totals.visits = 999, s => s.status = 'stale', s => s.refreshedAt = new Date(now.getTime()-31*60_000).toISOString(), s => s.refreshedAt = new Date(now.getTime()+1000).toISOString(), s => s.daily.pop(), s => s.private = 'X'.repeat(33_000)]) {
     const changed = structuredClone(value); edit(changed); rejected(() => bootstrapSql(changed, now));
   }
-  rejected(() => bootstrapSql(projectCloudflare({ data: { viewer: { accounts: [{ rumPageloadEventsAdaptiveGroups: [] }] } } }, completePeriod(now), now), now));
+  const empty = edgeRaw([]); empty.data.viewer.zones[0].totals = [];
+  rejected(() => bootstrapSql(projectCloudflare(empty, completePeriod(now), now), now));
+  validateBootstrapSnapshot(projectCloudflare(edgeRaw([], 0, 0), completePeriod(now), now), now);
 });
-test('only projected SQL/snapshot and two secret values written privately outside repo, no overwrite', () => {
+test('only projected SQL/snapshot and three secret values written privately outside repo, no overwrite', () => {
   const dir = createPrivateDirectory(tmpdir());
   try {
     const files = prepareFiles(dir, snapshot(), env, now);
     assert.equal(statSync(dir).mode & 0o777, 0o700);
     assert.equal(Object.keys(files).length, 3);
     for (const file of Object.values(files)) assert.equal(statSync(file).mode & 0o777, 0o600);
-    assert.deepEqual(JSON.parse(readFileSync(files.secrets)), { STATS_CF_API_TOKEN: env.STATS_CF_API_TOKEN, STATS_CF_ACCOUNT_ID: env.STATS_CF_ACCOUNT_ID });
+    assert.deepEqual(JSON.parse(readFileSync(files.secrets)), { STATS_CF_API_TOKEN: env.STATS_CF_API_TOKEN, STATS_CF_ACCOUNT_ID: env.STATS_CF_ACCOUNT_ID, STATS_CF_ZONE_ID: env.STATS_CF_ZONE_ID });
     assert.doesNotMatch(readFileSync(files.snapshot, 'utf8'), /FAKE|PRIVATE/);
     rejected(() => prepareFiles(dir, snapshot(), env, now));
     rejected(() => createPrivateDirectory(process.cwd()));
@@ -87,7 +90,7 @@ test('workflow wiring main only, step-scoped secrets, no secret deploy/artifacts
   assert.match(workflow, /push:\n    branches:\n      - main/);
   assert.doesNotMatch(workflow, /workflow_dispatch|pull_request|upload-artifact|wrangler secret|wrangler deploy/);
   assert.match(workflow, /run: node scripts\/deploy-stats.mjs/);
-  for (const name of ['CLOUDFLARE_API_TOKEN', 'CLOUDFLARE_ACCOUNT_ID', 'CLOUDFLARE_D1_DATABASE_ID', 'STATS_CF_API_TOKEN', 'STATS_CF_ACCOUNT_ID']) assert.ok(workflow.includes(`${name}: \${{ secrets.${name} }}`));
+  for (const name of ['CLOUDFLARE_API_TOKEN', 'CLOUDFLARE_ACCOUNT_ID', 'CLOUDFLARE_D1_DATABASE_ID', 'STATS_CF_API_TOKEN', 'STATS_CF_ACCOUNT_ID', 'STATS_CF_ZONE_ID']) assert.ok(workflow.includes(`${name}: \${{ secrets.${name} }}`));
   assert.match(workflow, /if: always\(\)/);
   assert.match(workflow, /cancel-in-progress: false/);
 });
@@ -109,12 +112,14 @@ test('orchestration: source/config gates before mutations, exact SQL/readback/de
         if (url.includes('/workers/domains')) return Response.json({ success: true, result: [{ hostname: 'agentfirst.directory', service: 'agentfirst-directory', environment: 'production' }] });
         if (failure === 'source') throw Error('PRIVATE');
         assert.equal(init.headers.Authorization, `Bearer ${env.STATS_CF_API_TOKEN}`);
-        return Response.json(++request === 1 ? settings : failure === 'empty' ? { data: { viewer: { accounts: [{ rumPageloadEventsAdaptiveGroups: [] }] } } } : raw);
+        const empty = edgeRaw([]); empty.data.viewer.zones[0].totals = [];
+        return Response.json(sourceResponse(++request, failure === 'empty' ? empty : raw));
       };
       const run = (command, args, childEnv) => {
         const phase = command === 'npm' ? 'build' : args.includes('migrations') ? 'migration' : args.includes('--file') ? 'bootstrap' : args.includes('--command') ? 'readback' : 'deploy';
         calls.push(phase);
         assert.equal(childEnv.STATS_CF_API_TOKEN, undefined);
+        assert.equal(childEnv.STATS_CF_ZONE_ID, undefined);
         if (phase === 'build') {
           assert.equal(childEnv.CLOUDFLARE_API_TOKEN, undefined);
           mkdirSync('dist/server', { recursive: true });
@@ -137,7 +142,7 @@ test('orchestration: source/config gates before mutations, exact SQL/readback/de
       };
       const operation = deployStats({ env: failure === 'credentials' ? { ...testEnv, STATS_CF_API_TOKEN: '' } : testEnv, fetcher, run, verify: async value => { calls.push('verify'); assert.deepEqual(value, filesSnapshot); if (failure === 'verify') throw Error('PRIVATE'); } });
       if (failure) await assert.rejects(operation, error => /Stats deployment failed at/.test(error.message) && !error.message.includes('PRIVATE') && !error.cause);
-      else { await operation; assert.deepEqual(calls, ['build', 'fetch', 'fetch', 'fetch', 'fetch', 'fetch', 'migration', 'bootstrap', 'readback', 'deploy', 'verify']); }
+      else { await operation; assert.deepEqual(calls, ['build', 'fetch', 'fetch', 'fetch', 'fetch', 'fetch', 'fetch', 'migration', 'bootstrap', 'readback', 'deploy', 'verify']); }
       if (['credentials','config','identity','source','empty','build'].includes(failure)) assert.ok(!calls.includes('migration'));
       assert.deepEqual(readdirSync(testEnv.RUNNER_TEMP), []);
     }

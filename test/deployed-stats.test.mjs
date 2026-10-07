@@ -8,18 +8,15 @@ import * as runtime from 'astro/runtime/server/index.js';
 import { chromium } from 'playwright';
 import { completePeriod, projectCloudflare, publicStatsResponse, unavailableStats } from '../src/lib/public-stats.ts';
 import { validateStatsResponse, validateRenderedStats, verifyDeployedStats } from '../scripts/verify-deployed-stats.mjs';
+import { edgeRow, edgeRaw } from './fixtures/edge-stats.mjs';
 
 const now = new Date('2026-10-06T12:00:00.000Z');
 // Explicit synthetic fixtures, never deployment/source measurements.
 function fixture(at = now, complete = false) {
   const period = completePeriod(at);
   const dates = unavailableStats(at).daily.map(d => d.date);
-  const rows = (complete ? dates : [dates[0], dates.at(-1)]).map((date, i) => ({
-    dimensions: { date, requestHost: 'agentfirst.directory' },
-    sum: { visits: i === 0 ? 0 : 1234 }, pageViews: 5678 + i,
-    avg: { sampleInterval: complete ? 1 : 100.125 },
-  }));
-  return projectCloudflare({ data: { viewer: { accounts: [{ rumPageloadEventsAdaptiveGroups: rows }] } } }, period, at);
+  const rows = (complete ? dates : [dates[0], dates.at(-1)]).map((date, i) => edgeRow(date, 5678 + i, i === 0 ? 0 : 1234, complete ? 1 : 100.125));
+  return projectCloudflare(edgeRaw(rows), period, at);
 }
 function response(value = fixture(), changes = {}) {
   return { status: 200, headers: publicStatsResponse(value).headers, body: JSON.stringify(value), ...changes };
@@ -70,7 +67,7 @@ test('allowlist comparison rejects extra fields at every nested level and altere
     s => { s.source.caveats.push('DO-NOT-PRINT'); },
     s => { s.totals.pageViews++; },
     s => { s.coverage.reportedDays++; },
-    s => { delete s.source.metrics.visits; },
+    s => { delete s.source.metrics.uniqueVisitors; },
     s => { s.schemaVersion = 1; },
   ];
   for (const change of changes) {
@@ -100,7 +97,7 @@ test('requires current 30 complete UTC dates and refresh age at most 30 minutes,
   rejected(() => validateStatsResponse(response(missing), value, { now }), 'snapshot-schema');
   const day = structuredClone(value); day.daily[0].date = day.daily[1].date;
   rejected(() => validateStatsResponse(response(day), value, { now }), 'snapshot-schema');
-  const invalid = structuredClone(value); invalid.daily[0].visits = -1;
+  const invalid = structuredClone(value); invalid.daily[0].uniqueVisitors = -1;
   rejected(() => validateStatsResponse(response(invalid), value, { now }), 'snapshot-schema');
 });
 
@@ -253,7 +250,7 @@ test('all injected operational errors and invalid base URLs are sanitized, expec
   await assert.rejects(verifyDeployedStats(expected, { fetcher: async () => { throw new Error('RAW-CREDENTIAL-PAYLOAD'); } }), error => error.message === 'Deployed stats verification failed: execution' && !error.cause);
   await assert.rejects(verifyDeployedStats(expected, { base: 'https://USER:RAW-CREDENTIAL@localhost' }), /base-url$/);
   let called = false;
-  await assert.rejects(verifyDeployedStats({ ...expected, token: 'RAW-CREDENTIAL' }, { fetcher() { called = true; } }), /snapshot-allowlist$/);
+  await assert.rejects(verifyDeployedStats({ ...expected, token: 'RAW-CREDENTIAL' }, { fetcher() { called = true; } }), /snapshot-schema$/);
   assert.equal(called, false);
   await serve(expected, async base => {
     await assert.rejects(verifyDeployedStats(expected, { base, browserType: { launch() { throw new Error('RAW-BROWSER-CREDENTIAL'); } } }), error => error.message === 'Deployed stats verification failed: execution' && !error.cause);

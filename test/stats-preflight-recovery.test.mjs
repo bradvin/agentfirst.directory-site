@@ -6,13 +6,16 @@ import { join } from 'node:path';
 import { validateRemoteDatabase, injectDatabase } from '../scripts/stats-deploy-helpers.mjs';
 import { deployStats } from '../scripts/deploy-stats.mjs';
 import { createPreflightReporter } from '../scripts/stats-preflight-diagnostics.mjs';
+import { edgeSettings, aggregateResponse, edgeRaw } from './fixtures/edge-stats.mjs';
 
 const env = { CLOUDFLARE_API_TOKEN: 'FAKE_DEPLOY_ONLY', CLOUDFLARE_ACCOUNT_ID: 'a'.repeat(32), CLOUDFLARE_D1_DATABASE_ID: '11111111-1111-1111-1111-111111111111', STATS_CF_API_TOKEN: 'FAKE_READ_ONLY', STATS_CF_ACCOUNT_ID: 'a'.repeat(32), GITHUB_EVENT_NAME: 'push', GITHUB_REF: 'refs/heads/main', GITHUB_REPOSITORY: 'bradvin/agentfirst.directory-site' };
 const config = JSON.parse(readFileSync(new URL('../wrangler.jsonc', import.meta.url), 'utf8'));
 const goodDB = { success: true, result: { uuid: env.CLOUDFLARE_D1_DATABASE_ID, name: 'agentfirst' } };
 const goodWorker = { success: true, result: { bindings: [{ type: 'd1', name: 'DB', id: env.CLOUDFLARE_D1_DATABASE_ID }] } };
 const goodDomain = { success: true, result: [{ hostname: 'agentfirst.directory', service: 'agentfirst-directory', environment: 'production' }] };
-const goodSettings = { data: { viewer: { accounts: [{ settings: { rumPageloadEventsAdaptiveGroups: { enabled: true, availableFields: ['count', 'sum_visits', 'avg_sampleInterval', 'dimensions_date', 'dimensions_requestHost'], maxDuration: 30*86400, notOlderThan: 30*86400, maxPageSize: 31 } } }] } } };
+env.STATS_CF_ZONE_ID = 'b'.repeat(32);
+const goodSettings = edgeSettings();
+const goodAggregate = aggregateResponse(edgeRaw([]));
 
 test('D1 identity uses precisely Wrangler 4.128.0 uuid/name field selection without metrics reads', async () => {
   await validateRemoteDatabase(env, async url => {
@@ -44,12 +47,12 @@ test('every source-preflight rejection identifies its safe gate and numeric stat
   mkdirSync(repo); mkdirSync(runner);
   try {
     process.chdir(repo);
-    for (const [gate, stage] of [['remote-database', 0], ['remote-worker-bindings', 1], ['remote-worker-domain', 2], ['source-settings', 3], ['source-query', 4]]) {
+    for (const [gate, stage] of [['remote-database', 0], ['remote-worker-bindings', 1], ['remote-worker-domain', 2], ['source-settings', 3], ['source-query', 4], ['source-query', 5]]) {
       for (const mode of ['http', 'envelope', 'shape', 'transport', 'invalid-json', 'unsafe-code', 'oversize', ...(gate === 'remote-database' ? ['old-name', 'wrong-uuid'] : [])]) {
         writeFileSync('wrangler.jsonc', JSON.stringify(config));
         let call = 0; let mutation = false;
         const fetcher = async () => {
-          if (call++ !== stage) return Response.json([goodDB, goodWorker, goodDomain, goodSettings][call-1]);
+          if (call++ !== stage) return Response.json([goodDB, goodWorker, goodDomain, goodSettings, goodAggregate][call-1]);
           if (mode === 'transport') throw Error('PRIVATE ' + env.CLOUDFLARE_API_TOKEN);
           if (mode === 'invalid-json') return new Response('PRIVATE ' + env.STATS_CF_API_TOKEN, { status: 502 });
           if (mode === 'oversize') return new Response('PRIVATE'.repeat(20000), { status: 502 });

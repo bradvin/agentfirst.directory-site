@@ -1,59 +1,77 @@
-Public stats implementation and approval boundary
+# Public edge traffic statistics
 
-Architecture
-- Identity correction: the expected existing D1 database name is `agentfirst`; the Worker/service remains `agentfirst-directory`, the binding remains `DB`, and routes/cron are unchanged. This corrects a check/config mismatch, not a resource rename. Brad supplied the target name/UUID from the Worker DB target; that is user-supplied evidence, not a live API read or confirmation of the encrypted Actions UUID. The failed main run https://github.com/bradvin/agentfirst.directory-site/actions/runs/37532108737 stopped at remote-database HTTP 200/code none before any remote mutation.
-- No production UUID is committed: Wrangler retains the zero placeholder; only `CLOUDFLARE_D1_DATABASE_ID` injects it. Preflight still checks exact source/deployment account equality, config account/UUID, the account-scoped remote D1 `uuid,name`, and the live Worker `DB` binding UUID/domain/service. A UUID mismatch is a stop, not permission to fall back to name-only targeting or change secrets.
-- CLI audit: deployment migrations use binding `DB`; bootstrap and exact readback use the injected UUID. Local/CI commands use `DB`; the local harness also executes by `agentfirst` and proves it resolves to the same singleton. No migration filename/schema or publication target changes. Fixed-enum `identity-envelope`, `identity-uuid`, and `identity-name` diagnostics distinguish database identity rejection; no upstream messages/identifiers are emitted. If approved Actions preflight reports `identity-uuid` or `remote-worker-bindings`, stop for OPS inspection without bypassing gates.
-- This follow-up requires Brad to approve and merge its PR before the normal main-push deployment. Local/PR validation does not establish a production-proven fix or a live stats page; only a successful approved deployment and exact live readback can do that.
-- /stats and /stats.json read the same D1 public_stats singleton. Neither route calls Cloudflare upstream. JSON schemaVersion is "1"; null means not reported. Partial totals sum only reported days; totals.complete tells consumers whether all 30 dates reported.
-- src/worker.ts preserves Astro's fetch handler and adds a scheduled handler. wrangler.jsonc declares 03:15 UTC daily. This schedule is code only until deployment; no external job was created.
-- 0006_public_stats.sql adds one table to the existing DB binding. No separately provisioned resource. Failures atomically mark the retained last-good snapshot stale without replacing metrics; missing/corrupt storage is unavailable, not zero. Stale also means >36 hours since refresh or an older complete-date window.
-- Collector checks live account dataset settings, requests exactly the prior 30 complete UTC dates, exact requestHost=agentfirst.directory, date grouping with limit 31 (maximum possible rows 30), and rechecks every returned host/date. Other sites/subdomains cannot enter the projection. Empty/sparse results remain honestly unavailable/partial; adaptive sampling is already extrapolated.
-- Only dates, aggregate estimates, sampling intervals, metric definitions, reporting period and freshness enter storage/public JSON. No source responses, identifiers, referrers, paths, IPs, or credential values.
+`/stats` and `/stats.json` publish Cloudflare zone edge metrics (`httpRequests1dGroups`), not browser/RUM metrics. Collection uses the configured zone without hostname, bot, crawler, or eyeball filters. This is all Cloudflare-proxied zone traffic, potentially including other proxied hostnames. HTTP requests include assets and other network traffic; they are not page views. Unique visitors are Cloudflare's network/IP-based metric, not identifiable humans or a count of agents.
 
-Automated main-push deployment (requires explicit Brad approval)
-- Do not merge to main without production approval. deploy.yml remains main-push only, with validated tests/build required and serialized production deployments. Nothing in this follow-up merges, deploys, migrates remote D1, installs Worker secrets, or activates cron.
-- OPS separately installs Actions encrypted secrets STATS_CF_API_TOKEN and STATS_CF_ACCOUNT_ID from the approved item. The source token must be Account Analytics Read scoped to the owning account, distinct from the existing CLOUDFLARE_API_TOKEN deployment credential. No new deployment credential or policies are needed. The unchanged CLOUDFLARE_ACCOUNT_ID and CLOUDFLARE_D1_DATABASE_ID Actions secrets remain the deployment identity.
-- scripts/deploy-stats.mjs validates every required credential/config, source/deployment account equality, expected Worker name/domain/D1 binding/name/ID, and built config. It reads the target D1 identity using the existing deployment token, then securely queries actual browser/RUM settings and data using the same collectPublicStats source path as the scheduled Worker. Missing/failed/empty/stale/malformed data aborts before remote mutations, never installing synthetic or fallback zeros. Measured zeros remain valid; missing dates remain null.
-- Only a bounded canonical public projection, its escaped singleton SQL, and a two-field Wrangler secrets JSON file are written mode 0600 in a private RUNNER_TEMP child directory (0700). Actions stores the inputs encrypted; the temporary secrets JSON is necessarily plaintext for Wrangler, never an artifact. Wrangler disk logging is disabled and privileged command/error output is withheld. Cleanup runs in finally and an always() workflow step; no private source payload is saved/uploaded.
-- After all gates pass: apply the existing migrations; bootstrap/read back the exact singleton in the explicitly targeted remote D1; deploy built reviewed code once with --secrets-file (additive, preserving omitted secrets); verify /stats.json and the real Chromium /stats render against the exact initial snapshot, status/headers/privacy/current 30 dates/freshness/source definitions and null/partial metrics. No public refresh endpoint exists. The existing code schedule 03:15 UTC becomes active only with this approved main deployment, not during this follow-up.
-- Failures after the first migration can leave remote changes applied; this is not a transaction spanning D1 and Worker deployment. The workflow fails closed and needs OPS inspection/retry, not a secret-only deployment or automatic rollback. No pre-merge production execution is possible locally because the deployment credential is Actions-only.
+## Source and semantics
 
-Repeatable Actions bootstrap exercise (Node 24+, Playwright Chromium installed; local writes only)
-  npm ci
-  npx playwright install chromium
-  npm run ci
-  STATS_VERIFY_RENDERED=1 node verification/stats-actions-local.mjs
-This uses clearly synthetic schema fixtures (fake UUIDs and counts, never production fixture data), validates source/built identities and fake UUID injection, runs exact emitted SQL through isolated LOCAL D1 by both `DB` and `agentfirst` with exact byte readback, a real Wrangler --dry-run --secrets-file with clearly FAKE values outside the repo, strict JSON/human browser comparison, and all four rendered scripts. It removes its temporary files/server finally. CI repeats the fake SQL/dry-run/browser checks. To also exercise a new real source pull, securely inject the approved STATS_CF_API_TOKEN and STATS_CF_ACCOUNT_ID into this same process environment; it uses collectPublicStats, writes only the canonical projection to LOCAL D1 and checks the rendered build against that same pull. It never saves raw responses or credentials and never runs remote migration/deploy.
+The headline query selects **no dimensions**, once for the whole reporting window:
 
-Repeatable independent local verification (Node 24+; commands from repo root)
-  npm ci
-  npm run ci
-  export STATS_LOCAL_STATE=/absolute/private/scratch/stats-local
-  ./node_modules/.bin/wrangler d1 migrations apply DB --local --persist-to "$STATS_LOCAL_STATE"
-  ./node_modules/.bin/wrangler d1 execute DB --local --persist-to "$STATS_LOCAL_STATE" --file=test/fixtures/seed-classifications.sql
+```graphql
+query EdgeTotals($zoneTag: string, $from: Date, $to: Date) {
+  viewer { zones(filter: {zoneTag: $zoneTag}) {
+    totals: httpRequests1dGroups(limit: 1, filter: {date_geq: $from, date_lt: $to}) {
+      sum { requests }
+      uniq { uniques }
+    }
+  } }
+}
+```
 
-For a new real-data local collection, securely inject STATS_CF_API_TOKEN and STATS_CF_ACCOUNT_ID into the verification process environment from approved read-only credentials, never print them. Set STATS_PRIVATE_DIR to an existing private scratch directory outside the repo, then:
-  node verification/stats-real-local.mjs
-This makes two read-only GraphQL POSTs and writes raw responses mode 0600 outside the repo, persisting only the allowlisted public snapshot to LOCAL D1. Wrangler getPlatformProxy requires the /v3 suffix internally; the script handles it. No credentials are required to serve/read already populated local data.
+A separate query selects daily `dimensions { date }`, `sum { requests }`, `uniq { uniques }`, and `avg { sampleInterval }` for exactly the same range. Daily unique visitors are not additive. Daily values are never used to calculate headline unique visitors. Counts are validated as nonnegative safe integers; the returned sampling metadata is disclosed without multiplying counts by the interval.
 
-Serve built final bytes in another terminal:
-  ./node_modules/.bin/wrangler dev --config dist/server/wrangler.json --local --persist-to "$STATS_LOCAL_STATE" --host 127.0.0.1 --ip 127.0.0.1 --port 4327 --test-scheduled
+Cloudflare's documentation establishes IP/network-based visitors, proxy scope, and inclusion of bots/crawlers. It does **not** establish whether `httpRequests1dGroups` whole-window `uniq.uniques` deduplicates IPs across dates or aggregates daily cardinalities. We therefore publish the exact provider field and this limitation, without claiming monthly distinct-human or confirmed cross-day distinct-IP counts. Documentation consulted:
 
-Verify (Chromium must be installed for Playwright):
-  BASE_URL=http://127.0.0.1:4327 STATS_ARTIFACT_DIR=/absolute/private/scratch STATS_EXPECTED_SNAPSHOT=/absolute/private/scratch/stats-real-public-snapshot.json node verification/public-stats.mjs
-  BASE_URL=http://127.0.0.1:4327 npm run verify:rendered
-  BASE_URL=http://127.0.0.1:4327 node verification/stats-local-states.mjs
-The expected snapshot argument is optional. Empty DB is truthfully unavailable. stats-local-states requires STATS_LOCAL_STATE and restores its local snapshot after testing scheduled failure/unavailable/corruption. Never pass remote flags. Raw results must never be copied into source/public directories.
+- https://developers.cloudflare.com/analytics/faq/about-analytics/
+- https://developers.cloudflare.com/analytics/account-and-zone-analytics/zone-analytics/
+- https://developers.cloudflare.com/analytics/graphql-api/features/filtering/
+- https://developers.cloudflare.com/analytics/graphql-api/features/sorting/
+- https://developers.cloudflare.com/analytics/graphql-api/limits/
 
-Authoritative source references
-https://developers.cloudflare.com/web-analytics/data-metrics/high-level-metrics/
-https://developers.cloudflare.com/web-analytics/data-metrics/data-origin-and-collection/
-https://developers.cloudflare.com/web-analytics/faq/
-https://developers.cloudflare.com/analytics/graphql-api/sampling/
-https://developers.cloudflare.com/analytics/graphql-api/limits/
-https://developers.cloudflare.com/analytics/graphql-api/features/discovery/settings/
-https://developers.cloudflare.com/analytics/graphql-api/getting-started/authentication/api-token-auth/
-Actual introspection confirmed viewer.accounts.rumPageloadEventsAdaptiveGroups, count (aliased pageViews), sum.visits, dimensions.date/requestHost and avg.sampleInterval. Visits are not unique users. Sampling may yield different estimates across repeated pulls; screenshots/JSON must be compared against the same persisted pull, not independently fetched observations.
+The approved parent read-only query for `[2026-09-07, 2026-10-07)` returned 42,075 HTTP requests and 5,977 unique visitors, matching the Overview screenshot after rounding. That result proves source selection, not cross-day deduplication semantics or execution of this new integrated collector. No source identifiers, raw responses, or credentials belong in this public repository.
 
-Out of scope: GSC, protected listing SEO cohort, dependency remediation. npm ci reported 10 pre-existing dependency advisories (2 moderate, 8 high); no lockfile/dependency versions changed.
+## Schema version 2
+
+The breaking public contract has exactly these fields:
+
+- `schemaVersion: "2"`; `status`: `fresh`, `stale`, or `unavailable`.
+- `refreshedAt`: successful capture time in UTC, or null.
+- `period`: inclusive `start`/`end`, `timezone: "UTC"`, `days: 30`.
+- `source`: constant name, dataset, zone-wide scope, metric definitions, and caveats.
+- `coverage`: `reportedDays`, `missingDays`, and `sampled` (daily metadata only, not proof of aggregate sampling state).
+- `totals`: `uniqueVisitors`, `requests`, `complete`. `complete` means the whole-window API aggregate was returned, not that every daily row exists.
+- `daily`: 30 ordered objects with `date`, `uniqueVisitors`, `requests`, `sampleInterval`; all measurements are null for missing dates, not invented zeros.
+
+The reporting window is 30 completed UTC dates. Today's partial date is excluded. Refresh time is not the reporting-period end. Successful collection may have missing daily rows while retaining an independently reported aggregate. No aggregate row is unavailable, not zero. Zero counts returned by the provider are valid. Daily request sums cannot exceed the full-window aggregate; with all 30 rows, the request sum must equal it. A 31-row daily limit is a truncation sentinel above the maximum 30 groups, with duplicate/out-of-window groups rejected. Dataset settings are checked before traffic queries: enabled, four required fields, duration/retention at least 30 days, page size at least 31.
+
+Stored version-1 browser snapshots and malformed/private unexpected fields are rejected, never relabelled or used as fallback. During sequencing they produce an explicit version-2 unavailable response. A failed refresh keeps a valid version-2 last-good snapshot marked stale. Snapshots older than 36 hours or ending before the current completed window are stale. No successful capture is claimed on failure.
+
+The accessible page retains status metadata, responsive request chart with distinctly labelled missing dates, and the complete daily table. Both routes read the same validated D1 singleton. GET/HEAD are allowed, mutation methods are 405, JSON is CORS-readable, and public responses are cached for 300 seconds. Request handling never calls analytics and there is no public refresh endpoint.
+
+## Deployment and credentials
+
+The existing Worker `agentfirst-directory`, D1 database name `agentfirst`, custom domain, and daily `15 3 * * *` schedule are unchanged. The private runtime database UUID remains injected by Actions, not committed. `CLOUDFLARE_API_TOKEN` is the deployment credential; the source credential never performs writes.
+
+Operations separately provisions exactly `STATS_CF_API_TOKEN`, `STATS_CF_ACCOUNT_ID`, and `STATS_CF_ZONE_ID` as Actions secrets. Account/zone IDs must be lowercase 32-hex values; source account must equal the unchanged deployment account. The token is never logged or passed as a command argument. The exact zone query establishes access but does not prove zone ownership under that account. Cross-account ownership remains unverified without an authoritative response from existing approved permissions; do not add Zone Read or remove existing permissions.
+
+Normal deployment preserves the existing fail-before-remote-mutation gates: build and verify config/target account, Worker DB binding and domain, source readiness/query/projection; privately stage the projected bootstrap SQL/snapshot and three-key secret file at mode 0600 in a mode-0700 temporary directory; apply migration/bootstrap; read back the exact remote singleton; deploy via `wrangler deploy --secrets-file`; verify both rendered page and JSON against that same snapshot. Omitted unrelated runtime secrets are not included or deleted. Files are cleaned on success/failure. A missing zone secret prevents bootstrap/deploy before remote writes. Production deployment, main push, merge, remote D1 operations, and secret provisioning require separate approval and are not part of implementation verification.
+
+## Local verification and genuine replay
+
+Use the installed Node 24+ runtime and Wrangler:
+
+```sh
+npm ci
+npm run ci
+node verification/stats-worker-scheduled.mjs
+STATS_VERIFY_RENDERED=1 node verification/stats-actions-local.mjs
+```
+
+The scheduled harness executes the actual built Worker in workerd with **fake** source responses and local D1. The Actions harness uses actual Wrangler local migrations, idempotent bootstrap/readback, fake-secret dry-run, built Worker route/header/status/privacy checks, old-schema migration behavior, and Chromium desktop/mobile checks. It never reads genuine credentials. Set `STATS_ARTIFACT_DIR` to an existing private external artifact directory to retain browser evidence.
+
+For the parent to exercise the **genuine integrated collector**, pipe a securely retrieved JSON object with exactly the three `STATS_CF_*` keys into:
+
+```sh
+node verification/stats-real-local.mjs --stdin
+```
+
+Or supply those keys securely in the environment and run without `--stdin`. Do not paste values into commands, save credential files, enable shell tracing, or dump environment/upstream responses. This script makes read-only settings/aggregate/daily queries, creates a fresh isolated private local persist directory outside the repository, applies installed Wrangler migrations with `--local`, bootstraps and verifies the public-only singleton, and prints only public measurements and local artifact paths. It performs no remote writes. It emits only a generic error on failure. Source credentials are removed from subprocess environments. The retained artifact contains only the allowlisted public snapshot. Parent verification is still required before approval.
