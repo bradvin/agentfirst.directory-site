@@ -81,7 +81,7 @@ function expectedRender(s) {
     samplingParagraphs: 1,
     caption: `Daily unique visitors and HTTP requests, ${formatDate(s.period.start)} to ${formatDate(s.period.end)} (UTC)`,
     columns: ['Date (UTC)', 'Unique visitors', 'HTTP requests'],
-    rows: s.daily.map(d => ({ values: [formatDate(d.date), format(d.uniqueVisitors), format(d.requests)], dateTime: d.date, rowScope: 'row' })),
+    rows: [...s.daily].reverse().map(d => ({ values: [formatDate(d.date), format(d.uniqueVisitors), format(d.requests)], dateTime: d.date, rowScope: 'row' })),
     source: [
       ['Unique visitors', 'This is not an exact count of people: bots and automated traffic are included. Do not add daily visitors to get the total shown above.'],
       ['HTTP requests', 'These include pages, images and other files, not page views.'],

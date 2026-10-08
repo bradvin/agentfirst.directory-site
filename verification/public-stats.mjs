@@ -47,7 +47,7 @@ try {
   assert.ok(desktopBoxes[0].x < desktopBoxes[1].x && desktopBoxes[1].x < desktopBoxes[2].x);
   const rows = page.locator('tbody tr'); assert.equal(await rows.count(), 30);
   for (let i=0; i<30; i++) {
-    const d=snapshot.daily[i]; const values=await rows.nth(i).locator('th,td').allTextContents();
+    const d=[...snapshot.daily].reverse()[i]; const values=await rows.nth(i).locator('th,td').allTextContents();
     assert.deepEqual(values, [date(d.date), format(d.uniqueVisitors), format(d.requests)]);
     assert.equal(await rows.nth(i).locator('time').getAttribute('datetime'), d.date);
   }

@@ -114,6 +114,10 @@ test("daily table preserves missing values, measured zeros, chart fallback and k
   const { html } = await renderSnapshot(snapshot);
   const body = html.match(/<tbody[^>]*>([\s\S]*?)<\/tbody>/)[1];
   assert.equal((body.match(/<tr[\s>]/g) ?? []).length, 30);
+  assert.deepEqual([...body.matchAll(/datetime="([^"]+)"/g)].map(match => match[1]), [...snapshot.daily].reverse().map(day => day.date));
+  const original = JSON.stringify(snapshot);
+  await renderSnapshot(snapshot);
+  assert.equal(JSON.stringify(snapshot), original, "Rendering must not mutate snapshot.daily");
   for (const { date } of snapshot.daily) assert.ok(body.includes(`datetime="${date}"`));
   assert.match(body, /<td[^>]*>0<\/td>/);
   assert.match(body, /<td[^>]*>Not reported<\/td>/);
