@@ -130,8 +130,10 @@ async function render(snapshot) {
   new Function('require', 'module', 'exports', outputText)(require, module, module.exports);
   const result = {
     createAstro: () => ({ request: new Request('http://localhost/stats'), response: { headers: new Headers() } }),
-    _metadata: { rendererSpecificHydrationScripts: new Set(), hasRenderedHead: false, renderedHead: '', extraHead: [], propagators: new Set() },
+    _metadata: { rendererSpecificHydrationScripts: new Set(), renderedScripts: new Set(), hasRenderedHead: false, renderedHead: '', extraHead: [], propagators: new Set() },
     renderers: [], styles: new Set(), scripts: new Set(), links: new Set(), componentMetadata: new Map(), clientDirectives: new Map(),
+    // SSR-only fixture: the built-Worker harness exercises the actual client bundle.
+    inlinedScripts: new Map(), resolve: async () => "data:text/javascript,",
   };
   return `<!doctype html><html><body>${await runtime.renderToString(result, module.exports.default, {}, {})}</body></html>`;
 }

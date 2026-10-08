@@ -20,6 +20,7 @@ const statusMessage = {
   unavailable: "Traffic figures are not available right now. Missing figures do not mean zero traffic.",
 }[snapshot.status];
 const maxRequests = Math.max(1, ...snapshot.daily.map(d => d.requests ?? 0));
+const tableDays = [...snapshot.daily].reverse();
 ---
 <BaseLayout title={`Public traffic statistics | ${siteConfig.name}`} description={description} canonicalPath="/stats">
   <div class="shell-inner policy-shell stats-shell">
@@ -53,13 +54,25 @@ const maxRequests = Math.max(1, ...snapshot.daily.map(d => d.requests ?? 0));
       <p id="daily-help">Days use UTC. “Not reported” means missing data, not zero. On small screens, focus the table and use the arrow keys to scroll.</p>
       <figure class="stats-chart" aria-labelledby="chart-caption">
         <figcaption id="chart-caption">Daily HTTP requests. Gaps mean missing figures; values are in the table below.</figcaption>
-        <div class="stats-bars" aria-hidden="true">{snapshot.daily.map(day => <div class:list={["stats-bar-slot", { "stats-missing": day.requests === null }]}><span style={`height:${day.requests === null ? 0 : 100 * day.requests / maxRequests}%`}></span></div>)}</div>
+        <div class="stats-bars" role="group" aria-label="Daily HTTP requests, oldest to newest. Use left and right arrow keys to inspect days.">
+          {snapshot.daily.map((day, index) => <div data-date={day.date} class:list={["stats-bar-slot", { "stats-missing": day.requests === null }]}>
+            <button type="button" class="stats-day-target" tabindex={index === 0 ? 0 : -1}
+              data-date={day.date} data-label={formatDate(day.date)} data-visitors={formatEstimate(day.uniqueVisitors)} data-requests={formatEstimate(day.requests)}
+              aria-label={`${formatDate(day.date)}: Unique visitors ${formatEstimate(day.uniqueVisitors)}; HTTP requests ${formatEstimate(day.requests)}`}>
+              <span aria-hidden="true" style={`height:${day.requests === null ? 0 : 100 * day.requests / maxRequests}%`}></span>
+            </button>
+          </div>)}
+        </div>
       </figure>
+      <div id="stats-day-tooltip" class="stats-day-tooltip" role="tooltip" hidden>
+        <time></time>
+        <dl><div><dt>Unique visitors</dt><dd data-tooltip-visitors></dd></div><div><dt>HTTP requests</dt><dd data-tooltip-requests></dd></div></dl>
+      </div>
       <div class="stats-table-scroll" role="region" tabindex="0" aria-label="Daily traffic estimates, horizontally scrollable" aria-describedby="daily-help">
         <table>
           <caption>Daily unique visitors and HTTP requests, <time datetime={snapshot.period.start}>{formatDate(snapshot.period.start)}</time> to <time datetime={snapshot.period.end}>{formatDate(snapshot.period.end)}</time> (UTC)</caption>
           <thead><tr><th scope="col">Date (UTC)</th><th scope="col" class="stats-numeric">Unique visitors</th><th scope="col" class="stats-numeric">HTTP requests</th></tr></thead>
-          <tbody>{snapshot.daily.map(day => <tr><th scope="row"><time datetime={day.date}>{formatDate(day.date)}</time></th><td class="stats-numeric">{formatEstimate(day.uniqueVisitors)}</td><td class="stats-numeric">{formatEstimate(day.requests)}</td></tr>)}</tbody>
+          <tbody>{tableDays.map(day => <tr><th scope="row"><time datetime={day.date}>{formatDate(day.date)}</time></th><td class="stats-numeric">{formatEstimate(day.uniqueVisitors)}</td><td class="stats-numeric">{formatEstimate(day.requests)}</td></tr>)}</tbody>
         </table>
       </div>
     </section>
@@ -85,6 +98,10 @@ const maxRequests = Math.max(1, ...snapshot.daily.map(d => d.requests ?? 0));
     </section>
   </div>
 </BaseLayout>
+<script>
+  import { initStatsChartTooltip } from "../lib/stats-chart-tooltip";
+  initStatsChartTooltip();
+</script>
 <style>
   .stats-shell { min-width: 0; }
   .stats-json-link { margin: 18px 0 0; }
@@ -102,9 +119,18 @@ const maxRequests = Math.max(1, ...snapshot.daily.map(d => d.requests ?? 0));
   .stats-chart { margin: 0 0 24px; }
   .stats-chart figcaption { color: var(--muted-soft); line-height: 1.65; margin-bottom: 12px; }
   .stats-bars { display: grid; grid-template-columns: repeat(30, minmax(0, 1fr)); gap: 3px; height: 130px; border-bottom: 1px solid var(--border); }
-  .stats-bar-slot { display: flex; align-items: end; min-width: 0; }
-  .stats-bar-slot span { width: 100%; background: var(--accent); }
-  .stats-missing { border-bottom: 2px dashed var(--muted-soft); }
+  .stats-bar-slot { min-width: 0; position: relative; }
+  .stats-day-target { display: flex; align-items: end; width: 100%; height: 100%; margin: 0; padding: 0; border: 0; border-radius: 0; background: transparent; cursor: pointer; }
+  .stats-day-target span { width: 100%; background: var(--accent); pointer-events: none; }
+  .stats-day-target:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; position: relative; z-index: 1; }
+  .stats-missing::after { content: ""; position: absolute; bottom: 0; width: 100%; border-bottom: 2px dashed var(--muted-soft); pointer-events: none; }
+  .stats-day-tooltip { position: fixed; z-index: 20; width: 250px; max-width: calc(100vw - 16px); max-height: calc(100dvh - 16px); overflow: auto; padding: 14px; border: 1px solid var(--border); border-radius: 6px; background: var(--surface-strong); color: var(--text); box-shadow: 0 8px 24px #0006; font-size: 0.875rem; }
+  .stats-day-tooltip[hidden] { display: none; }
+  .stats-day-tooltip time { display: block; color: var(--accent); font: 600 1rem "IBM Plex Mono", monospace; }
+  .stats-day-tooltip dl { display: grid; gap: 8px; margin: 12px 0 0; }
+  .stats-day-tooltip dl div { display: flex; justify-content: space-between; gap: 12px; }
+  .stats-day-tooltip dt { color: var(--muted-soft); }
+  .stats-day-tooltip dd { margin: 0; font-variant-numeric: tabular-nums; }
   .stats-table-scroll { min-width: 0; max-width: 100%; overflow-x: auto; border: 1px solid var(--border); border-radius: 4px; }
   .stats-table-scroll:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; }
   table { width: 100%; min-width: 540px; border-collapse: collapse; font-size: 14px; }

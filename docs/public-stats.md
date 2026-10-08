@@ -47,6 +47,8 @@ Stored version-1 browser snapshots and malformed/private unexpected fields are r
 
 The accessible page retains status metadata, responsive request chart with distinctly labelled missing dates, and the complete daily table. Both routes read the same validated D1 singleton. GET/HEAD are allowed, mutation methods are 405, JSON is CORS-readable, and public responses are cached for 300 seconds. Request handling never calls analytics and there is no public refresh endpoint.
 
+The chart remains chronological (oldest left, newest right); the table presents all 30 dates newest first without changing the stored/JSON ordering. Each full-height chart day exposes its date and values on hover, focus, or touch, including missing dates and measured zeros. Left/right arrows, Home, and End move keyboard focus; Tab reaches the table. Escape, leaving both the day and popup (unless still focused), an outside tap, or a second tap dismisses the single popup. The accessible table remains the no-JavaScript fallback.
+
 ## Deployment and credentials
 
 The existing Worker `agentfirst-directory`, D1 database name `agentfirst`, custom domain, and daily `15 3 * * *` schedule are unchanged. The private runtime database UUID remains injected by Actions, not committed. `CLOUDFLARE_API_TOKEN` is the deployment credential; the source credential never performs writes.
@@ -63,10 +65,13 @@ Use the installed Node 24+ runtime and Wrangler:
 npm ci
 npm run ci
 node verification/stats-worker-scheduled.mjs
+STATS_ARTIFACT_DIR=/absolute/private/external/evidence npm run verify:stats-chart
 STATS_VERIFY_RENDERED=1 node verification/stats-actions-local.mjs
 ```
 
 The scheduled harness executes the actual built Worker in workerd with **fake** source responses and local D1. The Actions harness uses actual Wrangler local migrations, idempotent bootstrap/readback, fake-secret dry-run, built Worker route/header/status/privacy checks, old-schema migration behavior, and Chromium desktop/mobile checks. It never reads genuine credentials. Set `STATS_ARTIFACT_DIR` to an existing private external artifact directory to retain browser evidence.
+
+The chart harness starts a fresh Wrangler process from the production build with explicit private scratch persistence. It blocks third-party browser requests and uses only synthetic snapshots to check full JSON agreement, reverse table/chronological chart ordering, popup values and viewport bounds, pointer/focus/touch dismissal, keyboard/table scrolling, and complete/partial/stale/unavailable states. Build first; logs and screenshots must remain outside the public repository.
 
 For the parent to exercise the **genuine integrated collector**, pipe a securely retrieved JSON object with exactly the three `STATS_CF_*` keys into:
 

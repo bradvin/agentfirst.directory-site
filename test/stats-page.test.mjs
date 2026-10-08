@@ -55,13 +55,15 @@ async function renderSnapshot(snapshot) {
   new Function("require", "module", "exports", outputText)(require, module, module.exports);
   const result = {
     createAstro: () => ({ response, request: new Request('http://localhost/stats') }),
-    _metadata: { rendererSpecificHydrationScripts: new Set(), hasRenderedHead: false, renderedHead: "", extraHead: [], propagators: new Set() },
+    _metadata: { rendererSpecificHydrationScripts: new Set(), renderedScripts: new Set(), hasRenderedHead: false, renderedHead: "", extraHead: [], propagators: new Set() },
     renderers: [],
     styles: new Set(),
     scripts: new Set(),
     links: new Set(),
     componentMetadata: new Map(),
     clientDirectives: new Map(),
+    // SSR-only fixture: the built-Worker harness exercises the actual client bundle.
+    inlinedScripts: new Map(), resolve: async () => "data:text/javascript,",
   };
   const html = await runtime.renderToString(result, module.exports.default, {}, {});
   return { html, response };
@@ -114,6 +116,10 @@ test("daily table preserves missing values, measured zeros, chart fallback and k
   const { html } = await renderSnapshot(snapshot);
   const body = html.match(/<tbody[^>]*>([\s\S]*?)<\/tbody>/)[1];
   assert.equal((body.match(/<tr[\s>]/g) ?? []).length, 30);
+  assert.deepEqual([...body.matchAll(/datetime="([^"]+)"/g)].map(match => match[1]), [...snapshot.daily].reverse().map(day => day.date));
+  const original = JSON.stringify(snapshot);
+  await renderSnapshot(snapshot);
+  assert.equal(JSON.stringify(snapshot), original, "Rendering must not mutate snapshot.daily");
   for (const { date } of snapshot.daily) assert.ok(body.includes(`datetime="${date}"`));
   assert.match(body, /<td[^>]*>0<\/td>/);
   assert.match(body, /<td[^>]*>Not reported<\/td>/);
