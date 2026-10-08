@@ -128,7 +128,7 @@ try {
       await tooltip().hover(); await pause(250); await popupAgreement(partial, i);
       if ([0, 15, 29].includes(i)) {
         const path = join(artifacts, `popup-desktop-day-${i}.png`);
-        await page.screenshot({ path, fullPage: true }); evidence.desktop.push(path);
+        await page.screenshot({ path }); evidence.desktop.push(path);
       }
       await page.mouse.move(0, 0); await tooltip().waitFor({ state: 'hidden' });
     }
@@ -159,7 +159,10 @@ try {
       await targets().nth(i).tap(); await popupAgreement(partial, i);
       await tooltip().tap(); await popupAgreement(partial, i);
       const path = join(artifacts, `popup-mobile-day-${i}.png`);
-      await page.screenshot({ path, fullPage: true }); evidence.mobile.push(path);
+      // Full-page capture can transiently resize the mobile viewport (including to 4x4),
+      // correctly dismissing an off-screen day. Capture the actual popup viewport instead.
+      await page.screenshot({ path }); evidence.mobile.push(path);
+      await popupAgreement(partial, i);
       await targets().nth(i).tap(); await tooltip().waitFor({ state: 'hidden' });
     }
     await targets().nth(0).tap(); await page.locator('#daily-heading').tap(); assert.equal(await tooltip().count(), 0, 'Outside tap dismisses');
