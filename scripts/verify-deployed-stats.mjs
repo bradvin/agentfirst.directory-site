@@ -57,33 +57,39 @@ export function validateStatsResponse({ status, headers, body }, expected, { now
   return actual;
 }
 
+const formatDate = value => new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' }).format(new Date(value));
+const formatUpdate = value => `${formatDate(value)}, ${new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', hourCycle: 'h23', timeZone: 'UTC' }).format(new Date(value))} UTC`;
 function expectedRender(s) {
   return {
     h1: ['Website traffic statistics'],
-    headings: ['Fresh snapshot', 'Traffic reported in this window', `All ${s.period.days} reporting dates`, 'What these numbers mean'],
-    statusMessage: 'The latest successful snapshot is current. Freshness does not mean every date has reported data.',
+    headings: ['Unique visitors', 'HTTP Requests', 'Window', 'Traffic by day', 'What these numbers mean', 'Fresh snapshot'],
+    statusMessage: 'The latest update is current, though some daily figures may be missing.',
     metadata: [
-      ['Reporting window', `${s.period.start} through ${s.period.end} (inclusive), ${s.period.days} complete dates in ${s.period.timezone}`],
-      ['Last successful refresh', `${s.refreshedAt} (UTC)`],
-      ['Coverage', `${s.coverage.reportedDays} reported dates; ${s.coverage.missingDays} missing dates. ${s.coverage.sampled ? 'Sampling indicated in daily detail.' : 'No sampling indicated in daily detail; this does not establish aggregate sampling.'}`],
+      ['Reporting dates', `${formatDate(s.period.start)} to ${formatDate(s.period.end)} (UTC)`],
+      ['Last update', formatUpdate(s.refreshedAt)],
+      ['Daily coverage', `${s.coverage.reportedDays} days reported; ${s.coverage.missingDays} days not reported. Totals are reported separately from the daily figures.`],
     ],
     times: [s.period.start, s.period.end, s.refreshedAt],
-    totalsLabel: 'Full-window API aggregate',
-    totals: [['Unique visitors', format(s.totals.uniqueVisitors)], ['HTTP requests', format(s.totals.requests)]],
-    totalsMessage: 'Totals are returned by one whole-window API query, independent of daily coverage. Unique visitors are not unique humans; cross-day IP deduplication is not established. These are provider metrics, not an exact census of people.',
-    caption: `Daily unique visitors and HTTP requests, ${s.period.start} through ${s.period.end} (UTC)`,
-    columns: ['Date (UTC)', 'Unique visitors (daily)', 'HTTP requests', 'Sample interval'],
-    rows: s.daily.map(d => ({ values: [d.date, format(d.uniqueVisitors), format(d.requests), format(d.sampleInterval)], dateTime: d.date, rowScope: 'row' })),
-    source: [
-      ['Source', `${s.source.name}, dataset ${s.source.dataset}.`],
-      ['Unique visitors', `Provider-defined unique visitors from ${s.source.metrics.uniqueVisitors}. This network/IP-based metric includes bots and crawlers, not identifiable unique humans.`],
-      ['HTTP requests', `Provider HTTP requests from ${s.source.metrics.requests}, including network and asset traffic, not page views.`],
-      ['Sampling', 'The sample interval is provider-reported daily metadata, not a percentage. Counts are used as returned; we do not multiply them by the interval again.'],
+    cards: [
+      ['Unique visitors', format(s.totals.uniqueVisitors), 'A visitor estimate that includes bots and automated traffic.'],
+      ['HTTP Requests', format(s.totals.requests), 'Requests for pages, images and other files.'],
+      ['Window', 'Last 30 days', '30 complete days in UTC, not including today.'],
     ],
-    caveats: s.source.caveats,
+    windowTimes: [s.period.start, s.period.end],
+    lastSection: 'snapshot-heading',
+    forbiddenCopy: false,
+    samplingParagraphs: 1,
+    caption: `Daily unique visitors and HTTP requests, ${formatDate(s.period.start)} to ${formatDate(s.period.end)} (UTC)`,
+    columns: ['Date (UTC)', 'Unique visitors', 'HTTP requests'],
+    rows: s.daily.map(d => ({ values: [formatDate(d.date), format(d.uniqueVisitors), format(d.requests)], dateTime: d.date, rowScope: 'row' })),
+    source: [
+      ['Unique visitors', 'This is not an exact count of people: bots and automated traffic are included. Do not add daily visitors to get the total shown above.'],
+      ['HTTP requests', 'These include pages, images and other files, not page views.'],
+      ['Sampling', 'Some traffic figures may be estimated from a sample rather than every request, so treat them as a guide rather than an exact count.'],
+    ],
     jsonLinks: ['/stats.json', '/stats.json'],
-    dailyHelp: 'Dates are UTC. Daily unique visitors are not additive. A reported 0 is the provider\'s measurement, not proof of no actual traffic when sampled; “Not reported” means missing data, not zero. On narrow screens, focus the table region and use the arrow keys to scroll.',
-    sourceMessage: 'Zone scope covers all Cloudflare-proxied hostnames in the configured zone. No hostname, bot, or eyeball-only filter is applied. These measurements cannot distinguish human visitors from AI agents.',
+    dailyHelp: 'Days use UTC. “Not reported” means missing data, not zero. On small screens, focus the table and use the arrow keys to scroll.',
+    sourceMessage: 'More measurement details are in the JSON snapshot.',
   };
 }
 
@@ -105,14 +111,15 @@ async function readRenderedStats(page) {
       statusMessage: text(section('snapshot-heading')?.querySelector('h2 + p')),
       metadata: definitions(section('snapshot-heading')),
       times: [...(section('snapshot-heading')?.querySelectorAll('time') ?? [])].map(t => t.getAttribute('datetime')),
-      totalsLabel: text(section('estimates-heading')?.querySelector('.detail-overline')),
-      totals: definitions(section('estimates-heading')),
-      totalsMessage: text(section('estimates-heading')?.querySelector('.stats-estimates + p')),
+      cards: all('.stats-summary-card').map(card => [text(card.querySelector('h2')), text(card.querySelector('.stats-value')), text(card.querySelector('.stats-card-copy'))]),
+      windowTimes: all('#window-heading + .stats-value + .stats-card-copy + .stats-window-dates time').map(t => t.getAttribute('datetime')),
+      lastSection: all(':scope > section').at(-1)?.getAttribute('aria-labelledby') ?? null,
+      forbiddenCopy: /cloudflare|httpRequests1dGroups|uniq\.uniques|sum\.requests|sampleInterval|Sample interval|\bAPI\b|\bzone\b|\bRUM\b|dataset|—/i.test(root.innerText + (document.querySelector('meta[name="description"]')?.content ?? '')),
+      samplingParagraphs: section('methodology-heading')?.querySelectorAll('dl > div:last-child dd > p').length ?? 0,
       caption: text(root.querySelector('caption')),
       columns: all('thead th[scope="col"]').map(text),
       rows: all('tbody tr').map(row => ({ values: [...row.querySelectorAll('th,td')].map(text), dateTime: row.querySelector('time')?.getAttribute('datetime') ?? null, rowScope: row.querySelector('th')?.getAttribute('scope') ?? null })),
       source: definitions(section('methodology-heading')),
-      caveats: all('.stats-caveats li').map(text),
       jsonLinks: all('a[href="/stats.json"]').map(a => a.getAttribute('href')),
       dailyHelp: text(root.querySelector('#daily-help')),
       sourceMessage: text(section('methodology-heading')?.querySelector('dl + p')),
