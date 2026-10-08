@@ -59,6 +59,7 @@ async function popup(index, mode = 'hover') {
 async function popupAgreement(snapshot, index) {
   const day = snapshot.daily[index];
   const tip = tooltip();
+  await tip.waitFor({ timeout: 2000 });
   assert.equal(await tip.count(), 1, 'Only one popup');
   assert.equal((await tip.locator('time').textContent()).trim(), human(day.date));
   assert.equal(await tip.locator('time').getAttribute('datetime'), day.date);
@@ -94,8 +95,9 @@ try {
   }
   assert.ok(ready, 'Fresh production-built Worker ready');
   browser = await chromium.launch({ headless: true });
-  context = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
-  await context.route('**/*', route => new URL(route.request().url()).origin === base ? route.continue() : route.abort());
+  context = await browser.newContext({ viewport: { width: 1440, height: 1000 }, serviceWorkers: 'block', acceptDownloads: false });
+  const localReadsOnly = route => new URL(route.request().url()).origin === base && ['GET', 'HEAD'].includes(route.request().method()) ? route.continue() : route.abort();
+  await context.route('**/*', localReadsOnly);
   page = await context.newPage();
   page.on('pageerror', error => errors.push(error.message));
   page.setDefaultTimeout(2500);
@@ -107,12 +109,17 @@ try {
   await test('chart stays chronological; full-height focusable targets include missing and zero dates', async () => {
     assert.deepEqual(await page.locator('.stats-bar-slot').evaluateAll(slots => slots.map(slot => slot.dataset.date)), dates);
     assert.equal(await targets().count(), 30);
-    for (const i of [0, 1, 15, 29]) {
+    for (let i = 0; i < 30; i++) {
       const target = targets().nth(i);
       assert.equal(await target.evaluate(node => node.closest('[aria-hidden="true"]')), null, 'No hidden focusable descendant');
       assert.equal(await target.getAttribute('aria-label'), `${human(dates[i])}: Unique visitors ${count(partial.daily[i].uniqueVisitors)}; HTTP requests ${count(partial.daily[i].requests)}`);
+      assert.equal(await target.getAttribute('data-visitors'), count(partial.daily[i].uniqueVisitors));
+      assert.equal(await target.getAttribute('data-requests'), count(partial.daily[i].requests));
       const box = await target.boundingBox(); const chart = await page.locator('.stats-bars').boundingBox();
       assert.ok(box.height >= chart.height - 2, 'Full chart-height hit area');
+      const bar = await target.locator('span').boundingBox();
+      const max = Math.max(1, ...partial.daily.map(day => day.requests ?? 0));
+      assert.ok(Math.abs(bar.height - box.height * (partial.daily[i].requests ?? 0) / max) < 1, 'Chart magnitude matches snapshot requests');
     }
   });
   await test('hover first/middle/last, missing and measured zero; popup stays visible on pointer transit', async () => {
@@ -142,25 +149,34 @@ try {
   });
   await test('mobile touch toggles and outside/Escape dismiss; edge placement and table scroll do not overflow', async () => {
     await context.close();
-    context = await browser.newContext({ viewport: { width: 320, height: 640 }, isMobile: true, hasTouch: true });
-    await context.route('**/*', route => new URL(route.request().url()).origin === base ? route.continue() : route.abort());
+    context = await browser.newContext({ viewport: { width: 320, height: 640 }, isMobile: true, hasTouch: true, serviceWorkers: 'block', acceptDownloads: false });
+    await context.route('**/*', localReadsOnly);
     page = await context.newPage(); page.setDefaultTimeout(2500);
     page.on('pageerror', error => errors.push(error.message));
     await load(partial); await agreement(partial);
+
     for (const i of [0, 15, 29]) {
       await targets().nth(i).tap(); await popupAgreement(partial, i);
       await tooltip().tap(); await popupAgreement(partial, i);
       const path = join(artifacts, `popup-mobile-day-${i}.png`);
       await page.screenshot({ path, fullPage: true }); evidence.mobile.push(path);
-      await targets().nth(i).tap(); assert.equal(await tooltip().count(), 0, 'Second tap dismisses');
+      await targets().nth(i).tap(); await tooltip().waitFor({ state: 'hidden' });
     }
     await targets().nth(0).tap(); await page.locator('#daily-heading').tap(); assert.equal(await tooltip().count(), 0, 'Outside tap dismisses');
     await targets().nth(29).tap(); await page.keyboard.press('Escape'); assert.equal(await tooltip().count(), 0);
+    await targets().nth(15).tap(); await popupAgreement(partial, 15);
+    await page.keyboard.press('Tab'); await tooltip().waitFor({ state: 'hidden' });
+    assert.ok(await page.locator('.stats-table-scroll').evaluate(node => node === document.activeElement), 'Touch-to-keyboard Tab leaves no stale popup');
+    await targets().nth(15).tap(); await popupAgreement(partial, 15);
+    await page.locator('.stats-table-scroll').focus(); await tooltip().waitFor({ state: 'hidden' });
     await page.locator('.stats-table-scroll').focus(); await page.keyboard.press('ArrowRight');
     await page.waitForFunction(() => document.querySelector('.stats-table-scroll').scrollLeft > 0);
     assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
     const path = join(artifacts, 'mobile-table-scroll.png'); await page.screenshot({ path, fullPage: true }); evidence.mobile.push(path);
     await page.setViewportSize({ width: 390, height: 844 });
+    await targets().nth(29).tap(); await popupAgreement(partial, 29);
+    await page.keyboard.press('Escape');
+    await page.setViewportSize({ width: 320, height: 360 });
     await targets().nth(29).tap(); await popupAgreement(partial, 29);
   });
   await test('complete, stale, partial and unavailable keep exact states and JSON; interactions do not fetch stats', async () => {
@@ -178,6 +194,17 @@ try {
       evidence.states.push(snapshot.status);
     }
     assert.deepEqual(errors, [], 'No browser script errors');
+  });
+  await test('without JavaScript, accessible complete reverse table remains the fallback', async () => {
+    await context.close();
+    context = await browser.newContext({ viewport: { width: 390, height: 844 }, javaScriptEnabled: false, serviceWorkers: 'block', acceptDownloads: false });
+    await context.route('**/*', localReadsOnly);
+    page = await context.newPage();
+    await load(partial); await agreement(partial);
+    assert.equal(await page.locator('tbody th[scope="row"]').count(), 30);
+    assert.equal(await page.locator('thead th[scope="col"]').count(), 3);
+    assert.equal(await page.getByRole('region', { name: 'Daily traffic estimates, horizontally scrollable' }).getAttribute('tabindex'), '0');
+    assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth));
   });
   writeFileSync(join(artifacts, 'popup-browser-evidence.json'), JSON.stringify(evidence, null, 2), { mode: 0o600 });
 } finally {
