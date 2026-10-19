@@ -1009,6 +1009,26 @@ img {
   align-items: center;
 }
 
+.submit-announcement-field {
+  display: grid;
+  gap: 8px;
+  margin: 20px 0;
+}
+
+.submit-announcement-field .submit-copy {
+  margin: 0;
+}
+
+#announcement-x-error {
+  margin: 0;
+  color: #ffb4b4;
+  line-height: 1.6;
+}
+
+#announcement-x-handle[aria-invalid="true"] {
+  border-color: #ffb4b4;
+}
+
 .submit-skill-input {
   width: 100%;
   min-height: 40px;

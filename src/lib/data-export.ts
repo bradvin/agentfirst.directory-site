@@ -28,6 +28,7 @@ export function toolToPublicRecord(tool: ToolCardData) {
     pricing: tool.entry.pricing,
     websiteUrl: tool.entry.websiteUrl,
     githubUrl: tool.entry.githubUrl,
+    announcementXHandle: tool.entry.announcementXHandle,
     docsUrl: tool.entry.docsUrl,
     pricingUrl: tool.entry.pricingUrl,
     licenseUrl: tool.entry.licenseUrl,

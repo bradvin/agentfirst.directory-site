@@ -65,6 +65,7 @@ export interface Tool {
   pricing: Pricing;
   classification?: Classification;
   submittedByGithub: string;
+  announcementXHandle?: string;
   logoUrl?: string;
   ogImageUrl?: string;
   logoWidth?: number;
@@ -142,6 +143,7 @@ interface ToolRow {
   pricing: Pricing;
   classification: Classification | null;
   submitted_by_github: string;
+  announcement_x_handle: string | null;
   logo_url: string | null;
   og_image_url: string | null;
   logo_width: number | null;
@@ -329,6 +331,7 @@ function mapToolCard(row: ToolRow): ToolCardData {
       pricing: row.pricing,
       classification: normalizeClassification(row.classification),
       submittedByGithub: row.submitted_by_github,
+      announcementXHandle: row.announcement_x_handle ?? undefined,
       logoUrl: sanitizeExternalUrl(row.logo_url),
       ogImageUrl: sanitizeExternalUrl(row.og_image_url),
       logoWidth: row.logo_width ?? undefined,
@@ -394,6 +397,7 @@ async function queryToolCards(
           t.pricing,
           t.classification,
           t.submitted_by_github,
+          t.announcement_x_handle,
           t.logo_url,
           t.og_image_url,
           t.logo_width,
