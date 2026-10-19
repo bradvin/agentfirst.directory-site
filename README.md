@@ -89,6 +89,16 @@ The staged `0003_add_tool_classification.sql` migration permits `NULL` only so a
 
 ## Local development
 
+### Optional announcement X handle
+
+`/submit` remains a copy-to-agent workflow, not a submission API. Its optional X input appends an explicitly supplied handle to the copied prompt; blank input produces the exact legacy prompt. The agent preserves it as `announcementXHandle` in the content PR frontmatter following `/SKILL.md`. Handles are trimmed, may start with one `@`, and normalize to case-preserving bare ASCII `[A-Za-z0-9_]{1,15}`. URLs, null, and non-string values are invalid; omitted/blank means no tag. Never infer or scrape a handle, or fall back to a GitHub username.
+
+Migration `0007_add_announcement_x_handle.sql` adds nullable `TEXT` column `tools.announcement_x_handle`; apply it before enabling content-publisher writes of that column. Existing rows remain NULL. The content publisher owns ingestion, this site's D1 query maps NULL to absence in `Tool.announcementXHandle`, and `/api/tools.json` preserves explicitly supplied values as `announcementXHandle` for downstream use. GitHub attribution is unchanged. This field is not rendered on public tool profiles and is not a social identity or JSON-LD `sameAs` link.
+
+**Downstream dependency:** no announcement poster is implemented in either repository. A future external announcement consumer must read this explicit field, tag only when it is present, and make no GitHub or scraped-account fallback. Actual announcement posting and end-to-end social delivery remain pending; this change does not post anything.
+
+`test/announcement-x-handle.test.mjs` exercises validation, an existing-row migration, and the actual D1 query/map/JSON export using synthetic SQLite fixtures. `verification/submit-announcement.mjs` runs real local Chromium with mocked clipboard and local GET-only transport, including invalid edits after a valid handle; it is included in `verify:rendered`. Never use live submissions for this verification.
+
 ```bash
 npm ci
 npm test

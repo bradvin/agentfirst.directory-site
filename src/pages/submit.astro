@@ -42,6 +42,22 @@ const structuredData = [
         </p>
       </header>
 
+      <div class="submit-announcement-field">
+        <label for="announcement-x-handle">X handle to tag when we announce your listing (optional)</label>
+        <input
+          id="announcement-x-handle"
+          class="submit-skill-input"
+          type="text"
+          autocomplete="off"
+          autocapitalize="none"
+          spellcheck="false"
+          aria-describedby="announcement-x-help announcement-x-error"
+          aria-invalid="false"
+        />
+        <p id="announcement-x-help" class="submit-copy">Your personal or product account. Leave blank if you don’t want a tag.</p>
+        <p id="announcement-x-error" role="alert" hidden></p>
+      </div>
+
       <div class="submit-skill-copy-row">
         <input
           id="skill-copy-input"
@@ -105,22 +121,62 @@ const structuredData = [
   </div>
 
   <script>
+    import { announcementXHandleError, buildSubmissionPrompt } from "../lib/announcement-x-handle";
+
     const copyButton = document.querySelector("#skill-copy-button");
     const copyInput = document.querySelector("#skill-copy-input");
+    const handleInput = document.querySelector("#announcement-x-handle");
+    const handleError = document.querySelector("#announcement-x-error");
+    let revision = 0;
+    let resetTimer: number | undefined;
+
+    function updatePrompt(): string | undefined {
+      if (!(handleInput instanceof HTMLInputElement) || !copyButton || !handleError) return;
+      window.clearTimeout(resetTimer);
+      copyButton.textContent = "Copy";
+      try {
+        const text = buildSubmissionPrompt(handleInput.value);
+        handleInput.setAttribute("aria-invalid", "false");
+        handleError.textContent = "";
+        handleError.setAttribute("hidden", "");
+        if (copyInput instanceof HTMLInputElement) copyInput.value = text;
+        copyButton.setAttribute("data-copy-text", text);
+        return text;
+      } catch {
+        handleInput.setAttribute("aria-invalid", "true");
+        handleError.textContent = announcementXHandleError;
+        handleError.removeAttribute("hidden");
+        // Never leave a previous valid handle available for copying after an invalid edit.
+        if (copyInput instanceof HTMLInputElement) copyInput.value = "";
+        copyButton.setAttribute("data-copy-text", "");
+      }
+    }
+
+    handleInput?.addEventListener("input", () => {
+      revision += 1;
+      updatePrompt();
+    });
 
     copyButton?.addEventListener("click", async () => {
-      const text = copyButton.getAttribute("data-copy-text") ?? "";
+      const text = updatePrompt();
+      if (text === undefined) {
+        if (handleInput instanceof HTMLInputElement) handleInput.focus();
+        return;
+      }
+      const copiedRevision = revision;
 
       try {
         await navigator.clipboard.writeText(text);
+        if (copiedRevision !== revision) return;
         if (copyInput instanceof HTMLInputElement) {
           copyInput.select();
         }
         copyButton.textContent = "Copied";
-        window.setTimeout(() => {
+        resetTimer = window.setTimeout(() => {
           copyButton.textContent = "Copy";
         }, 1200);
       } catch {
+        if (copiedRevision !== revision) return;
         if (copyInput instanceof HTMLInputElement) {
           copyInput.focus();
           copyInput.select();

@@ -83,7 +83,7 @@ try {
   if (process.env.STATS_VERIFY_RENDERED === '1') {
     const result = spawnSync('npm', ['run', 'verify:rendered'], { env: { ...childEnv, BASE_URL: base }, encoding: 'utf8', timeout: 300_000, maxBuffer: 8*1024*1024 });
     if (result.status !== 0) throw Error();
-    console.log('PASS: all four full rendered verification scripts against the same isolated LOCAL Worker.');
+    console.log('PASS: full rendered verification suite against the same isolated LOCAL Worker.');
   }
 } catch (error) {
   const code = /^Deployed stats verification failed: [a-z-]+$/.test(error?.message ?? '') ? error.message : 'local-exercise';
