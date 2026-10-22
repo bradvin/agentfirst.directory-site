@@ -48,7 +48,7 @@ const structuredData = [
     </section>
 
     <section class="detail-panel policy-panel">
-      <p class="detail-overline">Evidence standard</p>
+      <p class="detail-overline">Evidence standard, after pass-fit</p>
       <h2>Material claims need a maintained first-party source</h2>
       <ol class="policy-test-list">
         <li>
@@ -72,11 +72,15 @@ const structuredData = [
 
     <section class="policy-classification-grid" aria-label="Editorial review stages">
       <article class="detail-panel policy-classification-card">
-        <p class="detail-overline">1 · Scope</p>
-        <h3>Identify the agent role</h3>
+        <p class="detail-overline">1 · Product fit, before evidence</p>
+        <h3>Decide whether it is built for agents</h3>
         <p>
-          The reviewer states what an agent, agent builder, or interoperable agent system can do with the product or
-          protocol, and why that capability is material.
+          Record pass-fit, fail-fit, or unclear-fit with the intended user, core job, and why the product is or is not
+          built for agents. Use only the product description and operating model, plus canonical homepage positioning
+          if necessary, not evidence arrays, documentation, MCP details, implementation, pricing, licence, or validation.
+          Follow the <a class="detail-link" href="/policy#inclusion-test">product-fit gate</a>:
+          fail-fit stops with nonacceptance and unclear-fit holds for positioning clarification. Neither proceeds to
+          evidence review, metadata enrichment, or listing commits.
         </p>
       </article>
 
@@ -84,8 +88,10 @@ const structuredData = [
         <p class="detail-overline">2 · Verify</p>
         <h3>Check the specific evidence</h3>
         <p>
-          The reviewer checks maintained first-party material and rejects thin integrations, unsupported marketing,
-          and generic technical compatibility.
+          Only pass-fit proceeds to full first-party evidence, schema, and contradiction review. A human-first app
+          with REST, MCP, or SDK access cannot be rescued by integration depth or tool count. An AI agent serving
+          humans is not, by itself, a tool built for agents. Agent-oriented infrastructure, protocols, and
+          agent-builder tools may qualify when designed for agent operation, without exclusive agent use or agent-only origins.
         </p>
       </article>
 

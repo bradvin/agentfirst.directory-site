@@ -10,9 +10,9 @@ export interface CategoryEditorial {
 }
 
 export const editorialPolicy = {
-  version: "1.0",
-  effectiveDate: "2026-09-03",
-  effectiveDateLabel: "3 September 2026",
+  version: "1.1",
+  effectiveDate: "2026-10-22",
+  effectiveDateLabel: "22 October 2026",
 } as const;
 
 export const categoryEditorialEntries = [

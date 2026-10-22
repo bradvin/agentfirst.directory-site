@@ -77,10 +77,18 @@ CrewAI is a lean, lightning-fast framework built in Python for orchestrating rol
 
 Replace `YYYY-MM-DD` with the date the cited source was actually checked. Add `reviewedBy` and `reviewedAt` together only after a real editorial review.
 
-Every published tool must have one classification:
+## Product-fit-first editorial policy
+
+Only tools built for agents belong in the directory. Before evidence review, record `pass-fit`, `fail-fit`, or `unclear-fit` with the intended user, core job, and why the product is or is not built for agents. Use only the product description and operating model, plus canonical homepage positioning if necessary, not evidence arrays, docs, MCP details, implementation, pricing, licence, or validation.
+
+Only `pass-fit` proceeds to full evidence, schema, and contradiction review. `fail-fit` stops with nonacceptance; `unclear-fit` holds for product-positioning clarification. Neither proceeds to evidence review, metadata enrichment, or listing commits. A human-first app with REST, MCP, or SDK access cannot be rescued by integration depth or tool count. An AI agent serving humans is not, by itself, a tool built for agents. Agent-oriented infrastructure, protocols, and agent-builder tools may pass when designed for agent operation; exclusive agent use or agent-only origins are not required.
+
+The product-fit gate at `/policy#inclusion-test` takes precedence over category or contribution guidance, including any workflow that starts with evidence or treats internal autonomous agents alone as sufficient. Historical reassessments and public corrections require separate owner approval; this update authorizes no existing-listing changes.
+
+After `pass-fit` and successful evidence review, every published tool must have one classification:
 
 - `agent-native`: agents are a core actor, runtime, abstraction, or participant.
-- `agent-enabling`: the tool materially empowers an agent-first workflow.
+- `agent-enabling`: infrastructure or builder tooling designed for agent operation materially enables an agent-first workflow; this cannot bypass product fit.
 - `agent-internet-protocol`: an interoperable protocol lets agents communicate, transact, identify, coordinate, or interact online.
 
 The staged `0003_add_tool_classification.sql` migration permits `NULL` only so a populated database can be upgraded before the content publisher backfills every row. `0004_add_editorial_seo_metadata.sql` adds review/evidence metadata, genuine content dates, image dimensions, indexation flags, and the URL redirect/retirement registry. Runtime reads keep old/null rows safe and do not fabricate a classification badge, free offer, review, or operating-system claim. The public policy and evidence test live at `/policy`.

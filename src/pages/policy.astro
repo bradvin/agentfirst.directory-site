@@ -8,7 +8,7 @@ const path = "/policy";
 const title = `Inclusion policy | ${siteConfig.name}`;
 const pageName = "Agent-first inclusion policy";
 const description =
-  "How agentfirst.directory classifies listings and applies an evidence-based inclusion test.";
+  "How agentfirst.directory checks product fit before evidence review and classification.";
 
 const structuredData = [
   pageGraphSchema({
@@ -40,19 +40,20 @@ const structuredData = [
       </p>
       <h1 class="page-title">What belongs in an agent-first directory</h1>
       <p class="page-copy">
-        We include products, infrastructure, and protocols that give AI agents a material role or capability.
-        Each listing must have public evidence for its claimed role and fit exactly one classification.
+        Only tools built for agents belong in this directory. Product fit is decided before evidence review.
+        Passing fit is necessary, not acceptance: each listing must then have public evidence for its claimed role
+        and fit exactly one classification.
       </p>
     </section>
 
     <section class="detail-panel policy-panel">
       <p class="detail-overline">Working definition</p>
-      <h2>Agent-first means the agent role is material</h2>
+      <h2>Built for agents, not merely callable by agents</h2>
       <p>
-        A product is agent-first when an AI agent is a core actor, or when the product removes a substantial constraint
-        from an agent workflow. A protocol is agent-first when it gives independent systems a documented way to let
-        agents communicate, transact, identify, coordinate, or interact. Merely exposing an API that an agent could
-        call is not enough.
+        Judge the intended user, core job, and operating model. Agent-oriented infrastructure, protocols, and
+        agent-builder tools can qualify when designed for agent operation; exclusive agent use or agent-only origins
+        are not required. An AI agent serving humans is not, by itself, a tool built for agents. A human-first app
+        with REST, MCP, or SDK access does not qualify, regardless of integration depth or tool count.
       </p>
     </section>
 
@@ -79,8 +80,9 @@ const structuredData = [
         <p class="detail-overline">Agent-enabling</p>
         <h3>Infrastructure materially empowers agents</h3>
         <p>
-          The product gives agents meaningful capabilities or removes a material constraint from agent-first
-          workflows, even when people and conventional applications can also use it.
+          Infrastructure or builder tooling is designed for agent operation and gives agents meaningful capabilities,
+          even when people and conventional applications can also use it. This classification cannot bypass product
+          fit or rescue a human-first app through its integrations.
         </p>
         <p>
           <strong>Example:</strong> an isolated execution environment designed for agent-controlled code runs, or a
@@ -111,8 +113,20 @@ const structuredData = [
     </section>
 
     <section class="detail-panel policy-panel" id="inclusion-test">
-      <p class="detail-overline">Evidence-based inclusion test</p>
-      <h2>Evidence before labels</h2>
+      <p class="detail-overline">Product-fit-first inclusion test</p>
+      <h2>Product fit before evidence</h2>
+      <p>
+        Before reviewing any evidence, use only the product description and operating model, plus canonical homepage
+        positioning if necessary. Do not inspect evidence arrays, documentation, MCP details, implementation, pricing,
+        licence, or validation results at this stage. Record the intended user, core job, and why it is or is not
+        built for agents, with one decision:
+      </p>
+      <ul class="policy-test-list">
+        <li><strong>pass-fit:</strong> proceed to full first-party evidence, schema, and contradiction review.</li>
+        <li><strong>fail-fit:</strong> stop with nonacceptance; do not review evidence, enrich metadata, or commit listing changes.</li>
+        <li><strong>unclear-fit:</strong> hold for product-positioning clarification; do not review evidence or proceed with metadata or listing commits.</li>
+      </ul>
+      <h3>Only after pass-fit</h3>
       <ol class="policy-test-list">
         <li><strong>Identify the agent role.</strong> State what agents do and why that role is material.</li>
         <li><strong>Use first-party evidence.</strong> Verify the claim in product docs, a maintained repository, a specification, or the official website.</li>
@@ -130,7 +144,8 @@ const structuredData = [
       <h2>Compatibility alone is insufficient</h2>
       <ul class="policy-test-list">
         <li>A generic developer tool that an agent could happen to call.</li>
-        <li>A thin MCP or API wrapper with no material agent-first capability.</li>
+        <li>A human-first app with a secondary REST API, MCP server, or SDK, however extensive.</li>
+        <li>A product whose only agent role is internal AI completing a human customer's task.</li>
         <li>Unsupported marketing claims without first-party product evidence.</li>
         <li>A conventional workflow with “AI” or “agent” added only as positioning.</li>
       </ul>
@@ -153,7 +168,9 @@ const structuredData = [
         Read the <a class="detail-link" href="/editorial-standards">editorial standards</a> for source hierarchy,
         conflicts, sponsorship, ordering, and review cadence. If a published claim is wrong or a product has changed,
         use the <a class="detail-link" href="/corrections">corrections and appeals process</a>. Policy changes are
-        versioned from the effective date shown above.
+        versioned from the effective date shown above. This product-fit gate takes precedence over category or
+        contribution guidance suggesting internal autonomous agents alone qualify. Historical reassessments and
+        public corrections require separate owner approval; this policy update authorizes no existing-listing changes.
       </p>
     </section>
 
