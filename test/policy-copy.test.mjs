@@ -5,6 +5,16 @@ import { editorialPolicy, categoryEditorialEntries } from "../src/lib/category-e
 import { formatClassification } from "../src/lib/classification.ts";
 
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8").replace(/\s+/gu, " ").trim();
+
+// Reviewer regressions: these remain source-copy assertions, not an eligibility evaluator.
+test("Run control is route-conditional and portable standards keep an existing classification", () => {
+  assert.match(read("src/pages/policy.astro"), /offering claiming Run must establish Run control/);
+  assert.doesNotMatch(read("src/pages/policy.astro"), /runtime\/control-plane shape must establish Run control/);
+  for (const path of ["src/pages/submit.astro", "public/SKILL.md"]) {
+    assert.match(read(path), /agent-internet-protocol[^\n]*maintained, implementable protocol or standard[^\n]*portable agent representation across systems/);
+    assert.doesNotMatch(read(path), /An open protocol lets agents/);
+  }
+});
 const policy = read("src/pages/policy.astro");
 const standards = read("src/pages/editorial-standards.astro");
 const skill = read("public/SKILL.md");

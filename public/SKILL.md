@@ -145,7 +145,7 @@ Short summary of what the tool does.
 
 - `agent-native`: agents are a core actor, runtime, abstraction, or participant
 - `agent-enabling`: the tool materially empowers an agent-first workflow
-- `agent-internet-protocol`: an interoperable protocol enables agents to communicate, transact, identify, coordinate, or interact online
+- `agent-internet-protocol`: a maintained, implementable protocol or standard defines an agent interaction or portable agent representation across systems
 - Use first-party product docs, specifications, official websites, or maintained repositories as evidence
 - Generic technical compatibility, a thin MCP/API wrapper, or unsupported marketing does not qualify
 - Choose the most specific class the evidence supports; classification is not a quality score or endorsement
