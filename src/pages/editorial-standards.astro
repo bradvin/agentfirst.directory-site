@@ -18,7 +18,7 @@ const structuredData = [
     name: pageName,
     description,
     type: "WebPage",
-    datePublished: editorialPolicy.effectiveDate,
+    datePublished: "2026-10-22",
     dateModified: editorialPolicy.effectiveDate,
     lastReviewed: editorialPolicy.effectiveDate,
     breadcrumbs: [
@@ -38,7 +38,7 @@ const structuredData = [
   <div class="shell-inner policy-shell">
     <section class="page-intro page-intro-centered">
       <p class="detail-overline">
-        Editorial policy {editorialPolicy.version} · Effective {editorialPolicy.effectiveDateLabel}
+        Editorial policy {editorialPolicy.version} · Adopted {editorialPolicy.effectiveDateLabel}
       </p>
       <h1 class="page-title">How listings are researched and reviewed</h1>
       <p class="page-copy">
@@ -73,36 +73,54 @@ const structuredData = [
     <section class="policy-classification-grid" aria-label="Editorial review stages">
       <article class="detail-panel policy-classification-card">
         <p class="detail-overline">1 · Product fit, before evidence</p>
-        <h3>Decide whether it is built for agents</h3>
-        <p>
-          Record pass-fit, fail-fit, or unclear-fit with the intended user, core job, and why the product is or is not
-          built for agents. Use only the product description and operating model, plus canonical homepage positioning
-          if necessary, not evidence arrays, documentation, MCP details, implementation, pricing, licence, or validation.
-          Follow the <a class="detail-link" href="/policy#inclusion-test">product-fit gate</a>:
-          fail-fit stops with nonacceptance and unclear-fit holds for positioning clarification. Neither proceeds to
-          evidence review, metadata enrichment, or listing commits.
-        </p>
+        <h3>Identify Run, Equip or Enable fit</h3>
+        <p>Identify the maintained offering and exact mode. Use a short workflow explanation and submitted overview,
+          plus at most two short first-party positioning excerpts if needed. Introductory repository/docs and mode
+          pages are allowed; detailed API/MCP docs, claim-evidence arrays, code, pricing, licensing and validators are
+          not first-gate inputs. Record pass-fit, fail-fit or unclear-fit under the{" "}
+          <a class="detail-link" href="/policy#inclusion-test">bounded positioning test</a>. A material contradiction
+          or uncertain fact means hold. Fail-fit and unclear-fit stop with evidence not reviewed: no evidence access,
+          metadata enrichment or listing commits.</p>
       </article>
-
       <article class="detail-panel policy-classification-card">
         <p class="detail-overline">2 · Verify</p>
         <h3>Check the specific evidence</h3>
-        <p>
-          Only pass-fit proceeds to full first-party evidence, schema, and contradiction review. A human-first app
-          with REST, MCP, or SDK access cannot be rescued by integration depth or tool count. An AI agent serving
-          humans is not, by itself, a tool built for agents. Agent-oriented infrastructure, protocols, and
-          agent-builder tools may qualify when designed for agent operation, without exclusive agent use or agent-only origins.
-        </p>
+        <p>Only pass-fit proceeds to full first-party evidence, schema, and contradiction review. Verify material
+          claims and listing accuracy, then run technical validation on the exact revision. For Enable, verify the
+          current public contract can be independently implemented; do not infer conformance or working
+          interoperability. Distinguish a protocol from a same-branded harness or SDK; uncertain unit or contradictory
+          positioning means hold. A fit pass is not verified capability or acceptance.</p>
       </article>
-
       <article class="detail-panel policy-classification-card">
         <p class="detail-overline">3 · Classify</p>
         <h3>Choose one defensible class</h3>
-        <p>
-          Each accepted listing receives the most specific supported classification. Classification is not a rating,
-          award, recommendation, or substitute for due diligence.
-        </p>
+        <p>Each accepted listing receives the most specific supported classification. Classification is not a rating,
+          award, recommendation, or substitute for due diligence.</p>
       </article>
+    </section>
+
+    <section class="detail-panel policy-panel">
+      <p class="detail-overline">Eligibility routes, separate from classification</p>
+      <h2>The same broad test for every contributor</h2>
+      <p>Run requires running agents with meaningful customer control over execution, state or authority. Approving a
+        finished output alone is not sufficient; uncertain customer control is a hold, not an inferred capability.</p>
+      <p>Equip requires a concrete agent task or improvement and named product features designed for that workflow.
+        It does not require infrastructure ownership or control over execution, resources, state or authority.
+        Human-operated context, structured feedback, human–agent collaboration, maintained agent-focused libraries,
+        connectors, catalogues and data tools can qualify, including software that produces instructions.</p>
+      <p>Enable requires an intentionally agent-focused standard with agents or agent systems as first-class
+        participants, a concrete interaction or portable agent representation across systems, and a defined shared
+        contract. Running agents or provisioning resources is not required.</p>
+      <p>Generic compatibility alone, AI labels or repackaging are insufficient. Standalone prompt packs, skill files,
+        templates and one-off scripts remain excluded. Do not impose Run-specific or category-specific ownership
+        rules on valid Equip or Enable offerings. Use <a class="detail-link" href={editorialPolicy.sourceUrl}>adopted
+        policy #125</a> and the <a class="detail-link" href="/policy">full inclusion policy</a> if guidance conflicts.</p>
+      <p>Record the version, source revision/access date, unit/mode, workflow, route-specific rationale, positioning
+        sources, fit decision, availability gaps, stage, evidence consulted or evidence not reviewed, actual validation,
+        unresolved facts, recommendation and approval boundary. Final recommendations are eligible — corrections
+        required, hold — evidence unresolved, meets policy, or does not meet policy. None is merge or deploy approval.</p>
+      <p>Historical reassessments and public corrections require separate owner approval. This update authorizes no
+        listing changes, installed-reviewer activation or submission restart; review and publishing remain paused.</p>
     </section>
 
     <section class="detail-panel policy-panel">

@@ -10,9 +10,11 @@ export interface CategoryEditorial {
 }
 
 export const editorialPolicy = {
-  version: "1.1",
-  effectiveDate: "2026-10-22",
-  effectiveDateLabel: "22 October 2026",
+  version: "0.3",
+  effectiveDate: "2026-11-22",
+  effectiveDateLabel: "22 November 2026",
+  sourceUrl: "https://github.com/bradvin/agentfirst.directory/issues/125",
+  policySummary: "Run: run agents with meaningful customer control over execution, state or authority. Equip: support a concrete agent task or improvement through named purpose-built features; human-operated feedback/context, collaboration, maintained libraries, connectors and data tools can qualify without owning execution or infrastructure. Enable: define an intentionally agent-focused shared contract for first-class agent participants, a concrete interaction or portable representation across systems. These are eligibility routes, not classification values. Generic API/MCP compatibility alone and standalone prompt/skill packs, templates and one-off scripts do not qualify. A positioning fit pass precedes full evidence, accuracy and technical review; fail-fit and unclear-fit stop with evidence not reviewed. A fit pass is not acceptance or publication approval.",
 } as const;
 
 export const categoryEditorialEntries = [
@@ -256,11 +258,11 @@ export const categoryEditorialEntries = [
       "Connector catalogues and integration platforms belong here when their primary value is giving agents usable actions across external business applications.",
     includeWhen: [
       "The platform exposes maintained connectors or action catalogs designed for agent tool use.",
-      "Authentication, user authorization, and action execution are handled as substantive platform capabilities.",
+      "Named features support a concrete agent workflow; a maintained connector can qualify without owning upstream authentication or execution.",
       "The agent can discover or invoke integrations through a documented common interface.",
     ],
     excludeWhen: [
-      "It offers only one product integration or a thin connector wrapper.",
+      "Its only agent-specific contribution is compatibility or repackaging, with no purpose-built agent-workflow features.",
       "It is a conventional automation platform with no material agent-first interaction model.",
     ],
     selectionQuestions: [

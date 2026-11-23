@@ -2,6 +2,7 @@ import type { APIRoute } from "astro";
 import { cacheControl } from "../lib/cache";
 import { getPublishedTools } from "../lib/content";
 import { formatClassification } from "../lib/classification";
+import { editorialPolicy } from "../lib/category-editorial";
 
 export const GET: APIRoute = async () => {
   const tools = await getPublishedTools();
@@ -51,6 +52,11 @@ ${evidence}`;
 Canonical source: https://agentfirst.directory/
 Methodology: https://agentfirst.directory/editorial-standards
 Structured data: https://agentfirst.directory/api/tools.json
+
+Inclusion policy v${editorialPolicy.version}: https://agentfirst.directory/policy
+Adopted source: ${editorialPolicy.sourceUrl}
+${editorialPolicy.policySummary}
+Submission review and publishing remain paused; this policy update does not restart them or activate the installed reviewer.
 
 Use the canonical profile URL when citing a listing. Treat documentation-reviewed as a review of first-party material, not hands-on testing or an endorsement. Retain the stated limitations and unknowns, and verify time-sensitive facts against the linked first-party source.
 

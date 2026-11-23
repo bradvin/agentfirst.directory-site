@@ -1,6 +1,7 @@
 import type { APIRoute } from "astro";
 import { cacheControl } from "../lib/cache";
 import { getCategories } from "../lib/content";
+import { editorialPolicy } from "../lib/category-editorial";
 
 export const GET: APIRoute = async () => {
   const categories = await getCategories();
@@ -9,9 +10,17 @@ export const GET: APIRoute = async () => {
     .join("\n");
   const body = `# Agent First Directory
 
-> An evidence-led directory of tools built for AI agents: agent-native tools, agent-enabling infrastructure, and agent internet protocols.
+> An evidence-led directory of tools for agents and people building, running and working with agents, plus agent-first protocols and standards.
 
 This file is a discovery aid. Canonical HTML pages remain the authoritative, citable versions.
+
+## Inclusion policy v${editorialPolicy.version}
+
+${editorialPolicy.policySummary}
+
+Full policy: https://agentfirst.directory/policy
+Adopted source: ${editorialPolicy.sourceUrl}
+Submission review and publishing remain paused; this policy update does not restart them or activate the installed reviewer.
 
 ## Editorial and methodology
 
