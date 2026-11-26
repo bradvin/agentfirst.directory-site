@@ -29,6 +29,9 @@ const structuredData = [
       <p class="detail-overline">Submit</p>
       <h1 class="page-title">Add a tool with your agent</h1>
       <p class="page-copy">{description}</p>
+      <p class="submit-copy">Submission review and publishing remain paused. This policy update does not restart them
+        or activate the installed reviewer. The prompt tools below remain available for preparation only; do not
+        open a new listing-submission PR while the pause is in effect.</p>
     </section>
 
     <section class="detail-panel submit-panel submit-skill-panel">
@@ -82,12 +85,17 @@ const structuredData = [
     <section class="detail-panel submit-panel" aria-labelledby="submit-fit-title">
       <p class="detail-overline">Eligibility</p>
       <h2 id="submit-fit-title" class="submit-title">Check the fit</h2>
-      <p class="submit-copy">A listing needs a concrete agent role supported by first-party evidence. It must fit one of three classifications:</p>
+      <p class="submit-copy">First identify a maintained offering and exact mode. It must qualify through Run
+        (agents run with meaningful customer control), Equip (a concrete agent task or improvement through named
+        purpose-built features), or Enable (an agent-first shared interoperability contract). Equip includes
+        human-operated context, feedback, collaboration, maintained libraries, connectors and data tools; owning
+        execution or infrastructure is not required. These routes are separate from the classifications below.
+        A fit pass is not acceptance: first-party evidence and full review follow.</p>
       <div class="submit-grid">
         <div class="detail-panel submit-fields-panel">
           <div class="submit-field"><code>agent-native</code><span>Agents are a core actor, runtime, or participant.</span></div>
           <div class="submit-field"><code>agent-enabling</code><span>The product materially enables an agent-first workflow.</span></div>
-          <div class="submit-field"><code>agent-internet-protocol</code><span>An open protocol lets agents communicate, transact, identify, or coordinate online.</span></div>
+          <div class="submit-field"><code>agent-internet-protocol</code><span>A maintained, implementable protocol or standard defines an agent interaction or portable agent representation across systems.</span></div>
         </div>
         <div class="detail-panel submit-fields-panel">
           <div class="submit-field"><strong>Show the outcome</strong><span>Explain what an agent or agent builder can do because this exists.</span></div>
@@ -103,10 +111,11 @@ const structuredData = [
       <h2 id="submit-workflow-title" class="submit-title">What your agent prepares</h2>
       <div class="submit-grid">
         <ol class="submit-steps">
-          <li>Checks existing listings and chooses a category. It proposes a new category only when none fits.</li>
-          <li>Explains the concrete agent outcome and chooses one evidence-backed classification.</li>
+          <li>Checks for duplicates and applies the <a class="detail-link" href="/policy#inclusion-test">bounded positioning test</a> before evidence.
+            Records pass-fit, fail-fit or unclear-fit; failed or unclear fit stops with evidence not reviewed.</li>
+          <li>Only after pass-fit, researches claims, chooses an existing category when possible, and selects one evidence-backed classification.</li>
           <li>Maps material claims to dated first-party sources. It includes product facts only when verified and states limitations or unknowns.</li>
-          <li>Opens a pull request in the <a class="detail-link" href={contentRepoUrl} rel="noreferrer" target="_blank">content repository</a>.</li>
+          <li>After the owner explicitly restarts submissions, opens a pull request in the <a class="detail-link" href={contentRepoUrl} rel="noreferrer" target="_blank">content repository</a>. A policy pass is not publication approval.</li>
         </ol>
         <div class="detail-panel submit-fact-panel">
           <p class="detail-overline">After the PR</p>

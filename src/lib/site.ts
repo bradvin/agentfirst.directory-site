@@ -3,7 +3,7 @@ export const siteConfig = {
   shortName: "agent-first",
   url: "https://agentfirst.directory",
   description:
-    "Find and compare evidence-reviewed tools built for AI agents: agent-native software, enabling infrastructure, and open agent protocols.",
+    "Find and compare evidence-reviewed tools for agents and people building, running and working with agents, plus agent-first protocols and standards.",
   publisherName: "Brad Vincent",
   publisherType: "Person",
   publisherUrl: "https://agentfirst.directory/about",

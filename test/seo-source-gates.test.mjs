@@ -23,7 +23,7 @@ test("homepage keeps the approved direct copy and shared SEO description", () =>
   const homepage = read("src/pages/index.astro");
   const categoryFilters = read("src/components/CategoryFilters.astro");
   const description =
-    "Find and compare evidence-reviewed tools built for AI agents: agent-native software, enabling infrastructure, and open agent protocols.";
+    "Find and compare evidence-reviewed tools for agents and people building, running and working with agents, plus agent-first protocols and standards.";
 
   assert.match(site, new RegExp(JSON.stringify(description).slice(1, -1).replace(/[.*+?^${}()|[\]\\]/g, "\\$&")));
   assert.match(homepage, /description: siteConfig\.description/);

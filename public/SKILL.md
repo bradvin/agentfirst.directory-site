@@ -29,11 +29,37 @@ Only change the site repo when the user explicitly asks for website code changes
 - A synchronized `tool-submitters.json` entry for each changed tool, generated with the repository script
 - A pull request against `bradvin/agentfirst.directory`
 
+## Policy v0.3 and current pause
+
+The adopted source is https://github.com/bradvin/agentfirst.directory/issues/125; the public explanation is https://agentfirst.directory/policy. Submission review and publishing remain paused. This update does not restart them or activate the installed reviewer. Prepare locally only; do not open a new listing-submission PR until the owner explicitly restarts submissions. The PR workflow below is for use after that restart, not permission to bypass the pause.
+
+Identify one maintained offering and exact unit/mode, not an entire vendor family. Qualify through at least one route, recording the primary route and any independently justified secondary route:
+
+Coordinated repository policy: `docs/editorial-policy.md` in [source PR #145](https://github.com/bradvin/agentfirst.directory/pull/145/files), available on main once that PR merges. Until then issue #125 is canonical; do not fetch or pin an unmerged policy branch.
+
+- **Run:** the offering runs agents with meaningful customer control over execution, state or authority. Approving a finished output alone is not sufficient; uncertain customer control is a hold.
+- **Equip:** support a concrete agent task or improvement through named product features designed for that workflow. It does not require infrastructure ownership or control over execution, resources, state or authority. Human-operated context, structured feedback, human–agent collaboration, maintained agent-focused libraries, connectors, catalogues and data services can qualify. Upstream providers and instruction-producing software are not automatic exclusions.
+- **Enable:** a maintained protocol or interoperability standard intentionally includes agents/agent systems as first-class participants and defines a concrete interaction or portable agent representation across systems through a shared contract. Do not require runtime ownership, exclusive agent use, formal recognition or multiple implementations. Distinguish a protocol from its same-branded harness or SDK; ambiguity or contradictory positioning means hold, not inferred eligibility.
+
+Generic compatibility alone, AI labels, tool counts or repackaging do not establish agent-specific design. Standalone prompt packs, skill files, templates and one-off scripts are excluded; maintained software is not a prompt pack merely because it produces instructions. Category or Run-specific orchestration rules cannot reject valid Equip or Enable shapes. Routes are not new classification enum values.
+
+### Positioning first; evidence only after pass-fit
+
+Use the identity/unit/mode, intended user and core job, a short workflow explanation (target 150 words), submitted overview and at most two short first-party positioning excerpts (combined target 300 words), with URLs/sections. Introductory repository/docs and mode overviews are allowed; do not inspect claim-evidence arrays, detailed API/MCP documentation, code, pricing, licensing or validators at this stage. Do not keep browsing to rescue fit. A material contradiction or uncertain fact means hold. Availability is separate from fit.
+
+- `pass-fit`: record route, unit/mode and a one-sentence rationale, including Run control, Equip task and named features, or Enable agent participant and contract. Only then proceed to full first-party evidence, schema, and contradiction review.
+- `fail-fit`: state the exact exclusion and recommend nonacceptance. Stop with **evidence not reviewed**; no evidence access, metadata enrichment or listing commits.
+- `unclear-fit`: state the material gap/contradiction and ask a bounded clarification. Stop with **evidence not reviewed**; no evidence access, metadata enrichment or listing commits. Do not infer capabilities or silently reject.
+
+After pass-fit, verify material claims, listing accuracy and taxonomy, then run required technical checks on the exact revision. For Enable, inspect the current public specification for an independently implementable contract; do not infer conformance, working interoperability or security. A fit pass is not verified capability or acceptance. Use eligible — corrections required, hold — evidence unresolved, meets policy, or does not meet policy as the final recommendation with blockers/stage; none grants merge/publish/deploy permission.
+
+Record policy version, source revision/access date, unit/mode, customer/workflow, route and route-specific rationale, positioning sources, fit decision, availability gaps, stage reached, evidence consulted or evidence not reviewed, actual validation, unresolved facts and recommendation/approval boundary. Historical reassessments, listing changes and public corrections require separate owner approval.
+
 ## Workflow
 
 1. Check whether the tool already exists in the content repo.
-2. Apply the evidence-based inclusion test at `https://agentfirst.directory/policy`.
-3. Choose exactly one supported classification.
+2. Apply the bounded positioning gate above before evidence; failed or unclear fit stops.
+3. Only after pass-fit, review evidence and choose exactly one supported classification.
 4. Read the content repo's current `README.md` and category files; prefer an existing category when one fits.
 5. Create or update the tool markdown file.
 6. Add a short factual body and prefer including a `## So agents can...` section with concrete outcomes.
@@ -119,7 +145,7 @@ Short summary of what the tool does.
 
 - `agent-native`: agents are a core actor, runtime, abstraction, or participant
 - `agent-enabling`: the tool materially empowers an agent-first workflow
-- `agent-internet-protocol`: an interoperable protocol enables agents to communicate, transact, identify, coordinate, or interact online
+- `agent-internet-protocol`: a maintained, implementable protocol or standard defines an agent interaction or portable agent representation across systems
 - Use first-party product docs, specifications, official websites, or maintained repositories as evidence
 - Generic technical compatibility, a thin MCP/API wrapper, or unsupported marketing does not qualify
 - Choose the most specific class the evidence supports; classification is not a quality score or endorsement

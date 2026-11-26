@@ -2,6 +2,13 @@
 
 Astro site for `agentfirst.directory`, an evidence-led directory of agent-native tools, agent-enabling infrastructure, and agent internet protocols. It is deployed to Cloudflare Workers with D1-backed runtime reads. Site code and D1 schema live here. Approved content continues to live in the public `bradvin/agentfirst.directory` repo and is published into D1 by that repo's pipeline.
 
+## Proposed submission protection
+
+The [review/merge/publication protection proposal](docs/submission-protection.md)
+describes exact-head trusted approval, fail-closed publication checks and the
+separate owner-approved settings activation plan. It is not active enforcement,
+a submission-review restart or deployment authorization.
+
 ## Stack
 
 - Astro server rendering on Cloudflare Workers
@@ -77,19 +84,27 @@ CrewAI is a lean, lightning-fast framework built in Python for orchestrating rol
 
 Replace `YYYY-MM-DD` with the date the cited source was actually checked. Add `reviewedBy` and `reviewedAt` together only after a real editorial review.
 
-## Product-fit-first editorial policy
+## Product-fit-first editorial policy v0.3
 
-Only tools built for agents belong in the directory. Before evidence review, record `pass-fit`, `fail-fit`, or `unclear-fit` with the intended user, core job, and why the product is or is not built for agents. Use only the product description and operating model, plus canonical homepage positioning if necessary, not evidence arrays, docs, MCP details, implementation, pricing, licence, or validation.
+The adopted source is [policy issue #125](https://github.com/bradvin/agentfirst.directory/issues/125); `/policy` explains it publicly. Identify one maintained offering and its exact unit/mode. Routes are separate from category slugs and classification values:
 
-Only `pass-fit` proceeds to full evidence, schema, and contradiction review. `fail-fit` stops with nonacceptance; `unclear-fit` holds for product-positioning clarification. Neither proceeds to evidence review, metadata enrichment, or listing commits. A human-first app with REST, MCP, or SDK access cannot be rescued by integration depth or tool count. An AI agent serving humans is not, by itself, a tool built for agents. Agent-oriented infrastructure, protocols, and agent-builder tools may pass when designed for agent operation; exclusive agent use or agent-only origins are not required.
+The companion source lane confirms `docs/editorial-policy.md` in [source PR #145](https://github.com/bradvin/agentfirst.directory/pull/145/files) as its coordinated repository policy path. It becomes available on main after that PR merges; until then issue #125 remains canonical. No unmerged-branch content pin or network policy fetch is required. Listing/category content remains D1-backed, with repository overrides ahead of local category fallbacks; `/policy` takes precedence over conflicting category guidance.
 
-The product-fit gate at `/policy#inclusion-test` takes precedence over category or contribution guidance, including any workflow that starts with evidence or treats internal autonomous agents alone as sufficient. Historical reassessments and public corrections require separate owner approval; this update authorizes no existing-listing changes.
+- **Run:** runs agents with meaningful customer control over execution, state or authority. Approving a finished output alone is not sufficient; uncertain control means hold.
+- **Equip:** supports a concrete agent task or improvement through named product features designed for that workflow. It does not require infrastructure ownership or control of execution, resources, state or authority. Human-operated context, feedback, human–agent collaboration, maintained agent-focused libraries, connectors, catalogues and data tools can qualify, including software producing instructions or using upstream providers.
+- **Enable:** a maintained agent-first protocol/standard defines first-class participants (agents or agent systems), a concrete interaction or portable agent representation across systems and a shared contract. A protocol and its same-branded harness/SDK are distinct units; ambiguity or contradiction means hold. Runtime ownership, exclusive agent use, formal recognition and multiple implementations are not prerequisites.
 
-After `pass-fit` and successful evidence review, every published tool must have one classification:
+Use a small positioning packet: identity, unit/mode, intended user and core job, a short workflow explanation (target 150 words), submitted overview and at most two short first-party positioning excerpts (combined target 300 words) with URLs/sections. Introductory repository/docs and mode overviews are allowed; do not inspect claim-evidence arrays, detailed API/MCP docs, code, pricing, licensing or validators at this stage. A material contradiction or uncertain fact means hold, not rejection based on omission. Record `pass-fit`, `fail-fit` or `unclear-fit`, with route-specific rationale. Failed/unclear fit stops with **evidence not reviewed**: no evidence review, metadata enrichment or listing commits. Availability is separate from fit.
 
-- `agent-native`: agents are a core actor, runtime, abstraction, or participant.
-- `agent-enabling`: infrastructure or builder tooling designed for agent operation materially enables an agent-first workflow; this cannot bypass product fit.
-- `agent-internet-protocol`: an interoperable protocol lets agents communicate, transact, identify, coordinate, or interact online.
+Only `pass-fit` proceeds to full first-party evidence, schema, and contradiction review, listing accuracy and exact-revision technical validation. Verify Enable's current public implementable contract; positioning does not prove conformance or working interoperability. Record policy/source revision and date, unit/mode, route, positioning sources, fit decision, gaps, stage reached, evidence consulted, actual validation, unresolved facts and recommendation with approval boundary. Final recommendations are eligible — corrections required, hold — evidence unresolved, meets policy, or does not meet policy. Fit pass is not acceptance; meets-policy is not merge/deploy permission.
+
+Generic compatibility alone, labels or repackaged APIs do not qualify. Standalone prompt packs, skill files, templates and one-off scripts remain excluded; maintained software is not a prompt pack merely because it produces instructions. A Run-specific orchestrator/category boundary cannot reject an otherwise valid Equip or Enable offering. Historical reassessments and public corrections require separate owner approval; this update authorizes no existing-listing changes. Submission review and publishing remain paused; the update does not restart them or activate the installed reviewer.
+
+After successful review, every published tool still has exactly one classification:
+
+- `agent-native`: agents are a core actor, runtime, abstraction or participant.
+- `agent-enabling`: purpose-built features materially enable a concrete agent workflow, including libraries, connectors, data, context and feedback; no execution or infrastructure ownership requirement.
+- `agent-internet-protocol`: a maintained agent-first contract defines interaction or portable representation across systems.
 
 The staged `0003_add_tool_classification.sql` migration permits `NULL` only so a populated database can be upgraded before the content publisher backfills every row. `0004_add_editorial_seo_metadata.sql` adds review/evidence metadata, genuine content dates, image dimensions, indexation flags, and the URL redirect/retirement registry. Runtime reads keep old/null rows safe and do not fabricate a classification badge, free offer, review, or operating-system claim. The public policy and evidence test live at `/policy`.
 
