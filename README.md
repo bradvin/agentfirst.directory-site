@@ -2,6 +2,13 @@
 
 Astro site for `agentfirst.directory`, an evidence-led directory of agent-native tools, agent-enabling infrastructure, and agent internet protocols. It is deployed to Cloudflare Workers with D1-backed runtime reads. Site code and D1 schema live here. Approved content continues to live in the public `bradvin/agentfirst.directory` repo and is published into D1 by that repo's pipeline.
 
+## Proposed submission protection
+
+The [review/merge/publication protection proposal](docs/submission-protection.md)
+describes exact-head trusted approval, fail-closed publication checks and the
+separate owner-approved settings activation plan. It is not active enforcement,
+a submission-review restart or deployment authorization.
+
 ## Stack
 
 - Astro server rendering on Cloudflare Workers
